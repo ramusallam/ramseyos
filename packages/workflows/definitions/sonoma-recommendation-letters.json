@@ -1,0 +1,23 @@
+{
+  "id": "sonoma-recommendation-letters",
+  "name": "Recommendation Letters",
+  "workspace": "sonoma",
+  "category": "admin",
+  "description": "Drafts personalized college recommendation letters based on student context and achievements.",
+  "inputs": [
+    { "name": "studentName", "type": "text", "description": "Full name of the student.", "required": true },
+    { "name": "coursesWithStudent", "type": "textarea", "description": "Courses taken with this student and approximate dates.", "required": true },
+    { "name": "strengths", "type": "textarea", "description": "Key academic and personal strengths to highlight.", "required": true },
+    { "name": "anecdotes", "type": "textarea", "description": "Specific moments, projects, or interactions that illustrate the student.", "required": false },
+    { "name": "targetSchools", "type": "textarea", "description": "Schools or programs the student is applying to, if known.", "required": false }
+  ],
+  "outputs": [
+    { "name": "letter", "type": "markdown", "description": "Draft recommendation letter ready for review and personalization." }
+  ],
+  "aiTaskType": "drafting",
+  "preferredModel": "claude-opus",
+  "fallbackModel": "gemini-pro",
+  "reviewRequired": true,
+  "playbook": "packages/playbooks/sonoma/recommendation-letters.md",
+  "status": "draft"
+}

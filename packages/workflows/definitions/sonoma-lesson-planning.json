@@ -1,0 +1,23 @@
+{
+  "id": "sonoma-lesson-planning",
+  "name": "Lesson Planning",
+  "workspace": "sonoma",
+  "category": "teaching",
+  "description": "Generates inquiry-driven lesson plans for high school chemistry and physics courses.",
+  "inputs": [
+    { "name": "topic", "type": "text", "description": "The subject or concept for the lesson.", "required": true },
+    { "name": "course", "type": "select", "description": "Target course (e.g., AP Chemistry, Physics).", "required": true },
+    { "name": "duration", "type": "text", "description": "Class period length or number of periods.", "required": true },
+    { "name": "objectives", "type": "textarea", "description": "Specific learning objectives for this lesson.", "required": true },
+    { "name": "priorKnowledge", "type": "textarea", "description": "What students already know coming into this lesson.", "required": false }
+  ],
+  "outputs": [
+    { "name": "lessonPlan", "type": "markdown", "description": "Complete lesson plan with warm-up, investigation, reflection, and assessment." }
+  ],
+  "aiTaskType": "reasoning",
+  "preferredModel": "claude-opus",
+  "fallbackModel": "gemini-pro",
+  "reviewRequired": true,
+  "playbook": "packages/playbooks/sonoma/lesson-planning.md",
+  "status": "draft"
+}

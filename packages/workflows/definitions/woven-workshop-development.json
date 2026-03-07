@@ -1,0 +1,23 @@
+{
+  "id": "woven-workshop-development",
+  "name": "Workshop Development",
+  "workspace": "woven",
+  "category": "workshops",
+  "description": "Generates structured outlines and session plans for professional development workshops.",
+  "inputs": [
+    { "name": "workshopTitle", "type": "text", "description": "Title or working name for the workshop.", "required": true },
+    { "name": "audience", "type": "text", "description": "Target audience (e.g., K-12 teachers, administrators).", "required": true },
+    { "name": "duration", "type": "text", "description": "Total workshop length (e.g., 2 hours, full day).", "required": true },
+    { "name": "objectives", "type": "textarea", "description": "Learning objectives or outcomes for participants.", "required": true },
+    { "name": "constraints", "type": "textarea", "description": "Any logistical constraints, client requests, or scope notes.", "required": false }
+  ],
+  "outputs": [
+    { "name": "workshopOutline", "type": "markdown", "description": "Structured workshop outline with session flow, activities, and timing." }
+  ],
+  "aiTaskType": "reasoning",
+  "preferredModel": "claude-opus",
+  "fallbackModel": "gemini-pro",
+  "reviewRequired": true,
+  "playbook": "packages/playbooks/woven/workshop-development.md",
+  "status": "draft"
+}

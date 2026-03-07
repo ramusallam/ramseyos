@@ -1,0 +1,22 @@
+{
+  "id": "concordia-discussion-board",
+  "name": "Discussion Board Responses",
+  "workspace": "concordia",
+  "category": "teaching",
+  "description": "Drafts substantive instructor responses to graduate student discussion board posts.",
+  "inputs": [
+    { "name": "studentPost", "type": "textarea", "description": "The student's discussion board post to respond to.", "required": true },
+    { "name": "courseName", "type": "text", "description": "Name of the Concordia course.", "required": true },
+    { "name": "weekTopic", "type": "text", "description": "The discussion topic or prompt for this week.", "required": true },
+    { "name": "toneGuidance", "type": "textarea", "description": "Preferred tone or emphasis for this response.", "required": false }
+  ],
+  "outputs": [
+    { "name": "response", "type": "markdown", "description": "Draft instructor response that engages with the student's ideas." }
+  ],
+  "aiTaskType": "drafting",
+  "preferredModel": "claude-opus",
+  "fallbackModel": "gemini-pro",
+  "reviewRequired": true,
+  "playbook": "packages/playbooks/concordia/discussion-board.md",
+  "status": "draft"
+}

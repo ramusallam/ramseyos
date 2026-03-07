@@ -1,0 +1,22 @@
+{
+  "id": "sonoma-rubric-grading",
+  "name": "Rubric Grading",
+  "workspace": "sonoma",
+  "category": "teaching",
+  "description": "Evaluates student work against a provided rubric and generates structured feedback.",
+  "inputs": [
+    { "name": "studentWork", "type": "textarea", "description": "The student submission to evaluate.", "required": true },
+    { "name": "rubric", "type": "textarea", "description": "The grading rubric with criteria and point values.", "required": true },
+    { "name": "course", "type": "select", "description": "Target course for context.", "required": true },
+    { "name": "assignmentName", "type": "text", "description": "Name of the assignment being graded.", "required": true }
+  ],
+  "outputs": [
+    { "name": "evaluation", "type": "markdown", "description": "Rubric-aligned evaluation with scores per criterion and written feedback." }
+  ],
+  "aiTaskType": "reasoning",
+  "preferredModel": "claude-opus",
+  "fallbackModel": "gemini-pro",
+  "reviewRequired": true,
+  "playbook": "packages/playbooks/sonoma/rubric-grading.md",
+  "status": "draft"
+}

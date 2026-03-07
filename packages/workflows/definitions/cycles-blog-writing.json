@@ -1,0 +1,23 @@
+{
+  "id": "cycles-blog-writing",
+  "name": "Blog Writing",
+  "workspace": "cycles",
+  "category": "writing",
+  "description": "Drafts long-form blog posts for the Cycles of Learning platform on education and instructional practice.",
+  "inputs": [
+    { "name": "topic", "type": "text", "description": "The subject or thesis of the blog post.", "required": true },
+    { "name": "keyPoints", "type": "textarea", "description": "Main arguments, ideas, or points to cover.", "required": true },
+    { "name": "audience", "type": "text", "description": "Target readership (e.g., educators, administrators, general).", "required": true },
+    { "name": "tone", "type": "text", "description": "Desired tone (e.g., reflective, persuasive, conversational).", "required": false },
+    { "name": "references", "type": "textarea", "description": "Any research, quotes, or sources to incorporate.", "required": false }
+  ],
+  "outputs": [
+    { "name": "blogDraft", "type": "markdown", "description": "Complete blog post draft with title, body, and conclusion." }
+  ],
+  "aiTaskType": "drafting",
+  "preferredModel": "claude-opus",
+  "fallbackModel": "gemini-pro",
+  "reviewRequired": true,
+  "playbook": "packages/playbooks/cycles/blog-writing.md",
+  "status": "draft"
+}

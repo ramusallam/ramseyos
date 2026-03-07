@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RamseyOS Workflow Definition",
+  "description": "Schema for a single workflow definition in the RamseyOS Workflow Registry.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "workspace",
+    "category",
+    "description",
+    "inputs",
+    "outputs",
+    "aiTaskType",
+    "preferredModel",
+    "fallbackModel",
+    "reviewRequired",
+    "playbook",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Unique kebab-case identifier for this workflow."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable display name."
+    },
+    "workspace": {
+      "type": "string",
+      "enum": ["sonoma", "concordia", "woven", "cycles"],
+      "description": "Owning workspace ID."
+    },
+    "category": {
+      "type": "string",
+      "description": "Functional category within the workspace (e.g., teaching, admin, writing)."
+    },
+    "description": {
+      "type": "string",
+      "description": "One-sentence summary of what this workflow does."
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "description"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Input field name (camelCase)."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["text", "textarea", "file", "select", "number", "date"],
+            "description": "Input field type for form generation."
+          },
+          "description": {
+            "type": "string",
+            "description": "What this input is and why it is needed."
+          },
+          "required": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether this input is required to start the workflow."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Required inputs for this workflow."
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "description"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Output field name (camelCase)."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["markdown", "json", "text", "file"],
+            "description": "Output format."
+          },
+          "description": {
+            "type": "string",
+            "description": "What this output contains."
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Expected outputs from this workflow."
+    },
+    "aiTaskType": {
+      "type": "string",
+      "enum": ["reasoning", "drafting", "extraction", "summarization"],
+      "description": "Category of AI work. Maps to model assignment groups in models.config.ts."
+    },
+    "preferredModel": {
+      "type": "string",
+      "description": "Default model label (e.g., claude-opus, gemini-pro). Resolved by Model Router."
+    },
+    "fallbackModel": {
+      "type": "string",
+      "description": "Backup model label if preferred is unavailable."
+    },
+    "reviewRequired": {
+      "type": "boolean",
+      "description": "If true, output routes to Approval Queue before finalization."
+    },
+    "playbook": {
+      "type": "string",
+      "description": "Relative path from repo root to the matching playbook markdown file."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "deprecated"],
+      "description": "Lifecycle state of this workflow definition."
+    }
+  },
+  "additionalProperties": false
+}

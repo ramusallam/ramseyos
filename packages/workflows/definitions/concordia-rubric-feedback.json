@@ -1,0 +1,22 @@
+{
+  "id": "concordia-rubric-feedback",
+  "name": "Rubric Feedback",
+  "workspace": "concordia",
+  "category": "teaching",
+  "description": "Evaluates graduate student assignments against course rubrics and generates detailed feedback.",
+  "inputs": [
+    { "name": "studentSubmission", "type": "textarea", "description": "The student's submitted assignment text or content.", "required": true },
+    { "name": "rubric", "type": "textarea", "description": "The course rubric with criteria and expectations.", "required": true },
+    { "name": "courseName", "type": "text", "description": "Name of the Concordia course.", "required": true },
+    { "name": "assignmentTitle", "type": "text", "description": "Title of the assignment.", "required": true }
+  ],
+  "outputs": [
+    { "name": "feedback", "type": "markdown", "description": "Rubric-aligned feedback with scores and constructive commentary." }
+  ],
+  "aiTaskType": "reasoning",
+  "preferredModel": "claude-opus",
+  "fallbackModel": "gemini-pro",
+  "reviewRequired": true,
+  "playbook": "packages/playbooks/concordia/rubric-feedback.md",
+  "status": "draft"
+}
