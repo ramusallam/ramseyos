@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RamseyOS Quick Capture Entry",
+  "description": "A raw capture from the Quick Capture input. Captures are unprocessed items that land in the Universal Inbox for later triage. They are intentionally unstructured — the point is speed, not categorization.",
+  "type": "object",
+  "required": [
+    "id",
+    "content",
+    "source",
+    "status",
+    "createdAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Firestore document ID."
+    },
+    "content": {
+      "type": "string",
+      "description": "The raw captured text. Could be a task, idea, note, reminder, or anything."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["dashboard", "top-bar", "mobile", "keyboard-shortcut", "api"],
+      "description": "Where the capture was initiated from."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["unprocessed", "processed", "discarded"],
+      "description": "Processing status. Unprocessed items appear in the Universal Inbox."
+    },
+    "processedAs": {
+      "type": "object",
+      "description": "What this capture became after processing. Filled in when the user triages the item.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["task", "note", "event", "discarded"],
+          "description": "What the capture was converted to."
+        },
+        "referenceId": {
+          "type": "string",
+          "description": "ID of the created task, note, or event."
+        }
+      },
+      "additionalProperties": false
+    },
+    "workspaceHint": {
+      "type": "string",
+      "description": "Optional workspace tag added at capture time if the user knows where it belongs."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when captured."
+    },
+    "processedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when processed or discarded."
+    }
+  },
+  "additionalProperties": false
+}

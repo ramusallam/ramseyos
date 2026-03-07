@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RamseyOS Dashboard Widget",
+  "description": "Runtime state for a single dashboard widget instance. Captures the widget's current data snapshot for rendering. Widgets are ephemeral — they are assembled on each dashboard load from source data, not persisted long-term.",
+  "type": "object",
+  "required": [
+    "widgetId",
+    "widgetType",
+    "title",
+    "status",
+    "lastRefreshed"
+  ],
+  "properties": {
+    "widgetId": {
+      "type": "string",
+      "description": "Unique instance ID for this widget on the dashboard."
+    },
+    "widgetType": {
+      "type": "string",
+      "enum": [
+        "morning-intention",
+        "daily-card",
+        "approvals-ready",
+        "calendar-glance",
+        "quick-capture",
+        "active-projects",
+        "evening-review"
+      ],
+      "description": "The type of widget this represents."
+    },
+    "title": {
+      "type": "string",
+      "description": "Display title for the widget header."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["loaded", "loading", "empty", "error"],
+      "description": "Current data status of the widget."
+    },
+    "badge": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Optional count badge (e.g., 3 approvals pending, 12 tasks today)."
+    },
+    "data": {
+      "type": "object",
+      "description": "Widget-type-specific data payload. Structure varies by widgetType.",
+      "additionalProperties": true
+    },
+    "emptyMessage": {
+      "type": "string",
+      "description": "Message to display when the widget has no data (e.g., 'No approvals pending')."
+    },
+    "actionLabel": {
+      "type": "string",
+      "description": "Label for the primary action button (e.g., 'View All', 'Add Reflection')."
+    },
+    "actionTarget": {
+      "type": "string",
+      "description": "URL or route for the primary action (e.g., '/approvals', '/tasks')."
+    },
+    "lastRefreshed": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this widget's data was last fetched."
+    }
+  },
+  "additionalProperties": false
+}

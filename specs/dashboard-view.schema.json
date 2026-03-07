@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RamseyOS Dashboard View",
+  "description": "Configuration for the Today Dashboard layout. Defines which widgets appear, their order, and their display preferences. One document per user (single-user system, so effectively a singleton).",
+  "type": "object",
+  "required": [
+    "id",
+    "widgets",
+    "preferences",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Document ID. Typically 'default' for the single-user system."
+    },
+    "widgets": {
+      "type": "array",
+      "description": "Ordered list of widget configurations. Order determines display sequence top-to-bottom.",
+      "items": {
+        "type": "object",
+        "required": ["widgetId", "enabled"],
+        "properties": {
+          "widgetId": {
+            "type": "string",
+            "enum": [
+              "morning-intention",
+              "daily-card",
+              "approvals-ready",
+              "calendar-glance",
+              "quick-capture",
+              "active-projects",
+              "evening-review"
+            ],
+            "description": "Identifier for the widget type."
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether this widget is visible on the dashboard."
+          },
+          "collapsed": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether the widget starts in collapsed state."
+          },
+          "column": {
+            "type": "string",
+            "enum": ["full", "left", "right"],
+            "default": "full",
+            "description": "Layout column. Full-width or left/right for side-by-side sections."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "preferences": {
+      "type": "object",
+      "description": "Dashboard-level preferences.",
+      "properties": {
+        "eveningReviewTime": {
+          "type": "string",
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+          "default": "16:00",
+          "description": "Time after which the evening review prompt appears (HH:MM, 24-hour)."
+        },
+        "morningBriefingTime": {
+          "type": "string",
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+          "default": "06:30",
+          "description": "Target time for future mobile morning briefing push (HH:MM, 24-hour)."
+        },
+        "maxApprovalsShown": {
+          "type": "integer",
+          "default": 3,
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Number of approval items to show in the compact widget."
+        },
+        "maxProjectsShown": {
+          "type": "integer",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Number of active projects to show in the pulse widget."
+        }
+      },
+      "additionalProperties": false
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last configuration change."
+    }
+  },
+  "additionalProperties": false
+}

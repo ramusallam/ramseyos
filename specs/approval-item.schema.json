@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RamseyOS Approval Item",
+  "description": "An AI-generated draft awaiting user review. Created when a workflow run reaches a review step. Enforces the review-before-publish principle.",
+  "type": "object",
+  "required": [
+    "id",
+    "workflowRunId",
+    "workflowId",
+    "workspaceId",
+    "title",
+    "content",
+    "status",
+    "createdAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Firestore document ID."
+    },
+    "workflowRunId": {
+      "type": "string",
+      "description": "ID of the workflow run that produced this draft."
+    },
+    "workflowId": {
+      "type": "string",
+      "description": "ID of the workflow definition (e.g., sonoma-lesson-planning)."
+    },
+    "workflowName": {
+      "type": "string",
+      "description": "Human-readable workflow name for display."
+    },
+    "workspaceId": {
+      "type": "string",
+      "enum": ["sonoma", "concordia", "woven", "cycles"],
+      "description": "Workspace this approval belongs to."
+    },
+    "title": {
+      "type": "string",
+      "description": "Title for this approval item (e.g., 'Lesson Plan: Chemical Bonding')."
+    },
+    "content": {
+      "type": "string",
+      "description": "The generated draft content. Typically markdown."
+    },
+    "contentType": {
+      "type": "string",
+      "enum": ["markdown", "text", "json"],
+      "default": "markdown",
+      "description": "Format of the content field."
+    },
+    "inputs": {
+      "type": "object",
+      "description": "The inputs that were used to generate this draft. Preserved for context during review.",
+      "additionalProperties": true
+    },
+    "modelUsed": {
+      "type": "string",
+      "description": "Which AI model generated this content."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "approved", "rejected", "revised"],
+      "description": "Review status. Pending items appear in the Approval Queue."
+    },
+    "revisionNotes": {
+      "type": "string",
+      "description": "Notes added by the user when revising before approval."
+    },
+    "revisedContent": {
+      "type": "string",
+      "description": "Edited content if the user revised the draft before approving."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the approval was created."
+    },
+    "reviewedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the user acted on this approval."
+    }
+  },
+  "additionalProperties": false
+}
