@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RamseyOS Project",
+  "description": "A group of related tasks under a shared goal. Projects represent sustained efforts within a workspace.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "status",
+    "workspaceId",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Firestore document ID."
+    },
+    "title": {
+      "type": "string",
+      "description": "Project name."
+    },
+    "description": {
+      "type": "string",
+      "description": "Summary of the project's goal and scope."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "paused", "completed", "archived"],
+      "description": "Current lifecycle status."
+    },
+    "workspaceId": {
+      "type": "string",
+      "enum": ["sonoma", "concordia", "woven", "cycles"],
+      "description": "Owning workspace."
+    },
+    "subAreaId": {
+      "type": "string",
+      "description": "Sub-area within the workspace."
+    },
+    "targetDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Optional target completion date (YYYY-MM-DD)."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Freeform tags for filtering and search."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the project was created."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last update."
+    },
+    "completedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the project was marked completed."
+    }
+  },
+  "additionalProperties": false
+}

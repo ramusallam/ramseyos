@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RamseyOS Workflow Run",
+  "description": "A single execution of a workflow definition. Tracks inputs, outputs, status, and model usage for one workflow invocation.",
+  "type": "object",
+  "required": [
+    "id",
+    "workflowId",
+    "workspaceId",
+    "status",
+    "inputs",
+    "startedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Firestore document ID."
+    },
+    "workflowId": {
+      "type": "string",
+      "description": "ID of the workflow definition from packages/workflows/definitions/."
+    },
+    "workspaceId": {
+      "type": "string",
+      "enum": ["sonoma", "concordia", "woven", "cycles"],
+      "description": "Workspace this run belongs to."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["running", "awaiting_review", "completed", "failed"],
+      "description": "Current execution status."
+    },
+    "inputs": {
+      "type": "object",
+      "description": "Key-value pairs of user-provided inputs for this run.",
+      "additionalProperties": true
+    },
+    "outputs": {
+      "type": "object",
+      "description": "Key-value pairs of generated outputs.",
+      "additionalProperties": true
+    },
+    "modelUsed": {
+      "type": "string",
+      "description": "The AI model that was actually used (e.g., claude-opus-4-6)."
+    },
+    "tokenUsage": {
+      "type": "object",
+      "description": "Token counts for cost tracking.",
+      "properties": {
+        "inputTokens": { "type": "integer" },
+        "outputTokens": { "type": "integer" }
+      }
+    },
+    "errorMessage": {
+      "type": "string",
+      "description": "Error details if the run failed."
+    },
+    "approvalStatus": {
+      "type": "string",
+      "enum": ["pending", "approved", "rejected", "revised"],
+      "description": "Review status when the run is in awaiting_review state."
+    },
+    "reviewedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the output was reviewed."
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the run started."
+    },
+    "completedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the run finished (success or failure)."
+    }
+  },
+  "additionalProperties": false
+}

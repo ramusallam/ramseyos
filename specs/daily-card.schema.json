@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RamseyOS Daily Card",
+  "description": "A single day's operating plan. One document per calendar date, containing an ordered list of items assembled from tasks and calendar commitments.",
+  "type": "object",
+  "required": [
+    "date",
+    "status",
+    "items",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Calendar date for this card (YYYY-MM-DD). Also serves as the document ID."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "closed"],
+      "description": "Draft: being assembled. Active: in use for the day. Closed: day is over, card is archived."
+    },
+    "items": {
+      "type": "array",
+      "description": "Ordered list of daily card items. The order represents the recommended sequence for the day.",
+      "items": {
+        "type": "object",
+        "required": ["id", "sourceType", "title", "completionStatus"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique ID for this daily card item (not the source task/event ID)."
+          },
+          "sourceType": {
+            "type": "string",
+            "enum": ["recurring", "miscellaneous", "project", "calendar"],
+            "description": "Which input category this item came from."
+          },
+          "sourceId": {
+            "type": "string",
+            "description": "ID of the source task or calendar item."
+          },
+          "title": {
+            "type": "string",
+            "description": "Display title for this item."
+          },
+          "workspaceId": {
+            "type": "string",
+            "description": "Workspace this item belongs to."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project ID if this is a project task."
+          },
+          "scheduledTime": {
+            "type": "string",
+            "format": "time",
+            "description": "Specific start time if time-anchored (HH:MM)."
+          },
+          "scheduledEndTime": {
+            "type": "string",
+            "format": "time",
+            "description": "End time for calendar items (HH:MM)."
+          },
+          "timeBlock": {
+            "type": "string",
+            "enum": ["morning", "midday", "afternoon", "evening"],
+            "description": "General time block for non-time-anchored items."
+          },
+          "estimatedMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Estimated duration in minutes."
+          },
+          "completionStatus": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "done", "skipped", "deferred"],
+            "description": "Current completion status for this item."
+          },
+          "deferredTo": {
+            "type": "string",
+            "format": "date",
+            "description": "If deferred, the target date (YYYY-MM-DD)."
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when marked done."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "morningIntentionId": {
+      "type": "string",
+      "description": "Optional reference to a morning reflection entry for this date."
+    },
+    "eveningReviewId": {
+      "type": "string",
+      "description": "Optional reference to an evening reflection entry for this date."
+    },
+    "stats": {
+      "type": "object",
+      "description": "Completion statistics computed when the card is closed.",
+      "properties": {
+        "totalItems": { "type": "integer" },
+        "done": { "type": "integer" },
+        "skipped": { "type": "integer" },
+        "deferred": { "type": "integer" }
+      }
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the card was created."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last update."
+    }
+  },
+  "additionalProperties": false
+}

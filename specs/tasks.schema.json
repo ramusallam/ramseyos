@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RamseyOS Task",
+  "description": "A single unit of work in RamseyOS. Tasks are the atomic items that populate the Daily Card, task lists, and project plans.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "status",
+    "priority",
+    "workspaceId",
+    "schedulingType",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Firestore document ID."
+    },
+    "title": {
+      "type": "string",
+      "description": "Short descriptive title for the task."
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional longer description or notes."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["inbox", "active", "waiting", "done", "archived"],
+      "description": "Current lifecycle status."
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Priority level."
+    },
+    "workspaceId": {
+      "type": "string",
+      "enum": ["sonoma", "concordia", "woven", "cycles"],
+      "description": "Owning workspace."
+    },
+    "subAreaId": {
+      "type": "string",
+      "description": "Sub-area within the workspace (e.g., teaching, admin, workshops)."
+    },
+    "projectId": {
+      "type": "string",
+      "description": "Optional parent project ID."
+    },
+    "schedulingType": {
+      "type": "string",
+      "enum": ["recurring", "dated", "floating"],
+      "description": "How this task is scheduled. Recurring: repeats on a rule. Dated: has a specific due date. Floating: no date, picked manually."
+    },
+    "recurrence": {
+      "type": "object",
+      "description": "Recurrence rule. Only present when schedulingType is 'recurring'.",
+      "properties": {
+        "frequency": {
+          "type": "string",
+          "enum": ["daily", "weekdays", "weekly", "monthly"],
+          "description": "How often the task recurs."
+        },
+        "daysOfWeek": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+          },
+          "description": "Specific days for weekly or weekday recurrence."
+        },
+        "dayOfMonth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 31,
+          "description": "Day of month for monthly recurrence."
+        }
+      },
+      "required": ["frequency"]
+    },
+    "dueDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Due date for dated tasks (YYYY-MM-DD)."
+    },
+    "estimatedMinutes": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Estimated time to complete in minutes."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Freeform tags for filtering and search."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the task was created."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last update."
+    },
+    "completedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the task was marked done."
+    }
+  },
+  "additionalProperties": false
+}

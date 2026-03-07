@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RamseyOS Reflection Entry",
+  "description": "A personal reflection, intention, or journal entry. Supports daily reflection practice and connects to the Daily Card system.",
+  "type": "object",
+  "required": [
+    "id",
+    "date",
+    "entryType",
+    "content",
+    "createdAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Firestore document ID."
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "The date this reflection is associated with (YYYY-MM-DD)."
+    },
+    "entryType": {
+      "type": "string",
+      "enum": ["morning-intention", "evening-review", "freeform", "weekly-review"],
+      "description": "Type of reflection entry."
+    },
+    "content": {
+      "type": "string",
+      "description": "The reflection text."
+    },
+    "intention": {
+      "type": "string",
+      "description": "A short intention statement for the day. Primarily used with morning-intention entries."
+    },
+    "workspaceId": {
+      "type": "string",
+      "description": "Optional workspace context if the reflection is workspace-specific."
+    },
+    "projectId": {
+      "type": "string",
+      "description": "Optional project context if reflecting on a specific project."
+    },
+    "dailyCardDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Reference to the Daily Card this reflection relates to. Usually matches date."
+    },
+    "mood": {
+      "type": "string",
+      "enum": ["energized", "focused", "steady", "tired", "overwhelmed"],
+      "description": "Optional mood indicator."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Freeform tags."
+    },
+    "isPrivate": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this entry should be excluded from any AI processing. Defaults to true."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when created."
+    }
+  },
+  "additionalProperties": false
+}

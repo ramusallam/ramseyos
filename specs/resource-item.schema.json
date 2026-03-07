@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RamseyOS Resource Item",
+  "description": "A reusable instructional asset: lab design, project template, lesson activity, digital tool, or classroom material. Populates the Resource Library.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "resourceType",
+    "workspaceId",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Firestore document ID."
+    },
+    "title": {
+      "type": "string",
+      "description": "Resource name."
+    },
+    "description": {
+      "type": "string",
+      "description": "Summary of what this resource is and how it is used."
+    },
+    "resourceType": {
+      "type": "string",
+      "enum": ["project", "lesson-activity", "lab-design", "digital-tool", "adaptive-tech", "classroom-material", "template", "other"],
+      "description": "Category of resource."
+    },
+    "workspaceId": {
+      "type": "string",
+      "description": "Primary workspace this resource belongs to."
+    },
+    "subjects": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Subject areas (e.g., chemistry, physics, education)."
+    },
+    "courses": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Specific courses this resource is used in."
+    },
+    "topics": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Topic tags for search and discovery."
+    },
+    "content": {
+      "type": "string",
+      "description": "Inline content or notes about the resource."
+    },
+    "fileUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to an attached file in Firebase Storage or external location."
+    },
+    "externalUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "Link to an external resource (website, app, tool)."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Freeform tags for filtering."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when created."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last update."
+    }
+  },
+  "additionalProperties": false
+}

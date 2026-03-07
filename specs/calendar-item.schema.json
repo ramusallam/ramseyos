@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RamseyOS Calendar Item",
+  "description": "A time-bound commitment: class period, meeting, workshop session, or deadline. Provides the fixed time structure for the Daily Card.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "date",
+    "startTime",
+    "endTime",
+    "source",
+    "createdAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Firestore document ID."
+    },
+    "title": {
+      "type": "string",
+      "description": "Event title."
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional event description or notes."
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Event date (YYYY-MM-DD)."
+    },
+    "startTime": {
+      "type": "string",
+      "format": "time",
+      "description": "Start time (HH:MM)."
+    },
+    "endTime": {
+      "type": "string",
+      "format": "time",
+      "description": "End time (HH:MM)."
+    },
+    "location": {
+      "type": "string",
+      "description": "Optional location or room."
+    },
+    "workspaceId": {
+      "type": "string",
+      "description": "Optional workspace association."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["manual", "google-calendar"],
+      "description": "Where this item came from."
+    },
+    "externalId": {
+      "type": "string",
+      "description": "External calendar event ID for synced items."
+    },
+    "isRecurring": {
+      "type": "boolean",
+      "description": "Whether this is an instance of a recurring calendar event."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Freeform tags."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when created."
+    }
+  },
+  "additionalProperties": false
+}
