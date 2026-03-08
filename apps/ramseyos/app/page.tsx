@@ -1,4 +1,5 @@
 import { QuickCapture } from "./quick-capture";
+import Link from "next/link";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -89,6 +90,12 @@ export default function TodayDashboard() {
         {/* Quick Capture */}
         <Section>
           <QuickCapture />
+          <Link
+            href="/inbox"
+            className="inline-block mt-3 text-[11px] text-muted/60 hover:text-zinc-400 transition-colors"
+          >
+            View inbox &rarr;
+          </Link>
         </Section>
 
         {/* Reflection */}
