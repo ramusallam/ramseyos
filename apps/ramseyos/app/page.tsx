@@ -1,5 +1,5 @@
 import { QuickCapture } from "./quick-capture";
-import Link from "next/link";
+import { TodayFocus, RecentCaptures } from "./dashboard-live";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -39,29 +39,15 @@ export default function TodayDashboard() {
           </p>
         </Section>
 
-        {/* Today */}
+        {/* Today Focus */}
         <Section>
-          <SectionLabel>Today</SectionLabel>
-          <ul className="space-y-px">
-            <CardItem time="8:30" label="Review AP Chemistry homework" workspace="Sonoma" />
-            <CardItem time="9:00" label="Period 2 — AP Chemistry" workspace="Calendar" event />
-            <CardItem time="10:30" label="Draft lesson plan: Chemical Bonding" workspace="Sonoma" />
-            <CardItem time="11:00" label="Department meeting" workspace="Calendar" event />
-            <CardItem label="Concordia discussion responses" workspace="Concordia" />
-            <CardItem label="Woven workshop outline review" workspace="Woven" />
-          </ul>
+          <SectionLabel>Today focus</SectionLabel>
+          <TodayFocus />
         </Section>
 
-        {/* Next Up */}
+        {/* Recent Captures */}
         <Section>
-          <SectionLabel>Next up</SectionLabel>
-          <div className="flex items-baseline justify-between">
-            <div>
-              <p className="text-sm text-zinc-200">Period 2 — AP Chemistry</p>
-              <p className="text-[11px] text-muted mt-0.5">9:00 AM</p>
-            </div>
-            <p className="text-[11px] text-muted">in 25 min</p>
-          </div>
+          <RecentCaptures />
         </Section>
 
         {/* Quick Launch + Approvals */}
@@ -90,12 +76,6 @@ export default function TodayDashboard() {
         {/* Quick Capture */}
         <Section>
           <QuickCapture />
-          <Link
-            href="/inbox"
-            className="inline-block mt-3 text-[11px] text-muted/60 hover:text-zinc-400 transition-colors"
-          >
-            View inbox &rarr;
-          </Link>
         </Section>
 
         {/* Reflection */}
@@ -132,43 +112,6 @@ function Badge({ count }: { count: number }) {
     <span className="inline-flex items-center justify-center rounded-full bg-accent-dim text-accent text-[9px] font-medium tabular-nums size-4">
       {count}
     </span>
-  );
-}
-
-/* ── Daily Card ── */
-
-const WS: Record<string, string> = {
-  Sonoma: "text-indigo-400/70",
-  Concordia: "text-emerald-400/70",
-  Woven: "text-amber-400/70",
-  Cycles: "text-rose-400/70",
-  Calendar: "text-blue-400/60",
-};
-
-function CardItem({
-  time,
-  label,
-  workspace,
-  event = false,
-}: {
-  time?: string;
-  label: string;
-  workspace: string;
-  event?: boolean;
-}) {
-  return (
-    <li className="group flex items-center gap-3 rounded px-2.5 py-2 -mx-2.5 transition-colors hover:bg-surface">
-      <span className="w-9 shrink-0 text-right text-[11px] tabular-nums text-muted/60 font-mono">
-        {time ?? "–"}
-      </span>
-      <span className={`size-1 shrink-0 rounded-full ${event ? "bg-blue-400/50" : "bg-zinc-600"}`} />
-      <span className={`flex-1 text-[13px] ${event ? "text-zinc-400" : "text-zinc-300"}`}>
-        {label}
-      </span>
-      <span className={`text-[9px] tracking-wider uppercase shrink-0 ${WS[workspace] ?? "text-muted/50"}`}>
-        {workspace}
-      </span>
-    </li>
   );
 }
 
