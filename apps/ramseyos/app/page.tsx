@@ -16,14 +16,14 @@ function formatDate(): string {
 export default function TodayDashboard() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-2xl px-6 py-16">
+      <div className="mx-auto max-w-xl px-5 pt-12 pb-20">
 
         {/* Header */}
-        <header className="mb-14">
-          <p className="text-xs font-medium tracking-wide text-muted mb-1.5">
+        <header className="mb-10">
+          <p className="text-[11px] tracking-wide text-muted mb-1">
             {formatDate()}
           </p>
-          <h1 className="text-2xl font-normal tracking-tight text-zinc-100">
+          <h1 className="text-xl font-normal text-zinc-100">
             {getGreeting()}, Ramsey
           </h1>
         </header>
@@ -31,7 +31,7 @@ export default function TodayDashboard() {
         {/* Intention */}
         <Section>
           <SectionLabel>Intention</SectionLabel>
-          <p className="text-sm text-muted italic leading-relaxed">
+          <p className="text-sm text-muted/70 italic">
             Set your intention for the day...
           </p>
         </Section>
@@ -39,7 +39,7 @@ export default function TodayDashboard() {
         {/* Today */}
         <Section>
           <SectionLabel>Today</SectionLabel>
-          <ul className="space-y-1">
+          <ul className="space-y-px">
             <CardItem time="8:30" label="Review AP Chemistry homework" workspace="Sonoma" />
             <CardItem time="9:00" label="Period 2 — AP Chemistry" workspace="Calendar" event />
             <CardItem time="10:30" label="Draft lesson plan: Chemical Bonding" workspace="Sonoma" />
@@ -55,73 +55,67 @@ export default function TodayDashboard() {
           <div className="flex items-baseline justify-between">
             <div>
               <p className="text-sm text-zinc-200">Period 2 — AP Chemistry</p>
-              <p className="text-xs text-muted mt-0.5">9:00 AM</p>
+              <p className="text-[11px] text-muted mt-0.5">9:00 AM</p>
             </div>
-            <p className="text-xs text-muted">in 25 min</p>
+            <p className="text-[11px] text-muted">in 25 min</p>
           </div>
         </Section>
 
         {/* Quick Launch + Approvals */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 mb-12">
-          <Section flush>
+        <div className="grid grid-cols-2 gap-8 mb-8">
+          <div>
             <SectionLabel>Quick launch</SectionLabel>
-            <div className="space-y-1">
+            <div className="space-y-px">
               <ActionButton label="New lesson plan" />
               <ActionButton label="Grade with rubric" />
               <ActionButton label="Draft recommendation" />
               <ActionButton label="Discussion response" />
             </div>
-          </Section>
-
-          <Section flush>
+          </div>
+          <div>
             <SectionLabel>
               Approvals
               <Badge count={2} />
             </SectionLabel>
-            <div className="space-y-1">
+            <div className="space-y-px">
               <Approval title="Lesson Plan: Atomic Structure" meta="Lesson Planning · Sonoma" />
               <Approval title="Discussion Response: Week 4" meta="Discussion Board · Concordia" />
             </div>
-          </Section>
+          </div>
         </div>
 
         {/* Quick Capture */}
         <Section>
-          <div className="flex items-center gap-2.5 text-muted">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <line x1="8" y1="3" x2="8" y2="13" />
-              <line x1="3" y1="8" x2="13" y2="8" />
-            </svg>
+          <div className="flex items-center gap-2 text-muted/60">
+            <span className="text-xs">+</span>
             <p className="text-sm">Capture a thought, task, or idea...</p>
           </div>
         </Section>
 
         {/* Reflection */}
-        <div className="mb-16 opacity-40">
+        <div className="mb-10 opacity-30">
           <SectionLabel>Evening reflection</SectionLabel>
           <p className="text-sm text-muted italic">Available later today</p>
         </div>
 
         {/* Footer */}
-        <footer className="text-center">
-          <p className="text-[10px] text-muted/40 tracking-widest uppercase">
-            RamseyOS
-          </p>
-        </footer>
+        <p className="text-center text-[10px] text-muted/30 tracking-widest uppercase">
+          RamseyOS
+        </p>
       </div>
     </div>
   );
 }
 
-/* ── Layout primitives ── */
+/* ── Primitives ── */
 
-function Section({ children, flush }: { children: React.ReactNode; flush?: boolean }) {
-  return <div className={flush ? "" : "mb-12"}>{children}</div>;
+function Section({ children }: { children: React.ReactNode }) {
+  return <div className="mb-8">{children}</div>;
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-muted mb-4">
+    <h2 className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-widest text-muted/70 mb-3">
       {children}
     </h2>
   );
@@ -129,7 +123,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function Badge({ count }: { count: number }) {
   return (
-    <span className="inline-flex items-center justify-center rounded-full bg-accent-dim text-accent text-[10px] font-medium tabular-nums h-[18px] min-w-[18px] px-1">
+    <span className="inline-flex items-center justify-center rounded-full bg-accent-dim text-accent text-[9px] font-medium tabular-nums size-4">
       {count}
     </span>
   );
@@ -137,12 +131,12 @@ function Badge({ count }: { count: number }) {
 
 /* ── Daily Card ── */
 
-const WORKSPACE_COLORS: Record<string, string> = {
-  Sonoma: "text-indigo-400",
-  Concordia: "text-emerald-400",
-  Woven: "text-amber-400",
-  Cycles: "text-rose-400",
-  Calendar: "text-blue-400",
+const WS: Record<string, string> = {
+  Sonoma: "text-indigo-400/70",
+  Concordia: "text-emerald-400/70",
+  Woven: "text-amber-400/70",
+  Cycles: "text-rose-400/70",
+  Calendar: "text-blue-400/60",
 };
 
 function CardItem({
@@ -156,22 +150,16 @@ function CardItem({
   workspace: string;
   event?: boolean;
 }) {
-  const color = WORKSPACE_COLORS[workspace] ?? "text-muted";
-
   return (
-    <li className="group flex items-center gap-3 rounded-md px-3 py-2.5 -mx-3 transition-colors hover:bg-surface">
-      <span className="w-10 shrink-0 text-right text-[11px] tabular-nums text-muted font-mono">
-        {time ?? "—"}
+    <li className="group flex items-center gap-3 rounded px-2.5 py-2 -mx-2.5 transition-colors hover:bg-surface">
+      <span className="w-9 shrink-0 text-right text-[11px] tabular-nums text-muted/60 font-mono">
+        {time ?? "–"}
       </span>
-      <span
-        className={`w-1.5 h-1.5 shrink-0 rounded-full ${
-          event ? "bg-blue-400/60" : "bg-border-strong"
-        }`}
-      />
-      <span className={`flex-1 text-sm ${event ? "text-zinc-400" : "text-zinc-200"}`}>
+      <span className={`size-1 shrink-0 rounded-full ${event ? "bg-blue-400/50" : "bg-zinc-600"}`} />
+      <span className={`flex-1 text-[13px] ${event ? "text-zinc-400" : "text-zinc-300"}`}>
         {label}
       </span>
-      <span className={`text-[10px] tracking-wider uppercase ${color} shrink-0`}>
+      <span className={`text-[9px] tracking-wider uppercase shrink-0 ${WS[workspace] ?? "text-muted/50"}`}>
         {workspace}
       </span>
     </li>
@@ -184,7 +172,7 @@ function ActionButton({ label }: { label: string }) {
   return (
     <button
       type="button"
-      className="w-full text-left rounded-md px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-surface hover:text-zinc-100"
+      className="w-full text-left rounded px-2.5 py-1.5 text-[13px] text-zinc-400 transition-colors hover:bg-surface hover:text-zinc-200"
     >
       {label}
     </button>
@@ -193,9 +181,9 @@ function ActionButton({ label }: { label: string }) {
 
 function Approval({ title, meta }: { title: string; meta: string }) {
   return (
-    <div className="rounded-md px-3 py-2.5 transition-colors hover:bg-surface cursor-pointer">
-      <p className="text-sm text-zinc-300 truncate">{title}</p>
-      <p className="text-[10px] text-muted mt-0.5">{meta}</p>
+    <div className="rounded px-2.5 py-2 transition-colors hover:bg-surface cursor-pointer">
+      <p className="text-[13px] text-zinc-400 truncate">{title}</p>
+      <p className="text-[9px] text-muted/60 mt-0.5">{meta}</p>
     </div>
   );
 }
