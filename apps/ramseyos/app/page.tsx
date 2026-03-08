@@ -14,238 +14,188 @@ function formatDate(): string {
 }
 
 export default function TodayDashboard() {
-  const greeting = getGreeting();
-  const date = formatDate();
-
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-3xl px-6 py-12">
+      <div className="mx-auto max-w-2xl px-6 py-16">
 
-        {/* Greeting + Date */}
-        <header className="mb-12">
-          <p className="text-sm tracking-widest uppercase text-muted mb-2">
-            {date}
+        {/* Header */}
+        <header className="mb-14">
+          <p className="text-xs font-medium tracking-wide text-muted mb-1.5">
+            {formatDate()}
           </p>
-          <h1 className="text-3xl font-light tracking-tight">
-            {greeting}, Ramsey
+          <h1 className="text-2xl font-normal tracking-tight text-zinc-100">
+            {getGreeting()}, Ramsey
           </h1>
         </header>
 
-        {/* Morning Intention */}
-        <section className="mb-10">
-          <div className="rounded-lg border border-border bg-surface px-5 py-4">
-            <p className="text-xs uppercase tracking-widest text-muted mb-2">
-              Intention
-            </p>
-            <p className="text-sm text-foreground/70 italic">
-              Set your intention for the day...
-            </p>
-          </div>
-        </section>
+        {/* Intention */}
+        <Section>
+          <SectionLabel>Intention</SectionLabel>
+          <p className="text-sm text-muted italic leading-relaxed">
+            Set your intention for the day...
+          </p>
+        </Section>
 
-        {/* Daily Card */}
-        <section className="mb-10">
-          <h2 className="text-xs uppercase tracking-widest text-muted mb-4">
-            Today
-          </h2>
-          <div className="space-y-2">
-            <DailyCardItem
-              time="8:30"
-              title="Review AP Chemistry homework"
-              tag="Sonoma"
-              tagColor="text-indigo-400"
-            />
-            <DailyCardItem
-              time="9:00"
-              title="Period 2 — AP Chemistry"
-              tag="Calendar"
-              tagColor="text-blue-400"
-              isEvent
-            />
-            <DailyCardItem
-              time="10:30"
-              title="Draft lesson plan: Chemical Bonding"
-              tag="Sonoma"
-              tagColor="text-indigo-400"
-            />
-            <DailyCardItem
-              time="11:00"
-              title="Department meeting"
-              tag="Calendar"
-              tagColor="text-blue-400"
-              isEvent
-            />
-            <DailyCardItem
-              title="Concordia discussion responses"
-              tag="Concordia"
-              tagColor="text-emerald-400"
-            />
-            <DailyCardItem
-              title="Woven workshop outline review"
-              tag="Woven"
-              tagColor="text-amber-400"
-            />
-          </div>
-        </section>
+        {/* Today */}
+        <Section>
+          <SectionLabel>Today</SectionLabel>
+          <ul className="space-y-1">
+            <CardItem time="8:30" label="Review AP Chemistry homework" workspace="Sonoma" />
+            <CardItem time="9:00" label="Period 2 — AP Chemistry" workspace="Calendar" event />
+            <CardItem time="10:30" label="Draft lesson plan: Chemical Bonding" workspace="Sonoma" />
+            <CardItem time="11:00" label="Department meeting" workspace="Calendar" event />
+            <CardItem label="Concordia discussion responses" workspace="Concordia" />
+            <CardItem label="Woven workshop outline review" workspace="Woven" />
+          </ul>
+        </Section>
 
         {/* Next Up */}
-        <section className="mb-10">
-          <h2 className="text-xs uppercase tracking-widest text-muted mb-4">
-            Next up
-          </h2>
-          <div className="rounded-lg border border-border bg-surface px-5 py-4 flex items-center justify-between">
+        <Section>
+          <SectionLabel>Next up</SectionLabel>
+          <div className="flex items-baseline justify-between">
             <div>
-              <p className="text-sm font-medium">Period 2 — AP Chemistry</p>
+              <p className="text-sm text-zinc-200">Period 2 — AP Chemistry</p>
               <p className="text-xs text-muted mt-0.5">9:00 AM</p>
             </div>
-            <span className="text-xs text-muted">in 25 min</span>
+            <p className="text-xs text-muted">in 25 min</p>
           </div>
-        </section>
+        </Section>
 
-        {/* Two-column: Quick Launch + Approvals */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
-
-          {/* Quick Launch */}
-          <section>
-            <h2 className="text-xs uppercase tracking-widest text-muted mb-4">
-              Quick launch
-            </h2>
-            <div className="space-y-2">
-              <QuickAction label="New lesson plan" />
-              <QuickAction label="Grade with rubric" />
-              <QuickAction label="Draft recommendation" />
-              <QuickAction label="Discussion response" />
+        {/* Quick Launch + Approvals */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 mb-12">
+          <Section flush>
+            <SectionLabel>Quick launch</SectionLabel>
+            <div className="space-y-1">
+              <ActionButton label="New lesson plan" />
+              <ActionButton label="Grade with rubric" />
+              <ActionButton label="Draft recommendation" />
+              <ActionButton label="Discussion response" />
             </div>
-          </section>
+          </Section>
 
-          {/* Approvals Ready */}
-          <section>
-            <h2 className="text-xs uppercase tracking-widest text-muted mb-4">
-              Approvals ready
-              <span className="ml-2 inline-flex items-center justify-center rounded-full bg-accent/15 text-accent text-[10px] font-medium w-5 h-5">
-                2
-              </span>
-            </h2>
-            <div className="space-y-2">
-              <ApprovalCard
-                title="Lesson Plan: Atomic Structure"
-                workflow="Lesson Planning"
-                workspace="Sonoma"
-              />
-              <ApprovalCard
-                title="Discussion Response: Week 4"
-                workflow="Discussion Board"
-                workspace="Concordia"
-              />
+          <Section flush>
+            <SectionLabel>
+              Approvals
+              <Badge count={2} />
+            </SectionLabel>
+            <div className="space-y-1">
+              <Approval title="Lesson Plan: Atomic Structure" meta="Lesson Planning · Sonoma" />
+              <Approval title="Discussion Response: Week 4" meta="Discussion Board · Concordia" />
             </div>
-          </section>
+          </Section>
         </div>
 
         {/* Quick Capture */}
-        <section className="mb-10">
-          <div className="rounded-lg border border-border bg-surface px-4 py-3 flex items-center gap-3">
-            <span className="text-muted text-sm">+</span>
-            <p className="text-sm text-muted">
-              Capture a thought, task, or idea...
-            </p>
+        <Section>
+          <div className="flex items-center gap-2.5 text-muted">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <line x1="8" y1="3" x2="8" y2="13" />
+              <line x1="3" y1="8" x2="13" y2="8" />
+            </svg>
+            <p className="text-sm">Capture a thought, task, or idea...</p>
           </div>
-        </section>
+        </Section>
 
-        {/* Evening Reflection */}
-        <section className="mb-12">
-          <div className="rounded-lg border border-border/50 bg-surface/50 px-5 py-4">
-            <p className="text-xs uppercase tracking-widest text-muted/60 mb-2">
-              Evening reflection
-            </p>
-            <p className="text-sm text-foreground/40 italic">
-              Available later today
-            </p>
-          </div>
-        </section>
+        {/* Reflection */}
+        <div className="mb-16 opacity-40">
+          <SectionLabel>Evening reflection</SectionLabel>
+          <p className="text-sm text-muted italic">Available later today</p>
+        </div>
 
         {/* Footer */}
         <footer className="text-center">
-          <p className="text-xs text-muted/50 tracking-wide">
+          <p className="text-[10px] text-muted/40 tracking-widest uppercase">
             RamseyOS
           </p>
         </footer>
-
       </div>
     </div>
   );
 }
 
-function DailyCardItem({
+/* ── Layout primitives ── */
+
+function Section({ children, flush }: { children: React.ReactNode; flush?: boolean }) {
+  return <div className={flush ? "" : "mb-12"}>{children}</div>;
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-muted mb-4">
+      {children}
+    </h2>
+  );
+}
+
+function Badge({ count }: { count: number }) {
+  return (
+    <span className="inline-flex items-center justify-center rounded-full bg-accent-dim text-accent text-[10px] font-medium tabular-nums h-[18px] min-w-[18px] px-1">
+      {count}
+    </span>
+  );
+}
+
+/* ── Daily Card ── */
+
+const WORKSPACE_COLORS: Record<string, string> = {
+  Sonoma: "text-indigo-400",
+  Concordia: "text-emerald-400",
+  Woven: "text-amber-400",
+  Cycles: "text-rose-400",
+  Calendar: "text-blue-400",
+};
+
+function CardItem({
   time,
-  title,
-  tag,
-  tagColor,
-  isEvent = false,
+  label,
+  workspace,
+  event = false,
 }: {
   time?: string;
-  title: string;
-  tag: string;
-  tagColor: string;
-  isEvent?: boolean;
+  label: string;
+  workspace: string;
+  event?: boolean;
 }) {
-  return (
-    <div className="group flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-3 transition-colors hover:bg-surface-hover">
-      {/* Checkbox or time anchor */}
-      <div className="w-12 shrink-0 text-right">
-        {time ? (
-          <span className="text-xs text-muted font-mono">{time}</span>
-        ) : (
-          <span className="text-xs text-muted">&mdash;</span>
-        )}
-      </div>
+  const color = WORKSPACE_COLORS[workspace] ?? "text-muted";
 
-      {/* Completion indicator */}
-      <div
-        className={`w-3.5 h-3.5 shrink-0 rounded-sm border ${
-          isEvent
-            ? "border-blue-500/40 bg-blue-500/10"
-            : "border-border group-hover:border-muted"
+  return (
+    <li className="group flex items-center gap-3 rounded-md px-3 py-2.5 -mx-3 transition-colors hover:bg-surface">
+      <span className="w-10 shrink-0 text-right text-[11px] tabular-nums text-muted font-mono">
+        {time ?? "—"}
+      </span>
+      <span
+        className={`w-1.5 h-1.5 shrink-0 rounded-full ${
+          event ? "bg-blue-400/60" : "bg-border-strong"
         }`}
       />
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm truncate ${isEvent ? "text-foreground/80" : ""}`}>
-          {title}
-        </p>
-      </div>
-
-      {/* Workspace tag */}
-      <span className={`text-[10px] uppercase tracking-widest ${tagColor} shrink-0`}>
-        {tag}
+      <span className={`flex-1 text-sm ${event ? "text-zinc-400" : "text-zinc-200"}`}>
+        {label}
       </span>
-    </div>
+      <span className={`text-[10px] tracking-wider uppercase ${color} shrink-0`}>
+        {workspace}
+      </span>
+    </li>
   );
 }
 
-function QuickAction({ label }: { label: string }) {
+/* ── Actions ── */
+
+function ActionButton({ label }: { label: string }) {
   return (
-    <button type="button" className="w-full text-left rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-foreground/80 transition-colors hover:bg-surface-hover hover:text-foreground">
+    <button
+      type="button"
+      className="w-full text-left rounded-md px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-surface hover:text-zinc-100"
+    >
       {label}
     </button>
   );
 }
 
-function ApprovalCard({
-  title,
-  workflow,
-  workspace,
-}: {
-  title: string;
-  workflow: string;
-  workspace: string;
-}) {
+function Approval({ title, meta }: { title: string; meta: string }) {
   return (
-    <div className="rounded-lg border border-border bg-surface px-4 py-3 transition-colors hover:bg-surface-hover">
-      <p className="text-sm truncate">{title}</p>
-      <p className="text-[10px] text-muted mt-1">
-        {workflow} &middot; {workspace}
-      </p>
+    <div className="rounded-md px-3 py-2.5 transition-colors hover:bg-surface cursor-pointer">
+      <p className="text-sm text-zinc-300 truncate">{title}</p>
+      <p className="text-[10px] text-muted mt-0.5">{meta}</p>
     </div>
   );
 }
