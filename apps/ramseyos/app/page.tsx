@@ -1,3 +1,5 @@
+import { QuickCapture } from "./quick-capture";
+
 function getGreeting(): string {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";
@@ -86,10 +88,7 @@ export default function TodayDashboard() {
 
         {/* Quick Capture */}
         <Section>
-          <div className="flex items-center gap-2 text-muted/60">
-            <span className="text-xs">+</span>
-            <p className="text-sm">Capture a thought, task, or idea...</p>
-          </div>
+          <QuickCapture />
         </Section>
 
         {/* Reflection */}
