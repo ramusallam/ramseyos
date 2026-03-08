@@ -5,11 +5,19 @@ import { collection, query, orderBy, onSnapshot, type Timestamp } from "firebase
 import { db } from "@/lib/firebase";
 import Link from "next/link";
 
+type CaptureType = "capture" | "task" | "note" | "idea" | "resource";
+type Priority = "low" | "medium" | "high" | null;
+
 interface Capture {
   id: string;
   text: string;
   status: string;
   createdAt: Timestamp | null;
+  type?: CaptureType;
+  tags?: string[];
+  projectId?: string | null;
+  priority?: Priority;
+  processed?: boolean;
 }
 
 export default function InboxPage() {

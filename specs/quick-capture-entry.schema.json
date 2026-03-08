@@ -58,6 +58,34 @@
       "type": "string",
       "format": "date-time",
       "description": "Timestamp when processed or discarded."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["capture", "task", "note", "idea", "resource"],
+      "default": "capture",
+      "description": "Classification of the capture. Defaults to 'capture' and can be changed during triage."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Freeform tags for categorization, applied during triage."
+    },
+    "projectId": {
+      "type": ["string", "null"],
+      "default": null,
+      "description": "Optional reference to a project this capture belongs to."
+    },
+    "priority": {
+      "type": ["string", "null"],
+      "enum": ["low", "medium", "high", null],
+      "default": null,
+      "description": "Priority level, assigned during triage."
+    },
+    "processed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this capture has been triaged."
     }
   },
   "additionalProperties": false

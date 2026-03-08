@@ -19,6 +19,11 @@ export function QuickCapture() {
         text: trimmed,
         status: "unprocessed",
         createdAt: serverTimestamp(),
+        type: "capture",
+        processed: false,
+        tags: [],
+        projectId: null,
+        priority: null,
       });
       setText("");
     } finally {
