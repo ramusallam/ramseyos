@@ -8,6 +8,8 @@ import {
   onSnapshot,
   doc,
   updateDoc,
+  addDoc,
+  serverTimestamp,
   type Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -38,6 +40,22 @@ const PRIORITIES: { value: Priority; label: string }[] = [
 
 async function updateCapture(id: string, fields: Partial<Capture>) {
   await updateDoc(doc(db, "captures", id), fields);
+}
+
+async function convertToTask(capture: Capture) {
+  await addDoc(collection(db, "tasks"), {
+    title: capture.text,
+    createdAt: serverTimestamp(),
+    completed: false,
+    priority: capture.priority ?? null,
+    sourceCaptureId: capture.id,
+    notes: null,
+  });
+  await updateCapture(capture.id, {
+    type: "task",
+    processed: true,
+    status: "processed",
+  });
 }
 
 export default function InboxPage() {
@@ -96,6 +114,18 @@ export default function InboxPage() {
 
 function InboxItem({ item }: { item: Capture }) {
   const isProcessed = item.processed ?? false;
+  const isTask = item.type === "task";
+  const [converting, setConverting] = useState(false);
+
+  async function handleConvert() {
+    if (converting) return;
+    setConverting(true);
+    try {
+      await convertToTask(item);
+    } finally {
+      setConverting(false);
+    }
+  }
 
   return (
     <li
@@ -193,6 +223,24 @@ function InboxItem({ item }: { item: Capture }) {
         <span className="text-[10px] text-muted/40">
           {item.createdAt ? formatTime(item.createdAt) : ""}
         </span>
+
+        {/* Convert to Task */}
+        {!isTask && !isProcessed && (
+          <>
+            <span className="text-muted/20">·</span>
+            <button
+              type="button"
+              onClick={handleConvert}
+              disabled={converting}
+              className="text-[10px] text-accent/60 hover:text-accent transition-colors disabled:opacity-40"
+            >
+              {converting ? "Converting..." : "→ Task"}
+            </button>
+          </>
+        )}
+        {isTask && (
+          <span className="text-[10px] text-emerald-400/60">✓ task</span>
+        )}
       </div>
     </li>
   );
