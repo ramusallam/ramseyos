@@ -1,5 +1,6 @@
 import { QuickCapture } from "./quick-capture";
 import { TodayFocus, RecentCaptures } from "./dashboard-live";
+import Link from "next/link";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -76,6 +77,20 @@ export default function TodayDashboard() {
         {/* Quick Capture */}
         <Section>
           <QuickCapture />
+          <div className="flex items-center gap-4 mt-3">
+            <Link
+              href="/inbox"
+              className="text-[11px] text-muted/60 hover:text-zinc-400 transition-colors"
+            >
+              Inbox
+            </Link>
+            <Link
+              href="/tasks"
+              className="text-[11px] text-muted/60 hover:text-zinc-400 transition-colors"
+            >
+              Tasks
+            </Link>
+          </div>
         </Section>
 
         {/* Reflection */}

@@ -91,6 +91,12 @@ export default function InboxPage() {
           <h1 className="text-xl font-normal text-zinc-100 mt-2">
             Inbox
           </h1>
+          <Link
+            href="/tasks"
+            className="inline-block mt-2 text-[11px] text-muted/60 hover:text-zinc-400 transition-colors"
+          >
+            View tasks &rarr;
+          </Link>
         </header>
 
         {/* List */}
