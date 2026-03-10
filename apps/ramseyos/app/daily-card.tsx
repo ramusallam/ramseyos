@@ -29,28 +29,28 @@ export function DailyCard() {
 
   return (
     <div className="space-y-6">
-      {/* Daily Actions */}
-      <CardSection label="Daily actions">
-        {plan.dailyActions.length === 0 ? (
-          <Placeholder>No daily actions set.</Placeholder>
-        ) : (
+      {/* 1. Schedule — time-sensitive, soonest first */}
+      {plan.schedule.length > 0 && (
+        <CardSection label="Schedule">
           <ul className="space-y-px">
-            {plan.dailyActions.map((item) => (
+            {plan.schedule.map((event) => (
               <li
-                key={item.id}
+                key={event.id}
                 className="flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface"
               >
-                <span className="size-1 shrink-0 rounded-full bg-accent/40" />
-                <span className="text-[13px] text-zinc-300">
-                  {item.title}
+                <span className="text-[11px] text-muted/60 tabular-nums shrink-0 w-16">
+                  {formatTime(event.startTime)}
+                </span>
+                <span className="flex-1 text-[13px] text-zinc-300 truncate">
+                  {event.title}
                 </span>
               </li>
             ))}
           </ul>
-        )}
-      </CardSection>
+        </CardSection>
+      )}
 
-      {/* Chosen Tasks */}
+      {/* 2. Chosen Tasks — intentional picks, high priority first */}
       <CardSection label="Chosen for today">
         {plan.chosenTasks.length === 0 ? (
           <Placeholder>No tasks chosen for today.</Placeholder>
@@ -80,34 +80,9 @@ export function DailyCard() {
         )}
       </CardSection>
 
-      {/* Schedule */}
-      <CardSection label="Schedule">
-        {plan.schedule.length === 0 ? (
-          <Placeholder>No schedule items yet.</Placeholder>
-        ) : (
-          <ul className="space-y-px">
-            {plan.schedule.map((event) => (
-              <li
-                key={event.id}
-                className="flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface"
-              >
-                <span className="text-[11px] text-muted/60 tabular-nums shrink-0 w-16">
-                  {formatTime(event.startTime)}
-                </span>
-                <span className="flex-1 text-[13px] text-zinc-300 truncate">
-                  {event.title}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardSection>
-
-      {/* Focus Tasks */}
-      <CardSection label="Focus">
-        {plan.focusTasks.length === 0 ? (
-          <Placeholder>No high-priority tasks right now.</Placeholder>
-        ) : (
+      {/* 3. Focus — high-priority tasks not already chosen */}
+      {plan.focusTasks.length > 0 && (
+        <CardSection label="Focus">
           <ul className="space-y-px">
             {plan.focusTasks.map((task) => (
               <li
@@ -121,10 +96,31 @@ export function DailyCard() {
               </li>
             ))}
           </ul>
+        </CardSection>
+      )}
+
+      {/* 4. Daily Actions */}
+      <CardSection label="Daily actions">
+        {plan.dailyActions.length === 0 ? (
+          <Placeholder>No daily actions set.</Placeholder>
+        ) : (
+          <ul className="space-y-px">
+            {plan.dailyActions.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface"
+              >
+                <span className="size-1 shrink-0 rounded-full bg-accent/40" />
+                <span className="text-[13px] text-zinc-300">
+                  {item.title}
+                </span>
+              </li>
+            ))}
+          </ul>
         )}
       </CardSection>
 
-      {/* Inbox */}
+      {/* 5. Inbox — prioritized items first */}
       <CardSection
         label="Inbox"
         count={plan.inboxItems.length}

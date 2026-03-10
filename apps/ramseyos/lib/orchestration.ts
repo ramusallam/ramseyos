@@ -59,7 +59,40 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
       fetchSchedule(dayStart, dayEnd),
     ]);
 
-  return { dailyActions, chosenTasks, focusTasks, inboxItems, schedule };
+  // Smart ordering: upcoming schedule first, past events last
+  const now = new Date();
+  const upcoming = schedule.filter((e) => e.endTime.toDate() >= now);
+  const past = schedule.filter((e) => e.endTime.toDate() < now);
+  const orderedSchedule = [...upcoming, ...past];
+
+  // Sort chosen tasks: high > medium > low > null
+  const priorityRank: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  const sortByPriority = (a: TaskItem, b: TaskItem) => {
+    const pa = priorityRank[a.priority ?? ""] ?? 3;
+    const pb = priorityRank[b.priority ?? ""] ?? 3;
+    return pa - pb;
+  };
+
+  const orderedChosen = [...chosenTasks].sort(sortByPriority);
+
+  // Deduplicate: remove focus tasks that are already in chosen
+  const chosenIds = new Set(orderedChosen.map((t) => t.id));
+  const dedupedFocus = focusTasks.filter((t) => !chosenIds.has(t.id));
+
+  // Sort inbox: prioritized items first
+  const orderedInbox = [...inboxItems].sort((a, b) => {
+    const pa = priorityRank[a.priority ?? ""] ?? 3;
+    const pb = priorityRank[b.priority ?? ""] ?? 3;
+    return pa - pb;
+  });
+
+  return {
+    dailyActions,
+    chosenTasks: orderedChosen,
+    focusTasks: dedupedFocus,
+    inboxItems: orderedInbox,
+    schedule: orderedSchedule,
+  };
 }
 
 async function fetchDailyActions(): Promise<DailyAction[]> {
