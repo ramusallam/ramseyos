@@ -8,11 +8,10 @@ import {
   onSnapshot,
   doc,
   updateDoc,
-  addDoc,
-  serverTimestamp,
   type Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { createTask } from "@/lib/tasks";
 import Link from "next/link";
 
 type CaptureType = "capture" | "task" | "note" | "idea" | "resource";
@@ -43,13 +42,11 @@ async function updateCapture(id: string, fields: Partial<Capture>) {
 }
 
 async function convertToTask(capture: Capture) {
-  await addDoc(collection(db, "tasks"), {
+  await createTask({
     title: capture.text,
-    createdAt: serverTimestamp(),
-    completed: false,
-    priority: capture.priority ?? null,
+    priority: capture.priority,
     sourceCaptureId: capture.id,
-    notes: null,
+    projectId: capture.projectId,
   });
   await updateCapture(capture.id, {
     type: "task",

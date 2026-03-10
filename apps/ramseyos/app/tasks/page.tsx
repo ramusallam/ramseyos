@@ -21,6 +21,7 @@ interface Task {
   createdAt: Timestamp | null;
   completed: boolean;
   priority: Priority;
+  projectId: string | null;
   sourceCaptureId: string | null;
   notes: string | null;
 }
