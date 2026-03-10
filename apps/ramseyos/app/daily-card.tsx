@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { generateDailyPlan, type DailyPlan } from "@/lib/orchestration";
+import {
+  generateDailyPlan,
+  type DailyPlan,
+  type TimelineItem,
+  type TimelineItemType,
+} from "@/lib/orchestration";
 import { type Timestamp } from "firebase/firestore";
 import Link from "next/link";
 
@@ -9,6 +14,20 @@ const PRIORITY_STYLE: Record<string, string> = {
   high: "bg-rose-500/15 text-rose-400",
   medium: "bg-amber-500/15 text-amber-400",
   low: "bg-blue-500/15 text-blue-400",
+};
+
+const TYPE_LABEL: Record<TimelineItemType, string> = {
+  schedule: "event",
+  chosen: "today",
+  focus: "priority",
+  "daily-action": "daily",
+};
+
+const TYPE_DOT: Record<TimelineItemType, string> = {
+  schedule: "bg-sky-400/60",
+  chosen: "bg-accent/50",
+  focus: "bg-rose-400/60",
+  "daily-action": "bg-zinc-500/50",
 };
 
 function formatTime(ts: Timestamp): string {
@@ -29,112 +48,38 @@ export function DailyCard() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Schedule — time-sensitive, soonest first */}
-      <CardSection label="Schedule" count={plan.schedule.length}>
-        {plan.schedule.length === 0 ? (
-          <Placeholder>Nothing on the schedule today.</Placeholder>
-        ) : (
-          <ul className="space-y-px">
-            {plan.schedule.map((event) => {
-              const isPast = event.endTime.toDate() < new Date();
-              return (
-                <li
-                  key={event.id}
-                  className={`flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface ${
-                    isPast ? "opacity-40" : ""
-                  }`}
-                >
-                  <span className="text-[11px] text-muted/60 tabular-nums shrink-0 w-24">
-                    {formatTime(event.startTime)} – {formatTime(event.endTime)}
-                  </span>
-                  <span className="flex-1 text-[13px] text-zinc-300 truncate">
-                    {event.title}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </CardSection>
+      {/* Timeline — unified daily flow */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-[10px] font-medium uppercase tracking-widest text-muted/70">
+            Today&apos;s plan
+          </h3>
+          <span className="text-[10px] text-muted/40 tabular-nums">
+            {plan.timeline.length} items
+          </span>
+        </div>
 
-      {/* 2. Chosen Tasks — intentional picks, high priority first */}
-      <CardSection label="Chosen for today">
-        {plan.chosenTasks.length === 0 ? (
-          <Placeholder>No tasks chosen for today.</Placeholder>
+        {plan.timeline.length === 0 ? (
+          <p className="text-sm text-muted/50 italic">
+            Nothing planned for today.
+          </p>
         ) : (
           <ul className="space-y-px">
-            {plan.chosenTasks.map((task) => (
-              <li
-                key={task.id}
-                className="flex items-center gap-3 rounded px-2.5 py-2 -mx-2.5 transition-colors hover:bg-surface"
-              >
-                <span className="size-1.5 shrink-0 rounded-full bg-accent/50" />
-                <span className="flex-1 text-[13px] text-zinc-300 truncate">
-                  {task.title}
-                </span>
-                {task.priority && (
-                  <span
-                    className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${
-                      PRIORITY_STYLE[task.priority] ?? "text-muted/50"
-                    }`}
-                  >
-                    {task.priority}
-                  </span>
-                )}
-              </li>
+            {plan.timeline.map((item) => (
+              <TimelineRow key={`${item.type}-${item.id}`} item={item} />
             ))}
           </ul>
         )}
-      </CardSection>
+      </div>
 
-      {/* 3. Focus — high-priority tasks not already chosen */}
-      {plan.focusTasks.length > 0 && (
-        <CardSection label="Focus">
-          <ul className="space-y-px">
-            {plan.focusTasks.map((task) => (
-              <li
-                key={task.id}
-                className="flex items-center gap-3 rounded px-2.5 py-2 -mx-2.5 transition-colors hover:bg-surface"
-              >
-                <span className="size-1.5 shrink-0 rounded-full bg-rose-400/60" />
-                <span className="flex-1 text-[13px] text-zinc-300 truncate">
-                  {task.title}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </CardSection>
-      )}
-
-      {/* 4. Daily Actions */}
-      <CardSection label="Daily actions">
-        {plan.dailyActions.length === 0 ? (
-          <Placeholder>No daily actions set.</Placeholder>
-        ) : (
-          <ul className="space-y-px">
-            {plan.dailyActions.map((item) => (
-              <li
-                key={item.id}
-                className="flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface"
-              >
-                <span className="size-1 shrink-0 rounded-full bg-accent/40" />
-                <span className="text-[13px] text-zinc-300">
-                  {item.title}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardSection>
-
-      {/* 5. Inbox — prioritized items first */}
+      {/* Inbox — kept separate, not part of the timeline */}
       <CardSection
         label="Inbox"
         count={plan.inboxItems.length}
         action={{ href: "/inbox", text: "Review" }}
       >
         {plan.inboxItems.length === 0 ? (
-          <Placeholder>Inbox clear.</Placeholder>
+          <p className="text-sm text-muted/50 italic">Inbox clear.</p>
         ) : (
           <ul className="space-y-px">
             {plan.inboxItems.slice(0, 3).map((item) => (
@@ -174,6 +119,51 @@ export function DailyCard() {
   );
 }
 
+/* ── Timeline row ── */
+
+function TimelineRow({ item }: { item: TimelineItem }) {
+  const isPast =
+    item.type === "schedule" && item.endTime
+      ? item.endTime.toDate() < new Date()
+      : false;
+
+  return (
+    <li
+      className={`flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface ${
+        isPast ? "opacity-40" : ""
+      }`}
+    >
+      <span
+        className={`size-1.5 shrink-0 rounded-full ${TYPE_DOT[item.type]}`}
+      />
+
+      {item.startTime && item.endTime ? (
+        <span className="text-[11px] text-muted/60 tabular-nums shrink-0 w-24">
+          {formatTime(item.startTime)} – {formatTime(item.endTime)}
+        </span>
+      ) : (
+        <span className="text-[9px] text-muted/40 uppercase tracking-wide shrink-0 w-24">
+          {TYPE_LABEL[item.type]}
+        </span>
+      )}
+
+      <span className="flex-1 text-[13px] text-zinc-300 truncate">
+        {item.title}
+      </span>
+
+      {item.priority && (
+        <span
+          className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${
+            PRIORITY_STYLE[item.priority] ?? "text-muted/50"
+          }`}
+        >
+          {item.priority}
+        </span>
+      )}
+    </li>
+  );
+}
+
 /* ── Card primitives ── */
 
 function CardSection({
@@ -210,8 +200,4 @@ function CardSection({
       {children}
     </div>
   );
-}
-
-function Placeholder({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-muted/50 italic">{children}</p>;
 }
