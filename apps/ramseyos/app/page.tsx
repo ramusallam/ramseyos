@@ -1,5 +1,6 @@
 import { QuickCapture } from "./quick-capture";
-import { TodayFocus, InboxNeedsReview, ProjectFocus, DailyActions, ChosenForToday, TodaySchedule } from "./dashboard-live";
+import { ProjectFocus } from "./dashboard-live";
+import { DailyCard } from "./daily-card";
 import Link from "next/link";
 
 function getGreeting(): string {
@@ -40,33 +41,10 @@ export default function TodayDashboard() {
           </p>
         </Section>
 
-        {/* Daily Actions — recurring daily tasks */}
+        {/* Today's Plan — unified Daily Card */}
         <Section>
-          <SectionLabel>Daily actions</SectionLabel>
-          <DailyActions />
-        </Section>
-
-        {/* Chosen for Today — intentionally selected tasks */}
-        <Section>
-          <SectionLabel>Chosen for today</SectionLabel>
-          <ChosenForToday />
-        </Section>
-
-        {/* Today's Schedule — calendar events */}
-        <Section>
-          <SectionLabel>Today&apos;s schedule</SectionLabel>
-          <TodaySchedule />
-        </Section>
-
-        {/* Today Focus — high-priority tasks */}
-        <Section>
-          <SectionLabel>Today focus</SectionLabel>
-          <TodayFocus />
-        </Section>
-
-        {/* Inbox — unprocessed captures needing review */}
-        <Section>
-          <InboxNeedsReview />
+          <SectionLabel>Today&apos;s plan</SectionLabel>
+          <DailyCard />
         </Section>
 
         {/* Project Focus — supporting context */}
