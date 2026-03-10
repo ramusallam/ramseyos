@@ -32,21 +32,21 @@ export function QuickCapture() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2">
-      <span className="text-xs text-muted/60">+</span>
+    <form onSubmit={handleSubmit} className="flex items-center gap-3">
+      <span className="text-sm text-muted">+</span>
       <input
         type="text"
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Capture a thought, task, or idea..."
-        className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted/60 outline-none"
+        className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted/50 outline-none"
         disabled={saving}
       />
       {text.trim() && (
         <button
           type="submit"
           disabled={saving}
-          className="text-[11px] text-accent/70 hover:text-accent transition-colors"
+          className="text-[12px] font-medium text-accent hover:text-accent/80 transition-colors"
         >
           {saving ? "..." : "Save"}
         </button>

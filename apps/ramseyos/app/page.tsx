@@ -20,104 +20,126 @@ function formatDate(): string {
 
 export default function TodayDashboard() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-xl px-5 pt-12 pb-20">
-
-        {/* Header */}
-        <header className="mb-10">
-          <p className="text-[11px] tracking-wide text-muted mb-1">
-            {formatDate()}
-          </p>
-          <h1 className="text-xl font-normal text-zinc-100">
-            {getGreeting()}, Ramsey
-          </h1>
-        </header>
-
-        {/* Intention */}
-        <Section>
-          <SectionLabel>Intention</SectionLabel>
-          <p className="text-sm text-muted/70 italic">
-            Set your intention for the day...
-          </p>
-        </Section>
-
-        {/* Today's Plan — unified Daily Card */}
-        <Section>
-          <SectionLabel>Today&apos;s plan</SectionLabel>
-          <DailyCard />
-        </Section>
-
-        {/* Project Focus — supporting context */}
-        <Section>
-          <ProjectFocus />
-        </Section>
-
-        {/* Quick Launch + Approvals */}
-        <div className="grid grid-cols-2 gap-8 mb-8">
-          <div>
-            <SectionLabel>Quick launch</SectionLabel>
-            <div className="space-y-px">
-              <ActionButton label="New lesson plan" />
-              <ActionButton label="Grade with rubric" />
-              <ActionButton label="Draft recommendation" />
-              <ActionButton label="Discussion response" />
-            </div>
-          </div>
-          <div>
-            <SectionLabel>
-              Approvals
-              <Badge count={2} />
-            </SectionLabel>
-            <div className="space-y-px">
-              <Approval title="Lesson Plan: Atomic Structure" meta="Lesson Planning · Sonoma" />
-              <Approval title="Discussion Response: Week 4" meta="Discussion Board · Concordia" />
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Capture */}
-        <Section>
-          <QuickCapture />
-          <div className="flex items-center gap-4 mt-3">
+    <div className="min-h-screen bg-background">
+      {/* Top bar */}
+      <nav className="border-b border-border bg-surface/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="mx-auto max-w-4xl px-6 h-12 flex items-center justify-between">
+          <span className="text-[11px] font-semibold tracking-widest uppercase text-accent">
+            RamseyOS
+          </span>
+          <div className="flex items-center gap-5">
             <Link
               href="/inbox"
-              className="text-[11px] text-muted/60 hover:text-zinc-400 transition-colors"
+              className="text-[12px] text-muted hover:text-foreground transition-colors"
             >
               Inbox
             </Link>
             <Link
               href="/tasks"
-              className="text-[11px] text-muted/60 hover:text-zinc-400 transition-colors"
+              className="text-[12px] text-muted hover:text-foreground transition-colors"
             >
               Tasks
             </Link>
           </div>
-        </Section>
+        </div>
+      </nav>
 
-        {/* Reflection */}
-        <div className="mb-10 opacity-30">
-          <SectionLabel>Evening reflection</SectionLabel>
-          <p className="text-sm text-muted italic">Available later today</p>
+      <div className="mx-auto max-w-4xl px-6 pt-10 pb-20">
+        {/* Header */}
+        <header className="mb-8">
+          <p className="text-[12px] text-muted mb-1">{formatDate()}</p>
+          <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+            {getGreeting()}, Ramsey
+          </h1>
+        </header>
+
+        {/* Quick Capture */}
+        <div className="mb-8">
+          <DashboardCard>
+            <QuickCapture />
+          </DashboardCard>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-[10px] text-muted/30 tracking-widest uppercase">
-          RamseyOS
-        </p>
+        {/* Main grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Daily Card — primary */}
+          <div className="lg:col-span-2">
+            <DashboardCard>
+              <DailyCard />
+            </DashboardCard>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <DashboardCard>
+              <CardHeader>Quick launch</CardHeader>
+              <div className="space-y-0.5">
+                <ActionButton label="New lesson plan" />
+                <ActionButton label="Grade with rubric" />
+                <ActionButton label="Draft recommendation" />
+                <ActionButton label="Discussion response" />
+              </div>
+            </DashboardCard>
+
+            <DashboardCard>
+              <CardHeader>
+                <span className="flex items-center gap-2">
+                  Approvals
+                  <Badge count={2} />
+                </span>
+              </CardHeader>
+              <div className="space-y-1">
+                <Approval
+                  title="Lesson Plan: Atomic Structure"
+                  meta="Lesson Planning · Sonoma"
+                />
+                <Approval
+                  title="Discussion Response: Week 4"
+                  meta="Discussion Board · Concordia"
+                />
+              </div>
+            </DashboardCard>
+          </div>
+        </div>
+
+        {/* Project Focus */}
+        <div className="mb-8">
+          <DashboardCard>
+            <ProjectFocus />
+          </DashboardCard>
+        </div>
+
+        {/* Reflection */}
+        <DashboardCard className="opacity-50">
+          <CardHeader>Evening reflection</CardHeader>
+          <p className="text-sm text-muted italic">Available later today</p>
+        </DashboardCard>
       </div>
     </div>
   );
 }
 
-/* ── Primitives ── */
+/* ── Dashboard primitives ── */
 
-function Section({ children }: { children: React.ReactNode }) {
-  return <div className="mb-8">{children}</div>;
+function DashboardCard({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`bg-surface rounded-xl border border-border p-5 shadow-sm ${className}`}
+    >
+      {children}
+    </div>
+  );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function CardHeader({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-widest text-muted/70 mb-3">
+    <h2 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted mb-3">
       {children}
     </h2>
   );
@@ -125,19 +147,17 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function Badge({ count }: { count: number }) {
   return (
-    <span className="inline-flex items-center justify-center rounded-full bg-accent-dim text-accent text-[9px] font-medium tabular-nums size-4">
+    <span className="inline-flex items-center justify-center rounded-full bg-accent-dim text-accent text-[10px] font-semibold tabular-nums size-5">
       {count}
     </span>
   );
 }
 
-/* ── Actions ── */
-
 function ActionButton({ label }: { label: string }) {
   return (
     <button
       type="button"
-      className="w-full text-left rounded px-2.5 py-1.5 text-[13px] text-zinc-400 transition-colors hover:bg-surface hover:text-zinc-200"
+      className="w-full text-left rounded-lg px-3 py-2 text-[13px] text-foreground/70 transition-colors hover:bg-surface-raised hover:text-foreground"
     >
       {label}
     </button>
@@ -146,9 +166,9 @@ function ActionButton({ label }: { label: string }) {
 
 function Approval({ title, meta }: { title: string; meta: string }) {
   return (
-    <div className="rounded px-2.5 py-2 transition-colors hover:bg-surface cursor-pointer">
-      <p className="text-[13px] text-zinc-400 truncate">{title}</p>
-      <p className="text-[9px] text-muted/60 mt-0.5">{meta}</p>
+    <div className="rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-raised cursor-pointer">
+      <p className="text-[13px] text-foreground/80 truncate">{title}</p>
+      <p className="text-[10px] text-muted mt-0.5">{meta}</p>
     </div>
   );
 }

@@ -36,9 +36,9 @@ interface Project {
 }
 
 const PRIORITY_STYLE: Record<string, string> = {
-  high: "bg-rose-500/15 text-rose-400",
-  medium: "bg-amber-500/15 text-amber-400",
-  low: "bg-blue-500/15 text-blue-400",
+  high: "bg-rose-50 text-rose-600",
+  medium: "bg-amber-50 text-amber-600",
+  low: "bg-sky-50 text-sky-600",
 };
 
 export function TodayFocus() {
@@ -80,7 +80,7 @@ export function TodayFocus() {
 
   if (tasks.length === 0) {
     return (
-      <p className="text-sm text-muted/50 italic">
+      <p className="text-sm text-muted italic">
         No high-priority tasks right now.
       </p>
     );
@@ -90,18 +90,18 @@ export function TodayFocus() {
   for (const p of projects) projectMap.set(p.id, p.title);
 
   return (
-    <ul className="space-y-px">
+    <ul className="space-y-1">
       {tasks.map((task) => (
         <li
           key={task.id}
-          className="flex items-center gap-3 rounded px-2.5 py-2 -mx-2.5 transition-colors hover:bg-surface"
+          className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
         >
-          <span className="size-1.5 shrink-0 rounded-full bg-rose-400/60" />
-          <span className="flex-1 text-[13px] text-zinc-300 truncate">
+          <span className="size-2 shrink-0 rounded-full bg-rose-500" />
+          <span className="flex-1 text-[13px] text-foreground/80 truncate">
             {task.title}
           </span>
           {task.projectId && projectMap.get(task.projectId) && (
-            <span className="text-[9px] tracking-wider uppercase text-muted/40 shrink-0">
+            <span className="text-[10px] tracking-wider uppercase text-muted/60 shrink-0">
               {projectMap.get(task.projectId)}
             </span>
           )}
@@ -149,7 +149,7 @@ export function ChosenForToday() {
 
   if (tasks.length === 0) {
     return (
-      <p className="text-sm text-muted/50 italic">
+      <p className="text-sm text-muted italic">
         No tasks chosen for today.
       </p>
     );
@@ -159,18 +159,18 @@ export function ChosenForToday() {
   for (const p of projects) projectMap.set(p.id, p.title);
 
   return (
-    <ul className="space-y-px">
+    <ul className="space-y-1">
       {tasks.map((task) => (
         <li
           key={task.id}
-          className="flex items-center gap-3 rounded px-2.5 py-2 -mx-2.5 transition-colors hover:bg-surface"
+          className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
         >
-          <span className="size-1.5 shrink-0 rounded-full bg-accent/50" />
-          <span className="flex-1 text-[13px] text-zinc-300 truncate">
+          <span className="size-2 shrink-0 rounded-full bg-accent" />
+          <span className="flex-1 text-[13px] text-foreground/80 truncate">
             {task.title}
           </span>
           {task.projectId && projectMap.get(task.projectId) && (
-            <span className="text-[9px] tracking-wider uppercase text-muted/40 shrink-0">
+            <span className="text-[10px] tracking-wider uppercase text-muted/60 shrink-0">
               {projectMap.get(task.projectId)}
             </span>
           )}
@@ -217,38 +217,38 @@ export function InboxNeedsReview() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-widest text-muted/70">
+        <h2 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
           Inbox
           {totalCount > 0 && (
-            <span className="inline-flex items-center justify-center rounded-full bg-accent-dim text-accent text-[9px] font-medium tabular-nums size-4">
+            <span className="inline-flex items-center justify-center rounded-full bg-accent-dim text-accent text-[10px] font-semibold tabular-nums size-5">
               {totalCount}
             </span>
           )}
         </h2>
         <Link
           href="/inbox"
-          className="text-[10px] text-muted/50 hover:text-zinc-400 transition-colors"
+          className="text-[11px] text-accent hover:text-accent/80 transition-colors font-medium"
         >
           Review &rarr;
         </Link>
       </div>
       {totalCount === 0 ? (
-        <p className="text-sm text-muted/50 italic">Inbox clear.</p>
+        <p className="text-sm text-muted italic">Inbox clear.</p>
       ) : (
-        <ul className="space-y-px">
+        <ul className="space-y-1">
           {unprocessed.map((item) => (
             <li
               key={item.id}
-              className="flex items-center gap-3 rounded px-2.5 py-2 -mx-2.5 transition-colors hover:bg-surface"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
             >
-              <span className="size-1 shrink-0 rounded-full bg-zinc-500" />
-              <span className="flex-1 text-[13px] text-zinc-300 truncate">
+              <span className="size-1.5 shrink-0 rounded-full bg-gray-300" />
+              <span className="flex-1 text-[13px] text-foreground/70 truncate">
                 {item.text}
               </span>
               {item.priority && (
                 <span
-                  className={`text-[9px] px-1.5 py-0.5 rounded ${
-                    PRIORITY_STYLE[item.priority] ?? "text-muted/50"
+                  className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                    PRIORITY_STYLE[item.priority] ?? "text-muted"
                   }`}
                 >
                   {item.priority}
@@ -257,10 +257,10 @@ export function InboxNeedsReview() {
             </li>
           ))}
           {totalCount > 3 && (
-            <li className="px-2.5 py-1">
+            <li className="px-3 py-1">
               <Link
                 href="/inbox"
-                className="text-[11px] text-muted/50 hover:text-zinc-400 transition-colors"
+                className="text-[11px] text-muted hover:text-foreground transition-colors"
               >
                 +{totalCount - 3} more
               </Link>
@@ -311,11 +311,10 @@ export function ProjectFocus() {
 
   if (tasks.length === 0) {
     return (
-      <p className="text-sm text-muted/50 italic">No active tasks.</p>
+      <p className="text-sm text-muted italic">No active tasks.</p>
     );
   }
 
-  // Sort: high priority first, then medium, then rest
   const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
   const sorted = [...tasks].sort((a, b) => {
     const pa = priorityOrder[a.priority ?? ""] ?? 3;
@@ -323,7 +322,6 @@ export function ProjectFocus() {
     return pa - pb;
   });
 
-  // Group by project
   const projectMap = new Map<string, string>();
   for (const p of projects) projectMap.set(p.id, p.title);
 
@@ -334,7 +332,6 @@ export function ProjectFocus() {
     byProject.get(key)!.push(task);
   }
 
-  // Ordered: projects first (in project order), unassigned last
   const groups: { label: string; tasks: Task[] }[] = [];
   for (const p of projects) {
     const g = byProject.get(p.id);
@@ -345,45 +342,45 @@ export function ProjectFocus() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[10px] font-medium uppercase tracking-widest text-muted/70">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
           Project focus
         </h2>
         <Link
           href="/tasks"
-          className="text-[10px] text-muted/50 hover:text-zinc-400 transition-colors"
+          className="text-[11px] text-accent hover:text-accent/80 transition-colors font-medium"
         >
           All tasks &rarr;
         </Link>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-5">
         {groups.map(({ label, tasks: groupTasks }) => (
           <div key={label}>
-            <p className="text-[9px] uppercase tracking-wider text-muted/50 mb-1.5">
+            <p className="text-[10px] uppercase tracking-wider text-muted/60 font-medium mb-2">
               {label}
             </p>
-            <ul className="space-y-px">
+            <ul className="space-y-1">
               {groupTasks.map((task) => (
                 <li
                   key={task.id}
-                  className="flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
                 >
                   <span
-                    className={`size-1 shrink-0 rounded-full ${
+                    className={`size-1.5 shrink-0 rounded-full ${
                       task.priority === "high"
-                        ? "bg-rose-400/60"
+                        ? "bg-rose-500"
                         : task.priority === "medium"
-                          ? "bg-amber-400/60"
-                          : "bg-zinc-500"
+                          ? "bg-amber-500"
+                          : "bg-gray-400"
                     }`}
                   />
-                  <span className="flex-1 text-[13px] text-zinc-300 truncate">
+                  <span className="flex-1 text-[13px] text-foreground/80 truncate">
                     {task.title}
                   </span>
                   {task.priority && (
                     <span
-                      className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${
-                        PRIORITY_STYLE[task.priority] ?? "text-muted/50"
+                      className={`text-[9px] px-1.5 py-0.5 rounded font-medium shrink-0 ${
+                        PRIORITY_STYLE[task.priority] ?? "text-muted"
                       }`}
                     >
                       {task.priority}
@@ -446,21 +443,21 @@ export function TodaySchedule() {
 
   if (events.length === 0) {
     return (
-      <p className="text-sm text-muted/50 italic">No schedule items yet.</p>
+      <p className="text-sm text-muted italic">No schedule items yet.</p>
     );
   }
 
   return (
-    <ul className="space-y-px">
+    <ul className="space-y-1">
       {events.map((event) => (
         <li
           key={event.id}
-          className="flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface"
+          className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
         >
-          <span className="text-[11px] text-muted/60 tabular-nums shrink-0 w-16">
+          <span className="text-[11px] text-muted tabular-nums shrink-0 w-16">
             {formatTime(event.startTime)}
           </span>
-          <span className="flex-1 text-[13px] text-zinc-300 truncate">
+          <span className="flex-1 text-[13px] text-foreground/80 truncate">
             {event.title}
           </span>
         </li>
@@ -501,19 +498,19 @@ export function DailyActions() {
 
   if (items.length === 0) {
     return (
-      <p className="text-sm text-muted/50 italic">No daily actions set.</p>
+      <p className="text-sm text-muted italic">No daily actions set.</p>
     );
   }
 
   return (
-    <ul className="space-y-px">
+    <ul className="space-y-1">
       {items.map((item) => (
         <li
           key={item.id}
-          className="flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface"
+          className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
         >
-          <span className="size-1 shrink-0 rounded-full bg-accent/40" />
-          <span className="text-[13px] text-zinc-300">{item.title}</span>
+          <span className="size-1.5 shrink-0 rounded-full bg-accent/60" />
+          <span className="text-[13px] text-foreground/80">{item.title}</span>
         </li>
       ))}
     </ul>
