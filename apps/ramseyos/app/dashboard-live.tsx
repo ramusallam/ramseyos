@@ -399,6 +399,76 @@ export function ProjectFocus() {
   );
 }
 
+/* ── Today's Schedule ── */
+
+interface ScheduleEvent {
+  id: string;
+  title: string;
+  startTime: Timestamp;
+  endTime: Timestamp;
+  source: string;
+}
+
+function formatTime(ts: Timestamp): string {
+  return ts.toDate().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+export function TodaySchedule() {
+  const [events, setEvents] = useState<ScheduleEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const now = new Date();
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(now);
+    end.setHours(23, 59, 59, 999);
+
+    const q = query(
+      collection(db, "calendarEvents"),
+      where("startTime", ">=", start),
+      where("startTime", "<=", end),
+      orderBy("startTime", "asc")
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      setEvents(
+        snap.docs.map((d) => ({ id: d.id, ...d.data() })) as ScheduleEvent[]
+      );
+      setLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  if (loading) return null;
+
+  if (events.length === 0) {
+    return (
+      <p className="text-sm text-muted/50 italic">No schedule items yet.</p>
+    );
+  }
+
+  return (
+    <ul className="space-y-px">
+      {events.map((event) => (
+        <li
+          key={event.id}
+          className="flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface"
+        >
+          <span className="text-[11px] text-muted/60 tabular-nums shrink-0 w-16">
+            {formatTime(event.startTime)}
+          </span>
+          <span className="flex-1 text-[13px] text-zinc-300 truncate">
+            {event.title}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /* ── Daily Actions ── */
 
 interface DailyTaskItem {
