@@ -62,6 +62,21 @@
       "type": "string",
       "format": "date-time",
       "description": "Timestamp when the project was marked completed."
+    },
+    "archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the project is archived. Archived projects are hidden from active views."
+    },
+    "color": {
+      "type": ["string", "null"],
+      "default": null,
+      "description": "Optional display color for UI grouping (e.g., 'indigo', 'emerald', 'rose')."
+    },
+    "owner": {
+      "type": ["string", "null"],
+      "default": null,
+      "description": "Optional owner ID for future multi-user support. Null for single-user mode."
     }
   },
   "additionalProperties": false
