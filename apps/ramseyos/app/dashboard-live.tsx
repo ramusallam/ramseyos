@@ -329,3 +329,54 @@ export function ProjectFocus() {
     </div>
   );
 }
+
+/* ── Daily Actions ── */
+
+interface DailyTaskItem {
+  id: string;
+  title: string;
+  active: boolean;
+  order: number | null;
+}
+
+export function DailyActions() {
+  const [items, setItems] = useState<DailyTaskItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "dailyTasks"),
+      where("active", "==", true),
+      orderBy("order", "asc")
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      setItems(
+        snap.docs.map((d) => ({ id: d.id, ...d.data() })) as DailyTaskItem[]
+      );
+      setLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  if (loading) return null;
+
+  if (items.length === 0) {
+    return (
+      <p className="text-sm text-muted/50 italic">No daily actions set.</p>
+    );
+  }
+
+  return (
+    <ul className="space-y-px">
+      {items.map((item) => (
+        <li
+          key={item.id}
+          className="flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface"
+        >
+          <span className="size-1 shrink-0 rounded-full bg-accent/40" />
+          <span className="text-[13px] text-zinc-300">{item.title}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
