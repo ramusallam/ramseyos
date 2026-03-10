@@ -1,5 +1,5 @@
 import { QuickCapture } from "./quick-capture";
-import { TodayFocus, RecentCaptures } from "./dashboard-live";
+import { TodayFocus, RecentCaptures, ProjectFocus } from "./dashboard-live";
 import Link from "next/link";
 
 function getGreeting(): string {
@@ -49,6 +49,11 @@ export default function TodayDashboard() {
         {/* Recent Captures */}
         <Section>
           <RecentCaptures />
+        </Section>
+
+        {/* Project Focus */}
+        <Section>
+          <ProjectFocus />
         </Section>
 
         {/* Quick Launch + Approvals */}

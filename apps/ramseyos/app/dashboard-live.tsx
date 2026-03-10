@@ -22,6 +22,19 @@ interface Capture {
   createdAt: Timestamp | null;
 }
 
+interface Task {
+  id: string;
+  title: string;
+  priority: string | null;
+  projectId: string | null;
+  completed: boolean;
+}
+
+interface Project {
+  id: string;
+  title: string;
+}
+
 const PRIORITY_STYLE: Record<string, string> = {
   high: "bg-rose-500/15 text-rose-400",
   medium: "bg-amber-500/15 text-amber-400",
@@ -177,6 +190,133 @@ export function RecentCaptures() {
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+export function ProjectFocus() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "tasks"),
+      where("completed", "==", false),
+      orderBy("createdAt", "desc"),
+      limit(15)
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      setTasks(
+        snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Task[]
+      );
+      setLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "projects"),
+      where("archived", "==", false),
+      orderBy("createdAt", "desc")
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      setProjects(
+        snap.docs.map((d) => ({ id: d.id, title: d.data().title }))
+      );
+    });
+    return unsub;
+  }, []);
+
+  if (loading) return null;
+
+  if (tasks.length === 0) {
+    return (
+      <p className="text-sm text-muted/50 italic">No active tasks.</p>
+    );
+  }
+
+  // Sort: high priority first, then medium, then rest
+  const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  const sorted = [...tasks].sort((a, b) => {
+    const pa = priorityOrder[a.priority ?? ""] ?? 3;
+    const pb = priorityOrder[b.priority ?? ""] ?? 3;
+    return pa - pb;
+  });
+
+  // Group by project
+  const projectMap = new Map<string, string>();
+  for (const p of projects) projectMap.set(p.id, p.title);
+
+  const byProject = new Map<string, Task[]>();
+  for (const task of sorted) {
+    const key = task.projectId ?? "__unassigned__";
+    if (!byProject.has(key)) byProject.set(key, []);
+    byProject.get(key)!.push(task);
+  }
+
+  // Ordered: projects first (in project order), unassigned last
+  const groups: { label: string; tasks: Task[] }[] = [];
+  for (const p of projects) {
+    const g = byProject.get(p.id);
+    if (g) groups.push({ label: p.title, tasks: g });
+  }
+  const unassigned = byProject.get("__unassigned__");
+  if (unassigned) groups.push({ label: "Unassigned", tasks: unassigned });
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-[10px] font-medium uppercase tracking-widest text-muted/70">
+          Project focus
+        </h2>
+        <Link
+          href="/tasks"
+          className="text-[10px] text-muted/50 hover:text-zinc-400 transition-colors"
+        >
+          All tasks &rarr;
+        </Link>
+      </div>
+      <div className="space-y-4">
+        {groups.map(({ label, tasks: groupTasks }) => (
+          <div key={label}>
+            <p className="text-[9px] uppercase tracking-wider text-muted/50 mb-1.5">
+              {label}
+            </p>
+            <ul className="space-y-px">
+              {groupTasks.map((task) => (
+                <li
+                  key={task.id}
+                  className="flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface"
+                >
+                  <span
+                    className={`size-1 shrink-0 rounded-full ${
+                      task.priority === "high"
+                        ? "bg-rose-400/60"
+                        : task.priority === "medium"
+                          ? "bg-amber-400/60"
+                          : "bg-zinc-500"
+                    }`}
+                  />
+                  <span className="flex-1 text-[13px] text-zinc-300 truncate">
+                    {task.title}
+                  </span>
+                  {task.priority && (
+                    <span
+                      className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${
+                        PRIORITY_STYLE[task.priority] ?? "text-muted/50"
+                      }`}
+                    >
+                      {task.priority}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
