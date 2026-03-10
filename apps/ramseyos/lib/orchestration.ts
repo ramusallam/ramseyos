@@ -35,12 +35,24 @@ interface ScheduleItem {
   endTime: Timestamp;
 }
 
+export type TimelineItemType = "schedule" | "chosen" | "focus" | "daily-action";
+
+export interface TimelineItem {
+  id: string;
+  type: TimelineItemType;
+  title: string;
+  startTime?: Timestamp;
+  endTime?: Timestamp;
+  priority?: string | null;
+}
+
 export interface DailyPlan {
   dailyActions: DailyAction[];
   chosenTasks: TaskItem[];
   focusTasks: TaskItem[];
   inboxItems: InboxItem[];
   schedule: ScheduleItem[];
+  timeline: TimelineItem[];
 }
 
 export async function generateDailyPlan(): Promise<DailyPlan> {
@@ -86,12 +98,41 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
     return pa - pb;
   });
 
+  // Build timeline: schedule → chosen → focus → daily actions
+  const timeline: TimelineItem[] = [
+    ...orderedSchedule.map((e) => ({
+      id: e.id,
+      type: "schedule" as const,
+      title: e.title,
+      startTime: e.startTime,
+      endTime: e.endTime,
+    })),
+    ...orderedChosen.map((t) => ({
+      id: t.id,
+      type: "chosen" as const,
+      title: t.title,
+      priority: t.priority,
+    })),
+    ...dedupedFocus.map((t) => ({
+      id: t.id,
+      type: "focus" as const,
+      title: t.title,
+      priority: t.priority,
+    })),
+    ...dailyActions.map((a) => ({
+      id: a.id,
+      type: "daily-action" as const,
+      title: a.title,
+    })),
+  ];
+
   return {
     dailyActions,
     chosenTasks: orderedChosen,
     focusTasks: dedupedFocus,
     inboxItems: orderedInbox,
     schedule: orderedSchedule,
+    timeline,
   };
 }
 
