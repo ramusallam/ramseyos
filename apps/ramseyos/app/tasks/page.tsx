@@ -81,6 +81,27 @@ export default function TasksPage() {
   const incomplete = tasks.filter((t) => !t.completed);
   const completed = tasks.filter((t) => t.completed);
 
+  // Group incomplete tasks by project
+  const projectMap = new Map<string, Project>();
+  for (const p of projects) projectMap.set(p.id, p);
+
+  const grouped: { project: Project | null; tasks: Task[] }[] = [];
+  const byProjectId = new Map<string | null, Task[]>();
+
+  for (const task of incomplete) {
+    const key = task.projectId ?? null;
+    if (!byProjectId.has(key)) byProjectId.set(key, []);
+    byProjectId.get(key)!.push(task);
+  }
+
+  // Projects with tasks first (in project order), then unassigned last
+  for (const p of projects) {
+    const projectTasks = byProjectId.get(p.id);
+    if (projectTasks) grouped.push({ project: p, tasks: projectTasks });
+  }
+  const unassigned = byProjectId.get(null);
+  if (unassigned) grouped.push({ project: null, tasks: unassigned });
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-xl px-5 pt-12 pb-20">
@@ -109,13 +130,18 @@ export default function TasksPage() {
           </p>
         ) : (
           <>
-            {incomplete.length > 0 && (
-              <ul className="space-y-1 mb-8">
-                {incomplete.map((task) => (
-                  <TaskItem key={task.id} task={task} projects={projects} />
-                ))}
-              </ul>
-            )}
+            {grouped.map(({ project, tasks: groupTasks }) => (
+              <div key={project?.id ?? "unassigned"} className="mb-8">
+                <h2 className="text-[10px] font-medium uppercase tracking-widest text-muted/70 mb-3">
+                  {project?.title ?? "Unassigned"}
+                </h2>
+                <ul className="space-y-1">
+                  {groupTasks.map((task) => (
+                    <TaskItem key={task.id} task={task} projects={projects} />
+                  ))}
+                </ul>
+              </div>
+            ))}
 
             {completed.length > 0 && (
               <div>
