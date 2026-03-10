@@ -12,7 +12,7 @@ import {
   type Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { updateTaskProject } from "@/lib/tasks";
+import { updateTaskProject, toggleChosenForToday } from "@/lib/tasks";
 import Link from "next/link";
 
 type Priority = "low" | "medium" | "high" | null;
@@ -26,6 +26,7 @@ interface Task {
   projectId: string | null;
   sourceCaptureId: string | null;
   notes: string | null;
+  chosenForToday?: boolean;
 }
 
 interface Project {
@@ -212,6 +213,25 @@ function TaskItem({ task, projects }: { task: Task; projects: Project[] }) {
           >
             {task.priority}
           </span>
+        )}
+
+        {!task.completed && (
+          <button
+            type="button"
+            onClick={() =>
+              toggleChosenForToday(task.id, !!task.chosenForToday)
+            }
+            className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 transition-colors ${
+              task.chosenForToday
+                ? "bg-accent/15 text-accent"
+                : "text-muted/40 hover:text-muted/70"
+            }`}
+            aria-label={
+              task.chosenForToday ? "Remove from today" : "Choose for today"
+            }
+          >
+            {task.chosenForToday ? "today ✓" : "today"}
+          </button>
         )}
       </div>
 

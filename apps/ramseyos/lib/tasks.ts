@@ -36,6 +36,7 @@ export async function createTask(fields: {
     projectId: fields.projectId ?? null,
     sourceCaptureId: fields.sourceCaptureId ?? null,
     notes: fields.notes ?? null,
+    chosenForToday: false,
     createdAt: serverTimestamp(),
   });
   return ref.id;
@@ -46,4 +47,13 @@ export async function updateTaskProject(
   projectId: string | null
 ): Promise<void> {
   await updateDoc(doc(db, COLLECTION, taskId), { projectId });
+}
+
+export async function toggleChosenForToday(
+  taskId: string,
+  current: boolean
+): Promise<void> {
+  await updateDoc(doc(db, COLLECTION, taskId), {
+    chosenForToday: !current,
+  });
 }
