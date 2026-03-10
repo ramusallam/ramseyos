@@ -1,0 +1,49 @@
+import {
+  collection,
+  addDoc,
+  doc,
+  updateDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db } from "./firebase";
+
+export type Priority = "low" | "medium" | "high" | null;
+
+export interface Task {
+  id: string;
+  title: string;
+  completed: boolean;
+  priority: Priority;
+  projectId: string | null;
+  sourceCaptureId: string | null;
+  notes: string | null;
+  createdAt: unknown;
+}
+
+const COLLECTION = "tasks";
+
+export async function createTask(fields: {
+  title: string;
+  priority?: Priority;
+  projectId?: string | null;
+  sourceCaptureId?: string | null;
+  notes?: string | null;
+}): Promise<string> {
+  const ref = await addDoc(collection(db, COLLECTION), {
+    title: fields.title,
+    completed: false,
+    priority: fields.priority ?? null,
+    projectId: fields.projectId ?? null,
+    sourceCaptureId: fields.sourceCaptureId ?? null,
+    notes: fields.notes ?? null,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateTaskProject(
+  taskId: string,
+  projectId: string | null
+): Promise<void> {
+  await updateDoc(doc(db, COLLECTION, taskId), { projectId });
+}
