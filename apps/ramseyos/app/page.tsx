@@ -1,6 +1,7 @@
 import { QuickCapture } from "./quick-capture";
 import { ProjectFocus } from "./dashboard-live";
 import { DailyCard } from "./daily-card";
+import { NowNext } from "./now-next";
 import Link from "next/link";
 
 function getGreeting(): string {
@@ -52,6 +53,11 @@ export default function TodayDashboard() {
             {getGreeting()}, Ramsey
           </h1>
         </header>
+
+        {/* Now / Next — primary controller */}
+        <div className="mb-8">
+          <NowNext />
+        </div>
 
         {/* Quick Capture */}
         <div className="mb-8">
