@@ -8,9 +8,11 @@ import {
   onSnapshot,
   doc,
   updateDoc,
+  where,
   type Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { updateTaskProject } from "@/lib/tasks";
 import Link from "next/link";
 
 type Priority = "low" | "medium" | "high" | null;
@@ -26,6 +28,12 @@ interface Task {
   notes: string | null;
 }
 
+interface Project {
+  id: string;
+  title: string;
+  color: string | null;
+}
+
 const PRIORITY_STYLE: Record<string, string> = {
   high: "bg-rose-500/15 text-rose-400",
   medium: "bg-amber-500/15 text-amber-400",
@@ -38,6 +46,7 @@ async function toggleCompleted(id: string, current: boolean) {
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,6 +56,24 @@ export default function TasksPage() {
         snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Task[]
       );
       setLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "projects"),
+      where("archived", "==", false),
+      orderBy("createdAt", "desc")
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      setProjects(
+        snap.docs.map((d) => ({
+          id: d.id,
+          title: d.data().title,
+          color: d.data().color,
+        }))
+      );
     });
     return unsub;
   }, []);
@@ -85,7 +112,7 @@ export default function TasksPage() {
             {incomplete.length > 0 && (
               <ul className="space-y-1 mb-8">
                 {incomplete.map((task) => (
-                  <TaskItem key={task.id} task={task} />
+                  <TaskItem key={task.id} task={task} projects={projects} />
                 ))}
               </ul>
             )}
@@ -97,7 +124,7 @@ export default function TasksPage() {
                 </h2>
                 <ul className="space-y-1">
                   {completed.map((task) => (
-                    <TaskItem key={task.id} task={task} />
+                    <TaskItem key={task.id} task={task} projects={projects} />
                   ))}
                 </ul>
               </div>
@@ -111,54 +138,77 @@ export default function TasksPage() {
 
 /* ── Task Item ── */
 
-function TaskItem({ task }: { task: Task }) {
+function TaskItem({ task, projects }: { task: Task; projects: Project[] }) {
   return (
     <li
-      className={`flex items-center gap-3 rounded px-2.5 py-2.5 -mx-2.5 transition-colors hover:bg-surface ${
+      className={`rounded px-2.5 py-2.5 -mx-2.5 transition-colors hover:bg-surface ${
         task.completed ? "opacity-45" : ""
       }`}
     >
-      <button
-        type="button"
-        onClick={() => toggleCompleted(task.id, task.completed)}
-        className={`size-4 shrink-0 rounded border transition-colors ${
-          task.completed
-            ? "border-accent/40 bg-accent/20"
-            : "border-zinc-600 hover:border-zinc-400"
-        }`}
-        aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
-      >
-        {task.completed && (
-          <svg viewBox="0 0 16 16" className="size-4 text-accent">
-            <path
-              d="M4.5 8.5L7 11l4.5-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => toggleCompleted(task.id, task.completed)}
+          className={`size-4 shrink-0 rounded border transition-colors ${
+            task.completed
+              ? "border-accent/40 bg-accent/20"
+              : "border-zinc-600 hover:border-zinc-400"
+          }`}
+          aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
+        >
+          {task.completed && (
+            <svg viewBox="0 0 16 16" className="size-4 text-accent">
+              <path
+                d="M4.5 8.5L7 11l4.5-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </button>
 
-      <span
-        className={`flex-1 text-[13px] truncate ${
-          task.completed ? "text-zinc-500 line-through" : "text-zinc-300"
-        }`}
-      >
-        {task.title}
-      </span>
-
-      {task.priority && (
         <span
-          className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${
-            PRIORITY_STYLE[task.priority] ?? "text-muted/50"
+          className={`flex-1 text-[13px] truncate ${
+            task.completed ? "text-zinc-500 line-through" : "text-zinc-300"
           }`}
         >
-          {task.priority}
+          {task.title}
         </span>
-      )}
+
+        {task.priority && (
+          <span
+            className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${
+              PRIORITY_STYLE[task.priority] ?? "text-muted/50"
+            }`}
+          >
+            {task.priority}
+          </span>
+        )}
+      </div>
+
+      {/* Project selector */}
+      <div className="mt-1.5 ml-7">
+        <select
+          aria-label="Assign project"
+          value={task.projectId ?? ""}
+          onChange={(e) =>
+            updateTaskProject(task.id, e.target.value || null)
+          }
+          className="bg-transparent text-[10px] text-muted/70 outline-none cursor-pointer hover:text-zinc-400 transition-colors"
+        >
+          <option value="" className="bg-surface text-foreground">
+            No project
+          </option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id} className="bg-surface text-foreground">
+              {p.title}
+            </option>
+          ))}
+        </select>
+      </div>
     </li>
   );
 }
