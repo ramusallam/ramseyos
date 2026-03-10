@@ -30,25 +30,32 @@ export function DailyCard() {
   return (
     <div className="space-y-6">
       {/* 1. Schedule — time-sensitive, soonest first */}
-      {plan.schedule.length > 0 && (
-        <CardSection label="Schedule">
+      <CardSection label="Schedule" count={plan.schedule.length}>
+        {plan.schedule.length === 0 ? (
+          <Placeholder>Nothing on the schedule today.</Placeholder>
+        ) : (
           <ul className="space-y-px">
-            {plan.schedule.map((event) => (
-              <li
-                key={event.id}
-                className="flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface"
-              >
-                <span className="text-[11px] text-muted/60 tabular-nums shrink-0 w-16">
-                  {formatTime(event.startTime)}
-                </span>
-                <span className="flex-1 text-[13px] text-zinc-300 truncate">
-                  {event.title}
-                </span>
-              </li>
-            ))}
+            {plan.schedule.map((event) => {
+              const isPast = event.endTime.toDate() < new Date();
+              return (
+                <li
+                  key={event.id}
+                  className={`flex items-center gap-3 rounded px-2.5 py-1.5 -mx-2.5 transition-colors hover:bg-surface ${
+                    isPast ? "opacity-40" : ""
+                  }`}
+                >
+                  <span className="text-[11px] text-muted/60 tabular-nums shrink-0 w-24">
+                    {formatTime(event.startTime)} – {formatTime(event.endTime)}
+                  </span>
+                  <span className="flex-1 text-[13px] text-zinc-300 truncate">
+                    {event.title}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
-        </CardSection>
-      )}
+        )}
+      </CardSection>
 
       {/* 2. Chosen Tasks — intentional picks, high priority first */}
       <CardSection label="Chosen for today">
