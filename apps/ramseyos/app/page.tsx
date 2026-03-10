@@ -1,5 +1,5 @@
 import { QuickCapture } from "./quick-capture";
-import { TodayFocus, RecentCaptures, ProjectFocus } from "./dashboard-live";
+import { TodayFocus, InboxNeedsReview, ProjectFocus } from "./dashboard-live";
 import Link from "next/link";
 
 function getGreeting(): string {
@@ -40,18 +40,18 @@ export default function TodayDashboard() {
           </p>
         </Section>
 
-        {/* Today Focus */}
+        {/* Today Focus — high-priority tasks */}
         <Section>
           <SectionLabel>Today focus</SectionLabel>
           <TodayFocus />
         </Section>
 
-        {/* Recent Captures */}
+        {/* Inbox — unprocessed captures needing review */}
         <Section>
-          <RecentCaptures />
+          <InboxNeedsReview />
         </Section>
 
-        {/* Project Focus */}
+        {/* Project Focus — supporting context */}
         <Section>
           <ProjectFocus />
         </Section>

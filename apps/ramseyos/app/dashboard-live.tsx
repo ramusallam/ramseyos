@@ -42,50 +42,67 @@ const PRIORITY_STYLE: Record<string, string> = {
 };
 
 export function TodayFocus() {
-  const [items, setItems] = useState<Capture[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const q = query(
-      collection(db, "captures"),
-      where("processed", "==", false),
+      collection(db, "tasks"),
+      where("completed", "==", false),
       where("priority", "==", "high"),
       orderBy("createdAt", "desc"),
       limit(5)
     );
     const unsub = onSnapshot(q, (snap) => {
-      setItems(
-        snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Capture[]
+      setTasks(
+        snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Task[]
       );
       setLoading(false);
     });
     return unsub;
   }, []);
 
+  useEffect(() => {
+    const q = query(
+      collection(db, "projects"),
+      where("archived", "==", false)
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      setProjects(
+        snap.docs.map((d) => ({ id: d.id, title: d.data().title }))
+      );
+    });
+    return unsub;
+  }, []);
+
   if (loading) return null;
 
-  if (items.length === 0) {
+  if (tasks.length === 0) {
     return (
       <p className="text-sm text-muted/50 italic">
-        No high-priority items right now.
+        No high-priority tasks right now.
       </p>
     );
   }
 
+  const projectMap = new Map<string, string>();
+  for (const p of projects) projectMap.set(p.id, p.title);
+
   return (
     <ul className="space-y-px">
-      {items.map((item) => (
+      {tasks.map((task) => (
         <li
-          key={item.id}
+          key={task.id}
           className="flex items-center gap-3 rounded px-2.5 py-2 -mx-2.5 transition-colors hover:bg-surface"
         >
           <span className="size-1.5 shrink-0 rounded-full bg-rose-400/60" />
           <span className="flex-1 text-[13px] text-zinc-300 truncate">
-            {item.text}
+            {task.title}
           </span>
-          {item.type && item.type !== "capture" && (
-            <span className="text-[9px] tracking-wider uppercase text-muted/50 shrink-0">
-              {item.type}
+          {task.projectId && projectMap.get(task.projectId) && (
+            <span className="text-[9px] tracking-wider uppercase text-muted/40 shrink-0">
+              {projectMap.get(task.projectId)}
             </span>
           )}
         </li>
@@ -94,35 +111,34 @@ export function TodayFocus() {
   );
 }
 
-export function RecentCaptures() {
-  const [recent, setRecent] = useState<Capture[]>([]);
-  const [unprocessedCount, setUnprocessedCount] = useState(0);
+export function InboxNeedsReview() {
+  const [unprocessed, setUnprocessed] = useState<Capture[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const recentQ = query(
+    const q = query(
       collection(db, "captures"),
+      where("processed", "==", false),
       orderBy("createdAt", "desc"),
-      limit(5)
+      limit(3)
     );
-    const unsub = onSnapshot(recentQ, (snap) => {
-      const docs = snap.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      })) as Capture[];
-      setRecent(docs);
+    const unsub = onSnapshot(q, (snap) => {
+      setUnprocessed(
+        snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Capture[]
+      );
       setLoading(false);
     });
     return unsub;
   }, []);
 
   useEffect(() => {
-    const countQ = query(
+    const q = query(
       collection(db, "captures"),
       where("processed", "==", false)
     );
-    const unsub = onSnapshot(countQ, (snap) => {
-      setUnprocessedCount(snap.size);
+    const unsub = onSnapshot(q, (snap) => {
+      setTotalCount(snap.size);
     });
     return unsub;
   }, []);
@@ -133,10 +149,10 @@ export function RecentCaptures() {
     <div>
       <div className="flex items-center justify-between mb-3">
         <h2 className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-widest text-muted/70">
-          Recent captures
-          {unprocessedCount > 0 && (
+          Inbox
+          {totalCount > 0 && (
             <span className="inline-flex items-center justify-center rounded-full bg-accent-dim text-accent text-[9px] font-medium tabular-nums size-4">
-              {unprocessedCount}
+              {totalCount}
             </span>
           )}
         </h2>
@@ -144,32 +160,20 @@ export function RecentCaptures() {
           href="/inbox"
           className="text-[10px] text-muted/50 hover:text-zinc-400 transition-colors"
         >
-          View all &rarr;
+          Review &rarr;
         </Link>
       </div>
-      {recent.length === 0 ? (
-        <p className="text-sm text-muted/50 italic">Nothing captured yet.</p>
+      {totalCount === 0 ? (
+        <p className="text-sm text-muted/50 italic">Inbox clear.</p>
       ) : (
         <ul className="space-y-px">
-          {recent.map((item) => (
+          {unprocessed.map((item) => (
             <li
               key={item.id}
-              className={`flex items-center gap-3 rounded px-2.5 py-2 -mx-2.5 transition-colors hover:bg-surface ${
-                item.processed ? "opacity-40" : ""
-              }`}
+              className="flex items-center gap-3 rounded px-2.5 py-2 -mx-2.5 transition-colors hover:bg-surface"
             >
-              <span
-                className={`size-1 shrink-0 rounded-full ${
-                  item.processed ? "bg-zinc-700" : "bg-zinc-500"
-                }`}
-              />
-              <span
-                className={`flex-1 text-[13px] truncate ${
-                  item.processed
-                    ? "text-zinc-500 line-through"
-                    : "text-zinc-300"
-                }`}
-              >
+              <span className="size-1 shrink-0 rounded-full bg-zinc-500" />
+              <span className="flex-1 text-[13px] text-zinc-300 truncate">
                 {item.text}
               </span>
               {item.priority && (
@@ -181,13 +185,18 @@ export function RecentCaptures() {
                   {item.priority}
                 </span>
               )}
-              {item.type && item.type !== "capture" && (
-                <span className="text-[9px] tracking-wider uppercase text-muted/40 shrink-0">
-                  {item.type}
-                </span>
-              )}
             </li>
           ))}
+          {totalCount > 3 && (
+            <li className="px-2.5 py-1">
+              <Link
+                href="/inbox"
+                className="text-[11px] text-muted/50 hover:text-zinc-400 transition-colors"
+              >
+                +{totalCount - 3} more
+              </Link>
+            </li>
+          )}
         </ul>
       )}
     </div>
