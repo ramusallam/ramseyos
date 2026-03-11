@@ -63,6 +63,8 @@ export interface DailyPlan {
   timeline: TimelineItem[];
 }
 
+const MAX_FOCUS_TASKS = 5;
+
 export async function generateDailyPlan(): Promise<DailyPlan> {
   const today = new Date();
   const dayStart = new Date(today);
@@ -70,11 +72,12 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
   const dayEnd = new Date(today);
   dayEnd.setHours(23, 59, 59, 999);
 
-  const [dailyActions, chosenTasks, focusTasks, inboxItems, schedule, projects] =
+  const [dailyActions, chosenTasks, focusTasks, recentTasks, inboxItems, schedule, projects] =
     await Promise.all([
       fetchDailyActions(),
       fetchChosenTasks(),
       fetchFocusTasks(),
+      fetchRecentTasks(),
       fetchInboxItems(),
       fetchSchedule(dayStart, dayEnd),
       fetchProjects(),
@@ -89,19 +92,50 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
   const past = schedule.filter((e) => e.endTime.toDate() < now);
   const orderedSchedule = [...upcoming, ...past];
 
-  // Sort chosen tasks: high > medium > low > null
   const priorityRank: Record<string, number> = { high: 0, medium: 1, low: 2 };
-  const sortByPriority = (a: TaskItem, b: TaskItem) => {
-    const pa = priorityRank[a.priority ?? ""] ?? 3;
-    const pb = priorityRank[b.priority ?? ""] ?? 3;
+
+  // Score-based task ranking across all sources
+  // Higher score = higher in the list
+  function scoreTask(t: TaskItem, isChosen: boolean): number {
+    let s = 0;
+    if (isChosen) s += 100;                          // chosen for today
+    if (t.priority === "high") s += 40;              // high priority
+    else if (t.priority === "medium") s += 20;       // medium priority
+    if (t.projectId) s += 10;                        // project-linked
+    if (t.fromInbox) s += 5;                         // recently triaged from inbox
+    return s;
+  }
+
+  // Merge all task sources, deduplicate by id, score and rank
+  const seen = new Set<string>();
+  const scored: { task: TaskItem; score: number; type: TimelineItemType }[] = [];
+
+  for (const t of chosenTasks) {
+    if (seen.has(t.id)) continue;
+    seen.add(t.id);
+    scored.push({ task: t, score: scoreTask(t, true), type: "chosen" });
+  }
+  for (const t of focusTasks) {
+    if (seen.has(t.id)) continue;
+    seen.add(t.id);
+    scored.push({ task: t, score: scoreTask(t, false), type: "focus" });
+  }
+  for (const t of recentTasks) {
+    if (seen.has(t.id)) continue;
+    seen.add(t.id);
+    scored.push({ task: t, score: scoreTask(t, false), type: "focus" });
+  }
+
+  // Sort by score descending, then by priority as tiebreaker
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    const pa = priorityRank[a.task.priority ?? ""] ?? 3;
+    const pb = priorityRank[b.task.priority ?? ""] ?? 3;
     return pa - pb;
-  };
+  });
 
-  const orderedChosen = [...chosenTasks].sort(sortByPriority);
-
-  // Deduplicate: remove focus tasks that are already in chosen
-  const chosenIds = new Set(orderedChosen.map((t) => t.id));
-  const dedupedFocus = focusTasks.filter((t) => !chosenIds.has(t.id));
+  // Cap task items to MAX_FOCUS_TASKS
+  const topTasks = scored.slice(0, MAX_FOCUS_TASKS);
 
   // Sort inbox: prioritized items first
   const orderedInbox = [...inboxItems].sort((a, b) => {
@@ -110,7 +144,7 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
     return pa - pb;
   });
 
-  // Build timeline: schedule → chosen → focus → daily actions
+  // Build timeline: schedule → scored tasks → daily actions
   const timeline: TimelineItem[] = [
     ...orderedSchedule.map((e) => ({
       id: e.id,
@@ -119,17 +153,9 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
       startTime: e.startTime,
       endTime: e.endTime,
     })),
-    ...orderedChosen.map((t) => ({
+    ...topTasks.map(({ task: t, type }) => ({
       id: t.id,
-      type: "chosen" as const,
-      title: t.title,
-      priority: t.priority,
-      projectName: t.projectId ? projectMap.get(t.projectId) ?? null : null,
-      fromInbox: t.fromInbox,
-    })),
-    ...dedupedFocus.map((t) => ({
-      id: t.id,
-      type: "focus" as const,
+      type,
       title: t.title,
       priority: t.priority,
       projectName: t.projectId ? projectMap.get(t.projectId) ?? null : null,
@@ -142,10 +168,18 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
     })),
   ];
 
+  // Split for backward compat on the DailyPlan interface
+  const orderedChosen = topTasks
+    .filter((s) => s.type === "chosen")
+    .map((s) => s.task);
+  const orderedFocus = topTasks
+    .filter((s) => s.type === "focus")
+    .map((s) => s.task);
+
   return {
     dailyActions,
     chosenTasks: orderedChosen,
-    focusTasks: dedupedFocus,
+    focusTasks: orderedFocus,
     inboxItems: orderedInbox,
     schedule: orderedSchedule,
     timeline,
@@ -190,6 +224,23 @@ async function fetchFocusTasks(): Promise<TaskItem[]> {
     where("priority", "==", "high"),
     orderBy("createdAt", "desc"),
     limit(5)
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({
+    id: d.id,
+    title: d.data().title,
+    priority: d.data().priority ?? null,
+    projectId: d.data().projectId ?? null,
+    fromInbox: !!d.data().sourceCaptureId,
+  }));
+}
+
+async function fetchRecentTasks(): Promise<TaskItem[]> {
+  const q = query(
+    collection(db, "tasks"),
+    where("completed", "==", false),
+    orderBy("createdAt", "desc"),
+    limit(10)
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({
