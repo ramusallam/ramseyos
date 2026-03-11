@@ -1,5 +1,5 @@
 import { QuickCapture } from "./quick-capture";
-import { ProjectFocus } from "./dashboard-live";
+import { ProjectFocus, SuggestedTools } from "./dashboard-live";
 import { DailyCard } from "./daily-card";
 import { NowNext } from "./now-next";
 
@@ -81,6 +81,13 @@ export default function TodayDashboard() {
               </div>
             </DashboardCard>
           </div>
+        </div>
+
+        {/* Suggested Tools */}
+        <div className="mb-8">
+          <DashboardCard>
+            <SuggestedTools />
+          </DashboardCard>
         </div>
 
         {/* Project Focus */}

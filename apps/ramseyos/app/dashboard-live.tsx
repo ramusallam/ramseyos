@@ -11,6 +11,7 @@ import {
   type Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { getActiveTools, type ToolItem } from "@/lib/tools";
 import Link from "next/link";
 
 interface Capture {
@@ -514,5 +515,188 @@ export function DailyActions() {
         </li>
       ))}
     </ul>
+  );
+}
+
+/* ── Suggested Tools ── */
+
+const CATEGORY_STYLE: Record<string, string> = {
+  teaching: "bg-sky-50 text-sky-600",
+  publishing: "bg-violet-50 text-violet-600",
+  accessibility: "bg-emerald-50 text-emerald-600",
+  simulation: "bg-amber-50 text-amber-600",
+  classroom: "bg-rose-50 text-rose-600",
+};
+
+const MAX_SUGGESTIONS = 5;
+
+// Stop words to skip when matching project names to tools
+const STOP_WORDS = new Set([
+  "a", "an", "the", "and", "or", "of", "for", "to", "in", "on", "at", "is",
+  "it", "my", "v1", "v2", "app", "project",
+]);
+
+function tokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .split(/[\s\-_/]+/)
+    .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
+}
+
+function scoreToolForProjects(tool: ToolItem, projectTokens: string[]): number {
+  if (projectTokens.length === 0) return 0;
+  const haystack = `${tool.title} ${tool.description} ${tool.category}`.toLowerCase();
+  let score = 0;
+  for (const token of projectTokens) {
+    if (haystack.includes(token)) score++;
+  }
+  return score;
+}
+
+export function SuggestedTools() {
+  const [tools, setTools] = useState<ToolItem[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getActiveTools().then((t) => {
+      setTools(t);
+      setLoading(false);
+    });
+  }, []);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "tasks"),
+      where("completed", "==", false),
+      where("chosenForToday", "==", true),
+      orderBy("createdAt", "desc")
+    );
+    return onSnapshot(q, (snap) => {
+      setTasks(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Task[]);
+    });
+  }, []);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "projects"),
+      where("archived", "==", false)
+    );
+    return onSnapshot(q, (snap) => {
+      setProjects(
+        snap.docs.map((d) => ({ id: d.id, title: d.data().title }))
+      );
+    });
+  }, []);
+
+  if (loading) return null;
+  if (tools.length === 0) return null;
+
+  // Build project name tokens from today's tasks
+  const projectMap = new Map<string, string>();
+  for (const p of projects) projectMap.set(p.id, p.title);
+
+  const todayProjectNames = new Set<string>();
+  for (const t of tasks) {
+    if (t.projectId) {
+      const name = projectMap.get(t.projectId);
+      if (name) todayProjectNames.add(name);
+    }
+  }
+
+  const projectTokens = [...todayProjectNames].flatMap(tokenize);
+
+  // Score and rank: pinned always included, then by keyword match
+  const scored = tools.map((tool) => ({
+    tool,
+    score: (tool.pinned ? 100 : 0) + scoreToolForProjects(tool, projectTokens),
+  }));
+
+  const suggestions = scored
+    .filter((s) => s.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, MAX_SUGGESTIONS)
+    .map((s) => s.tool);
+
+  if (suggestions.length === 0) {
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+            Suggested tools
+          </h2>
+          <Link
+            href="/tools"
+            className="text-[11px] text-accent hover:text-accent/80 transition-colors font-medium"
+          >
+            All tools &rarr;
+          </Link>
+        </div>
+        <p className="text-sm text-muted italic">
+          Choose tasks for today to surface relevant tools.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+          Suggested tools
+        </h2>
+        <Link
+          href="/tools"
+          className="text-[11px] text-accent hover:text-accent/80 transition-colors font-medium"
+        >
+          All tools &rarr;
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {suggestions.map((tool) => {
+          const isExternal = tool.url !== "#";
+          return (
+            <a
+              key={tool.id}
+              href={tool.url}
+              target={isExternal ? "_blank" : undefined}
+              rel={isExternal ? "noopener noreferrer" : undefined}
+              className="group flex items-start gap-3 rounded-lg border border-border bg-surface-raised/50 px-3.5 py-3 transition-all hover:border-border-strong hover:bg-surface-raised"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-medium text-foreground/80 truncate group-hover:text-foreground transition-colors">
+                  {tool.title}
+                </p>
+                <span
+                  className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                    CATEGORY_STYLE[tool.category] ?? "bg-gray-50 text-muted"
+                  }`}
+                >
+                  {tool.category}
+                </span>
+              </div>
+              {isExternal && (
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  className="text-muted/30 group-hover:text-muted/60 transition-colors shrink-0 mt-1"
+                >
+                  <path
+                    d="M4.5 2H10v5.5M10 2L3 9"
+                    stroke="currentColor"
+                    strokeWidth="1.25"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </a>
+          );
+        })}
+      </div>
+    </div>
   );
 }
