@@ -11,6 +11,8 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 
+export type SparkStatus = "not-started" | "in-progress" | "deployed";
+
 export interface LessonPlan {
   id: string;
   title: string;
@@ -19,6 +21,8 @@ export interface LessonPlan {
   tags: string[];
   reflection: string;
   linkedResourceIds: string[];
+  sparkLink: string;
+  sparkStatus: SparkStatus;
   lastTaughtAt: Timestamp | null;
   createdAt: Timestamp | null;
   updatedAt: Timestamp | null;
@@ -38,6 +42,8 @@ export async function getLessonPlans(): Promise<LessonPlan[]> {
     tags: d.data().tags ?? [],
     reflection: d.data().reflection ?? "",
     linkedResourceIds: d.data().linkedResourceIds ?? [],
+    sparkLink: d.data().sparkLink ?? "",
+    sparkStatus: d.data().sparkStatus ?? "not-started",
     lastTaughtAt: d.data().lastTaughtAt ?? null,
     createdAt: d.data().createdAt ?? null,
     updatedAt: d.data().updatedAt ?? null,
@@ -56,6 +62,8 @@ export async function getLessonPlan(id: string): Promise<LessonPlan | null> {
     tags: d.tags ?? [],
     reflection: d.reflection ?? "",
     linkedResourceIds: d.linkedResourceIds ?? [],
+    sparkLink: d.sparkLink ?? "",
+    sparkStatus: d.sparkStatus ?? "not-started",
     lastTaughtAt: d.lastTaughtAt ?? null,
     createdAt: d.createdAt ?? null,
     updatedAt: d.updatedAt ?? null,
@@ -69,6 +77,8 @@ export interface LessonPlanUpdate {
   tags?: string[];
   reflection?: string;
   linkedResourceIds?: string[];
+  sparkLink?: string;
+  sparkStatus?: SparkStatus;
   lastTaughtAt?: Timestamp | null;
 }
 
