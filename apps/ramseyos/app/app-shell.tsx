@@ -89,7 +89,7 @@ function useShellCounts(): ShellCounts {
   return counts;
 }
 
-type NavKey = "today" | "inbox" | "tasks" | "projects" | "calendar" | "tools";
+type NavKey = "today" | "inbox" | "tasks" | "projects" | "calendar" | "tools" | "lessonPlans";
 
 const NAV_ITEMS: {
   href: string;
@@ -103,6 +103,7 @@ const NAV_ITEMS: {
   { href: "/projects", label: "Projects", icon: FolderIcon, key: "projects" },
   { href: "/calendar", label: "Calendar", icon: CalendarIcon, key: "calendar" },
   { href: "/tools", label: "Tools", icon: ToolsIcon, key: "tools" },
+  { href: "/lesson-plans", label: "Lesson Plans", icon: LessonPlanIcon, key: "lessonPlans" },
 ];
 
 function getNavCount(
@@ -405,6 +406,30 @@ function CalendarIcon({ active }: { active: boolean }) {
       />
       <path
         d="M2 7h12M5 1.5v3M11 1.5v3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function LessonPlanIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <path
+        d="M3 2.5h10a1 1 0 011 1v9a1 1 0 01-1 1H3a1 1 0 01-1-1v-9a1 1 0 011-1z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M5 6h6M5 8.5h4"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
