@@ -12,6 +12,24 @@ const CATEGORY_STYLE: Record<string, string> = {
   "classroom": "bg-rose-50 text-rose-600",
 };
 
+const CATEGORY_LABEL: Record<string, string> = {
+  "teaching": "Teaching",
+  "publishing": "Publishing",
+  "accessibility": "Accessibility",
+  "simulation": "Simulations",
+  "classroom": "Classroom",
+};
+
+function groupByCategory(tools: ToolItem[]): [string, ToolItem[]][] {
+  const map = new Map<string, ToolItem[]>();
+  for (const tool of tools) {
+    const group = map.get(tool.category) ?? [];
+    group.push(tool);
+    map.set(tool.category, group);
+  }
+  return Array.from(map.entries());
+}
+
 export default function ToolsPage() {
   const [tools, setTools] = useState<ToolItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,9 +76,18 @@ export default function ToolsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tools.map((tool) => (
-            <ToolCard key={tool.id} tool={tool} />
+        <div className="space-y-10">
+          {groupByCategory(tools).map(([category, items]) => (
+            <section key={category}>
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-4">
+                {CATEGORY_LABEL[category] ?? category}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {items.map((tool) => (
+                  <ToolCard key={tool.id} tool={tool} />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       )}
