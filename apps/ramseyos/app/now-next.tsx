@@ -114,7 +114,7 @@ export function NowNext() {
           isPrimary={false}
         />
       ) : (
-        <div className="bg-surface rounded-xl border border-border p-5 shadow-sm flex items-center justify-center">
+        <div className="bg-surface rounded-xl border border-border p-5 shadow-card flex items-center justify-center">
           <p className="text-sm text-muted italic">Nothing else lined up.</p>
         </div>
       )}
@@ -141,7 +141,7 @@ function FocusCard({
 
   return (
     <div
-      className={`rounded-xl border p-5 shadow-sm ${
+      className={`rounded-xl border p-5 shadow-card ${
         isPrimary
           ? "bg-surface border-accent/20"
           : "bg-surface border-border"
@@ -195,7 +195,7 @@ function InboxCard({
 }) {
   return (
     <div
-      className={`rounded-xl border p-5 shadow-sm ${
+      className={`rounded-xl border p-5 shadow-card ${
         isPrimary
           ? "bg-surface border-accent/20"
           : "bg-surface border-border"

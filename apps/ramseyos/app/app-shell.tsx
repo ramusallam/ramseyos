@@ -130,7 +130,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 border-r border-border bg-surface flex flex-col">
+      <aside className="w-56 shrink-0 border-r border-border-strong bg-surface flex flex-col">
         {/* Logo */}
         <div className="h-14 flex items-center px-5">
           <span className="text-[11px] font-semibold tracking-widest uppercase text-accent">

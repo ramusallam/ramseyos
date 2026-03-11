@@ -110,7 +110,7 @@ function DashboardCard({
 }) {
   return (
     <div
-      className={`bg-surface rounded-xl border border-border p-5 shadow-sm ${className}`}
+      className={`bg-surface rounded-xl border border-border p-5 shadow-card ${className}`}
     >
       {children}
     </div>
