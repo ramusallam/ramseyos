@@ -1,21 +1,131 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const NAV_ITEMS = [
-  { href: "/", label: "Today", icon: SunIcon },
-  { href: "/inbox", label: "Inbox", icon: InboxIcon },
-  { href: "/tasks", label: "Tasks", icon: CheckIcon },
-  { href: "/projects", label: "Projects", icon: FolderIcon },
-  { href: "/calendar", label: "Calendar", icon: CalendarIcon },
+interface ShellCounts {
+  inbox: number;
+  tasks: number;
+  chosenToday: number;
+  schedule: number;
+}
+
+function useShellCounts(): ShellCounts {
+  const [counts, setCounts] = useState<ShellCounts>({
+    inbox: 0,
+    tasks: 0,
+    chosenToday: 0,
+    schedule: 0,
+  });
+
+  useEffect(() => {
+    const unsubs: (() => void)[] = [];
+
+    // Unprocessed inbox captures
+    const inboxQ = query(
+      collection(db, "captures"),
+      where("processed", "==", false)
+    );
+    unsubs.push(
+      onSnapshot(inboxQ, (snap) =>
+        setCounts((prev) => ({ ...prev, inbox: snap.size }))
+      )
+    );
+
+    // Open (incomplete) tasks
+    const tasksQ = query(
+      collection(db, "tasks"),
+      where("completed", "==", false)
+    );
+    unsubs.push(
+      onSnapshot(tasksQ, (snap) =>
+        setCounts((prev) => ({ ...prev, tasks: snap.size }))
+      )
+    );
+
+    // Chosen for today
+    const chosenQ = query(
+      collection(db, "tasks"),
+      where("completed", "==", false),
+      where("chosenForToday", "==", true)
+    );
+    unsubs.push(
+      onSnapshot(chosenQ, (snap) =>
+        setCounts((prev) => ({ ...prev, chosenToday: snap.size }))
+      )
+    );
+
+    // Today's calendar events
+    const now = new Date();
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(now);
+    end.setHours(23, 59, 59, 999);
+    const calQ = query(
+      collection(db, "calendarEvents"),
+      where("startTime", ">=", start),
+      where("startTime", "<=", end),
+      orderBy("startTime", "asc")
+    );
+    unsubs.push(
+      onSnapshot(calQ, (snap) =>
+        setCounts((prev) => ({ ...prev, schedule: snap.size }))
+      )
+    );
+
+    return () => unsubs.forEach((fn) => fn());
+  }, []);
+
+  return counts;
+}
+
+type NavKey = "today" | "inbox" | "tasks" | "projects" | "calendar";
+
+const NAV_ITEMS: {
+  href: string;
+  label: string;
+  icon: React.FC<{ active: boolean }>;
+  key: NavKey;
+}[] = [
+  { href: "/", label: "Today", icon: SunIcon, key: "today" },
+  { href: "/inbox", label: "Inbox", icon: InboxIcon, key: "inbox" },
+  { href: "/tasks", label: "Tasks", icon: CheckIcon, key: "tasks" },
+  { href: "/projects", label: "Projects", icon: FolderIcon, key: "projects" },
+  { href: "/calendar", label: "Calendar", icon: CalendarIcon, key: "calendar" },
 ];
+
+function getNavCount(
+  key: NavKey,
+  counts: ShellCounts
+): number | null {
+  switch (key) {
+    case "today":
+      return counts.chosenToday || null;
+    case "inbox":
+      return counts.inbox || null;
+    case "tasks":
+      return counts.tasks || null;
+    case "calendar":
+      return counts.schedule || null;
+    default:
+      return null;
+  }
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const counts = useShellCounts();
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -31,9 +141,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Nav */}
         <nav className="flex-1 px-3 py-2">
           <ul className="space-y-0.5">
-            {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+            {NAV_ITEMS.map(({ href, label, icon: Icon, key }) => {
               const isActive =
                 href === "/" ? pathname === "/" : pathname.startsWith(href);
+              const count = getNavCount(key, counts);
               return (
                 <li key={href}>
                   <Link
@@ -45,7 +156,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     }`}
                   >
                     <Icon active={isActive} />
-                    {label}
+                    <span className="flex-1">{label}</span>
+                    {count !== null && (
+                      <span className="text-[10px] font-medium tabular-nums text-muted/70">
+                        {count}
+                      </span>
+                    )}
                   </Link>
                 </li>
               );
