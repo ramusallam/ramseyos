@@ -1,8 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getLessonPlans, type LessonPlan } from "@/lib/lesson-plans";
 import Link from "next/link";
+
+function groupByCourse(plans: LessonPlan[]): Map<string, LessonPlan[]> {
+  const groups = new Map<string, LessonPlan[]>();
+  for (const plan of plans) {
+    const key = plan.course?.trim() || "Unassigned";
+    const list = groups.get(key) ?? [];
+    list.push(plan);
+    groups.set(key, list);
+  }
+  // Sort keys alphabetically, but push "Unassigned" to the end
+  const sorted = new Map<string, LessonPlan[]>();
+  const keys = [...groups.keys()].sort((a, b) => {
+    if (a === "Unassigned") return 1;
+    if (b === "Unassigned") return -1;
+    return a.localeCompare(b);
+  });
+  for (const k of keys) sorted.set(k, groups.get(k)!);
+  return sorted;
+}
 
 export default function LessonPlansPage() {
   const [plans, setPlans] = useState<LessonPlan[]>([]);
@@ -14,6 +33,8 @@ export default function LessonPlansPage() {
       setLoading(false);
     });
   }, []);
+
+  const grouped = useMemo(() => groupByCourse(plans), [plans]);
 
   return (
     <div className="max-w-4xl px-8 pt-10 pb-20">
@@ -46,9 +67,18 @@ export default function LessonPlansPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {plans.map((plan) => (
-            <LessonPlanCard key={plan.id} plan={plan} />
+        <div className="space-y-8">
+          {[...grouped.entries()].map(([course, coursePlans]) => (
+            <section key={course}>
+              <h2 className="text-[13px] font-semibold text-foreground/70 uppercase tracking-wider mb-3">
+                {course}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {coursePlans.map((plan) => (
+                  <LessonPlanCard key={plan.id} plan={plan} />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       )}
