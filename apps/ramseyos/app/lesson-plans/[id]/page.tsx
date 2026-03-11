@@ -8,6 +8,7 @@ import {
   type LessonPlan,
 } from "@/lib/lesson-plans";
 import { Timestamp } from "firebase/firestore";
+import { getActiveTools, type ToolItem } from "@/lib/tools";
 import Link from "next/link";
 
 export default function LessonPlanEditorPage() {
@@ -26,9 +27,13 @@ export default function LessonPlanEditorPage() {
   const [tagInput, setTagInput] = useState("");
   const [reflection, setReflection] = useState("");
   const [lastTaughtAt, setLastTaughtAt] = useState("");
+  const [linkedResourceIds, setLinkedResourceIds] = useState<string[]>([]);
+  const [allTools, setAllTools] = useState<ToolItem[]>([]);
+  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
-    getLessonPlan(id).then((p) => {
+    Promise.all([getLessonPlan(id), getActiveTools()]).then(([p, tools]) => {
+      setAllTools(tools);
       if (!p) {
         setLoading(false);
         return;
@@ -39,6 +44,7 @@ export default function LessonPlanEditorPage() {
       setDescription(p.description);
       setTagInput(p.tags.join(", "));
       setReflection(p.reflection ?? "");
+      setLinkedResourceIds(p.linkedResourceIds ?? []);
       setLastTaughtAt(
         p.lastTaughtAt ? p.lastTaughtAt.toDate().toISOString().slice(0, 10) : ""
       );
@@ -62,6 +68,7 @@ export default function LessonPlanEditorPage() {
       description,
       tags,
       reflection,
+      linkedResourceIds,
       lastTaughtAt: lastTaughtAt
         ? Timestamp.fromDate(new Date(lastTaughtAt + "T00:00:00"))
         : null,
@@ -69,7 +76,7 @@ export default function LessonPlanEditorPage() {
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  }, [id, title, course, description, tagInput, reflection, lastTaughtAt, saving]);
+  }, [id, title, course, description, tagInput, reflection, linkedResourceIds, lastTaughtAt, saving]);
 
   if (loading) {
     return (
@@ -161,6 +168,109 @@ export default function LessonPlanEditorPage() {
           <p className="text-[10px] text-muted/50 mt-1.5">
             Separate tags with commas
           </p>
+        </div>
+
+        {/* Linked Resources */}
+        <div className="border-t border-border/50 pt-8">
+          <h2 className="text-[13px] font-semibold text-foreground/70 uppercase tracking-wider mb-1">
+            Linked Resources
+          </h2>
+          <p className="text-[11px] text-muted/50 mb-4">
+            Tools and resources used in this lesson.
+          </p>
+
+          {/* Linked cards */}
+          {linkedResourceIds.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              {linkedResourceIds.map((rid) => {
+                const tool = allTools.find((t) => t.id === rid);
+                if (!tool) return null;
+                return (
+                  <div
+                    key={rid}
+                    className="group flex items-start gap-3 rounded-lg border border-border bg-surface p-3 shadow-card"
+                  >
+                    <a
+                      href={tool.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 min-w-0"
+                    >
+                      <span className="text-[13px] font-medium text-foreground/90 group-hover:text-accent transition-colors">
+                        {tool.title}
+                      </span>
+                      <span className="block text-[11px] text-muted/60 mt-0.5 truncate">
+                        {tool.description}
+                      </span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLinkedResourceIds((prev) =>
+                          prev.filter((x) => x !== rid)
+                        )
+                      }
+                      className="shrink-0 text-[11px] text-muted/40 hover:text-red-400 transition-colors mt-0.5"
+                      aria-label={`Remove ${tool.title}`}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Add button / picker */}
+          {!showPicker ? (
+            <button
+              type="button"
+              onClick={() => setShowPicker(true)}
+              className="text-[12px] text-accent/70 hover:text-accent transition-colors"
+            >
+              + Link a resource
+            </button>
+          ) : (
+            <div className="rounded-lg border border-border bg-surface p-3 shadow-card space-y-1.5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                  Select a resource
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowPicker(false)}
+                  className="text-[11px] text-muted/40 hover:text-foreground/60 transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+              {allTools
+                .filter((t) => !linkedResourceIds.includes(t.id))
+                .map((tool) => (
+                  <button
+                    key={tool.id}
+                    type="button"
+                    onClick={() => {
+                      setLinkedResourceIds((prev) => [...prev, tool.id]);
+                    }}
+                    className="w-full text-left rounded-md px-3 py-2 hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="text-[13px] font-medium text-foreground/80">
+                      {tool.title}
+                    </span>
+                    <span className="block text-[10px] text-muted/50">
+                      {tool.category}
+                    </span>
+                  </button>
+                ))}
+              {allTools.filter((t) => !linkedResourceIds.includes(t.id))
+                .length === 0 && (
+                <p className="text-[11px] text-muted/50 py-2 text-center">
+                  All resources linked.
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Reflection */}
