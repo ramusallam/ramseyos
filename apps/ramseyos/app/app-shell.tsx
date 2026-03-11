@@ -3,14 +3,13 @@
 import { useState, useRef, useEffect } from "react";
 import {
   collection,
-  addDoc,
-  serverTimestamp,
   query,
   where,
   orderBy,
   onSnapshot,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { createCapture } from "@/lib/captures";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -207,16 +206,7 @@ function SidebarCapture() {
 
     setSaving(true);
     try {
-      await addDoc(collection(db, "captures"), {
-        text: trimmed,
-        status: "unprocessed",
-        createdAt: serverTimestamp(),
-        type: "capture",
-        processed: false,
-        tags: [],
-        projectId: null,
-        priority: null,
-      });
+      await createCapture({ text: trimmed, source: "manual" });
       setText("");
       setOpen(false);
     } finally {
@@ -232,7 +222,7 @@ function SidebarCapture() {
         className="flex items-center gap-3 rounded-lg px-3 py-2 w-full text-[13px] text-foreground/60 hover:bg-surface-raised hover:text-foreground transition-colors"
       >
         <PlusIcon />
-        Quick capture
+        Parking lot
       </button>
     );
   }
