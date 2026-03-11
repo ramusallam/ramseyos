@@ -7,6 +7,7 @@ import {
   updateLessonPlan,
   type LessonPlan,
 } from "@/lib/lesson-plans";
+import { Timestamp } from "firebase/firestore";
 import Link from "next/link";
 
 export default function LessonPlanEditorPage() {
@@ -23,6 +24,8 @@ export default function LessonPlanEditorPage() {
   const [course, setCourse] = useState("");
   const [description, setDescription] = useState("");
   const [tagInput, setTagInput] = useState("");
+  const [reflection, setReflection] = useState("");
+  const [lastTaughtAt, setLastTaughtAt] = useState("");
 
   useEffect(() => {
     getLessonPlan(id).then((p) => {
@@ -35,6 +38,10 @@ export default function LessonPlanEditorPage() {
       setCourse(p.course);
       setDescription(p.description);
       setTagInput(p.tags.join(", "));
+      setReflection(p.reflection ?? "");
+      setLastTaughtAt(
+        p.lastTaughtAt ? p.lastTaughtAt.toDate().toISOString().slice(0, 10) : ""
+      );
       setLoading(false);
     });
   }, [id]);
@@ -49,11 +56,20 @@ export default function LessonPlanEditorPage() {
       .map((t) => t.trim())
       .filter(Boolean);
 
-    await updateLessonPlan(id, { title, course, description, tags });
+    await updateLessonPlan(id, {
+      title,
+      course,
+      description,
+      tags,
+      reflection,
+      lastTaughtAt: lastTaughtAt
+        ? Timestamp.fromDate(new Date(lastTaughtAt + "T00:00:00"))
+        : null,
+    });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  }, [id, title, course, description, tagInput, saving]);
+  }, [id, title, course, description, tagInput, reflection, lastTaughtAt, saving]);
 
   if (loading) {
     return (
@@ -145,6 +161,37 @@ export default function LessonPlanEditorPage() {
           <p className="text-[10px] text-muted/50 mt-1.5">
             Separate tags with commas
           </p>
+        </div>
+
+        {/* Reflection */}
+        <div className="border-t border-border/50 pt-8">
+          <h2 className="text-[13px] font-semibold text-foreground/70 uppercase tracking-wider mb-1">
+            Lesson Reflection
+          </h2>
+          <p className="text-[11px] text-muted/50 mb-4">
+            What worked? What would you change next time?
+          </p>
+
+          <textarea
+            value={reflection}
+            onChange={(e) => setReflection(e.target.value)}
+            placeholder="Reflect on how this lesson went..."
+            rows={5}
+            className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-[13px] text-foreground leading-relaxed placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors shadow-card resize-none"
+          />
+
+          <div className="mt-4">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-2 block">
+              Last Taught
+            </label>
+            <input
+              type="date"
+              value={lastTaughtAt}
+              onChange={(e) => setLastTaughtAt(e.target.value)}
+              aria-label="Last taught date"
+              className="rounded-lg border border-border bg-surface px-4 py-2.5 text-[13px] text-foreground outline-none focus:border-accent/30 transition-colors shadow-card"
+            />
+          </div>
         </div>
 
         {/* Save */}

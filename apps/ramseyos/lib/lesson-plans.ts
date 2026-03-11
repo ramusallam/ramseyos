@@ -17,6 +17,8 @@ export interface LessonPlan {
   course: string;
   description: string;
   tags: string[];
+  reflection: string;
+  lastTaughtAt: Timestamp | null;
   createdAt: Timestamp | null;
   updatedAt: Timestamp | null;
 }
@@ -33,6 +35,8 @@ export async function getLessonPlans(): Promise<LessonPlan[]> {
     course: d.data().course,
     description: d.data().description,
     tags: d.data().tags ?? [],
+    reflection: d.data().reflection ?? "",
+    lastTaughtAt: d.data().lastTaughtAt ?? null,
     createdAt: d.data().createdAt ?? null,
     updatedAt: d.data().updatedAt ?? null,
   }));
@@ -48,6 +52,8 @@ export async function getLessonPlan(id: string): Promise<LessonPlan | null> {
     course: d.course,
     description: d.description,
     tags: d.tags ?? [],
+    reflection: d.reflection ?? "",
+    lastTaughtAt: d.lastTaughtAt ?? null,
     createdAt: d.createdAt ?? null,
     updatedAt: d.updatedAt ?? null,
   };
@@ -58,6 +64,8 @@ export interface LessonPlanUpdate {
   course?: string;
   description?: string;
   tags?: string[];
+  reflection?: string;
+  lastTaughtAt?: Timestamp | null;
 }
 
 export async function updateLessonPlan(
