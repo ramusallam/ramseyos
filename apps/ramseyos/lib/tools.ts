@@ -5,6 +5,8 @@ import {
   orderBy,
   getDocs,
   addDoc,
+  doc,
+  updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -16,6 +18,7 @@ export interface ToolItem {
   category: string;
   url: string;
   active: boolean;
+  pinned: boolean;
 }
 
 export async function getActiveTools(): Promise<ToolItem[]> {
@@ -32,7 +35,12 @@ export async function getActiveTools(): Promise<ToolItem[]> {
     category: d.data().category,
     url: d.data().url,
     active: d.data().active,
+    pinned: d.data().pinned ?? false,
   }));
+}
+
+export async function toggleToolPinned(id: string, current: boolean): Promise<void> {
+  await updateDoc(doc(db, "tools", id), { pinned: !current });
 }
 
 export async function seedTools(): Promise<number> {
@@ -76,6 +84,7 @@ export async function seedTools(): Promise<number> {
     await addDoc(collection(db, "tools"), {
       ...seed,
       active: true,
+      pinned: false,
       createdAt: serverTimestamp(),
     });
   }

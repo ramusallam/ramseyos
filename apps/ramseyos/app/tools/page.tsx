@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getActiveTools, seedTools, type ToolItem } from "@/lib/tools";
+import { getActiveTools, seedTools, toggleToolPinned, type ToolItem } from "@/lib/tools";
 import Link from "next/link";
 
 const CATEGORY_STYLE: Record<string, string> = {
@@ -45,6 +45,13 @@ export default function ToolsPage() {
     load();
   }, []);
 
+  async function handleTogglePin(id: string, current: boolean) {
+    await toggleToolPinned(id, current);
+    setTools((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, pinned: !current } : t))
+    );
+  }
+
   const categories = useMemo(
     () => [...new Set(tools.map((t) => t.category))],
     [tools]
@@ -66,6 +73,10 @@ export default function ToolsPage() {
     return result;
   }, [tools, search, activeCategory]);
 
+  const favorites = useMemo(
+    () => filtered.filter((t) => t.pinned),
+    [filtered]
+  );
   const grouped = useMemo(() => groupByCategory(filtered), [filtered]);
 
   return (
@@ -143,6 +154,25 @@ export default function ToolsPage() {
         </p>
       ) : (
         <div className="space-y-10">
+          {/* Favorites */}
+          {favorites.length > 0 && (
+            <section>
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-accent mb-4">
+                Favorites
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {favorites.map((tool) => (
+                  <ToolCard
+                    key={`fav-${tool.id}`}
+                    tool={tool}
+                    onTogglePin={handleTogglePin}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Categories */}
           {grouped.map(([category, items]) => (
             <section key={category}>
               <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-4">
@@ -150,7 +180,11 @@ export default function ToolsPage() {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {items.map((tool) => (
-                  <ToolCard key={tool.id} tool={tool} />
+                  <ToolCard
+                    key={tool.id}
+                    tool={tool}
+                    onTogglePin={handleTogglePin}
+                  />
                 ))}
               </div>
             </section>
@@ -161,48 +195,84 @@ export default function ToolsPage() {
   );
 }
 
-function ToolCard({ tool }: { tool: ToolItem }) {
+function ToolCard({
+  tool,
+  onTogglePin,
+}: {
+  tool: ToolItem;
+  onTogglePin: (id: string, current: boolean) => void;
+}) {
   const isExternal = tool.url !== "#";
 
   return (
-    <a
-      href={tool.url}
-      target={isExternal ? "_blank" : undefined}
-      rel={isExternal ? "noopener noreferrer" : undefined}
-      className="group bg-surface rounded-xl border border-border p-5 shadow-card transition-all hover:shadow-card-hover hover:border-border-strong"
-    >
-      <div className="flex items-start justify-between mb-3">
-        <span
-          className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
-            CATEGORY_STYLE[tool.category] ?? "bg-gray-50 text-muted"
-          }`}
-        >
-          {tool.category}
-        </span>
-        {isExternal && (
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-            className="text-muted/30 group-hover:text-muted/60 transition-colors shrink-0"
+    <div className="group relative bg-surface rounded-xl border border-border p-5 shadow-card transition-all hover:shadow-card-hover hover:border-border-strong">
+      <a
+        href={tool.url}
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noopener noreferrer" : undefined}
+        className="block"
+      >
+        <div className="flex items-start justify-between mb-3">
+          <span
+            className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+              CATEGORY_STYLE[tool.category] ?? "bg-gray-50 text-muted"
+            }`}
           >
-            <path
-              d="M4.5 2H10v5.5M10 2L3 9"
-              stroke="currentColor"
-              strokeWidth="1.25"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </div>
-      <h3 className="text-[14px] font-medium text-foreground/90 mb-1 group-hover:text-foreground transition-colors">
-        {tool.title}
-      </h3>
-      <p className="text-[12px] text-muted leading-relaxed">
-        {tool.description}
-      </p>
-    </a>
+            {tool.category}
+          </span>
+          {isExternal && (
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              className="text-muted/30 group-hover:text-muted/60 transition-colors shrink-0"
+            >
+              <path
+                d="M4.5 2H10v5.5M10 2L3 9"
+                stroke="currentColor"
+                strokeWidth="1.25"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </div>
+        <h3 className="text-[14px] font-medium text-foreground/90 mb-1 group-hover:text-foreground transition-colors">
+          {tool.title}
+        </h3>
+        <p className="text-[12px] text-muted leading-relaxed">
+          {tool.description}
+        </p>
+      </a>
+
+      {/* Pin button */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onTogglePin(tool.id, tool.pinned);
+        }}
+        className={`absolute bottom-3 right-3 p-1 rounded transition-colors ${
+          tool.pinned
+            ? "text-accent"
+            : "text-muted/20 hover:text-muted/50"
+        }`}
+        aria-label={tool.pinned ? "Unpin from favorites" : "Pin to favorites"}
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill={tool.pinned ? "currentColor" : "none"}
+          stroke="currentColor"
+          strokeWidth="1.25"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M5 1.5L9 1.5L9.5 5.5L11.5 7L11.5 8.5L8 8.5L8 12.5L6 12.5L6 8.5L2.5 8.5L2.5 7L4.5 5.5L5 1.5Z" />
+        </svg>
+      </button>
+    </div>
   );
 }
