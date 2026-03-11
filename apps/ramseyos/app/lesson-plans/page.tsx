@@ -58,7 +58,10 @@ export default function LessonPlansPage() {
 
 function LessonPlanCard({ plan }: { plan: LessonPlan }) {
   return (
-    <div className="group bg-surface rounded-xl border border-border p-5 shadow-card transition-all hover:shadow-card-hover hover:border-border-strong">
+    <Link
+      href={`/lesson-plans/${plan.id}`}
+      className="group block bg-surface rounded-xl border border-border p-5 shadow-card transition-all hover:shadow-card-hover hover:border-border-strong"
+    >
       <span className="text-[9px] px-1.5 py-0.5 rounded font-medium bg-sky-50 text-sky-600">
         {plan.course}
       </span>
@@ -80,6 +83,6 @@ function LessonPlanCard({ plan }: { plan: LessonPlan }) {
           ))}
         </div>
       )}
-    </div>
+    </Link>
   );
 }

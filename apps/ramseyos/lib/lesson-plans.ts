@@ -3,6 +3,10 @@ import {
   query,
   orderBy,
   getDocs,
+  doc,
+  getDoc,
+  updateDoc,
+  serverTimestamp,
   type Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -32,4 +36,36 @@ export async function getLessonPlans(): Promise<LessonPlan[]> {
     createdAt: d.data().createdAt ?? null,
     updatedAt: d.data().updatedAt ?? null,
   }));
+}
+
+export async function getLessonPlan(id: string): Promise<LessonPlan | null> {
+  const snap = await getDoc(doc(db, "lessonPlans", id));
+  if (!snap.exists()) return null;
+  const d = snap.data();
+  return {
+    id: snap.id,
+    title: d.title,
+    course: d.course,
+    description: d.description,
+    tags: d.tags ?? [],
+    createdAt: d.createdAt ?? null,
+    updatedAt: d.updatedAt ?? null,
+  };
+}
+
+export interface LessonPlanUpdate {
+  title?: string;
+  course?: string;
+  description?: string;
+  tags?: string[];
+}
+
+export async function updateLessonPlan(
+  id: string,
+  data: LessonPlanUpdate
+): Promise<void> {
+  await updateDoc(doc(db, "lessonPlans", id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
 }
