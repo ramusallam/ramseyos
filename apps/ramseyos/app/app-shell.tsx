@@ -1,5 +1,8 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -50,8 +53,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </ul>
         </nav>
 
+        {/* Quick Capture */}
+        <div className="px-3 py-3 border-t border-border">
+          <SidebarCapture />
+        </div>
+
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-border">
+        <div className="px-5 py-3 border-t border-border">
           <p className="text-[10px] text-muted/50 tracking-wide">
             v0.1 · Foundation
           </p>
@@ -61,6 +69,116 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <main className="flex-1 min-w-0 overflow-y-auto">{children}</main>
     </div>
+  );
+}
+
+/* ── Sidebar Capture ── */
+
+function SidebarCapture() {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = text.trim();
+    if (!trimmed || saving) return;
+
+    setSaving(true);
+    try {
+      await addDoc(collection(db, "captures"), {
+        text: trimmed,
+        status: "unprocessed",
+        createdAt: serverTimestamp(),
+        type: "capture",
+        processed: false,
+        tags: [],
+        projectId: null,
+        priority: null,
+      });
+      setText("");
+      setOpen(false);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-3 rounded-lg px-3 py-2 w-full text-[13px] text-foreground/60 hover:bg-surface-raised hover:text-foreground transition-colors"
+      >
+        <PlusIcon />
+        Quick capture
+      </button>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-2">
+      <input
+        ref={inputRef}
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            setText("");
+            setOpen(false);
+          }
+        }}
+        placeholder="Capture a thought..."
+        className="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-[13px] text-foreground placeholder:text-muted/50 outline-none focus:border-accent/30 transition-colors"
+        disabled={saving}
+      />
+      <div className="flex items-center justify-between px-1">
+        <button
+          type="button"
+          onClick={() => {
+            setText("");
+            setOpen(false);
+          }}
+          className="text-[11px] text-muted hover:text-foreground transition-colors"
+        >
+          Cancel
+        </button>
+        {text.trim() && (
+          <button
+            type="submit"
+            disabled={saving}
+            className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+          >
+            {saving ? "Saving..." : "Save"}
+          </button>
+        )}
+      </div>
+    </form>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className="text-muted"
+    >
+      <path
+        d="M8 3.5v9M3.5 8h9"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 
