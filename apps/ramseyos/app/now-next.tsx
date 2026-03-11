@@ -170,6 +170,12 @@ function FocusCard({
             {item.startTime && item.endTime
               ? `${formatTime(item.startTime)} – ${formatTime(item.endTime)}`
               : TYPE_LABEL[item.type]}
+            {item.projectName && (
+              <span className="text-muted/50"> · {item.projectName}</span>
+            )}
+            {item.fromInbox && (
+              <span className="text-amber-500/60"> · from inbox</span>
+            )}
           </p>
         </div>
       </div>

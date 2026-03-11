@@ -166,6 +166,18 @@ function TimelineRow({ item }: { item: TimelineItem }) {
         {item.title}
       </span>
 
+      {item.projectName && (
+        <span className="text-[9px] text-muted/50 shrink-0 truncate max-w-[80px]">
+          {item.projectName}
+        </span>
+      )}
+
+      {item.fromInbox && (
+        <span className="text-[9px] text-amber-500/70 shrink-0">
+          inbox
+        </span>
+      )}
+
       {item.priority && (
         <span
           className={`text-[9px] px-1.5 py-0.5 rounded font-medium shrink-0 ${

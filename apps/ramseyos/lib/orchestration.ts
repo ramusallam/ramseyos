@@ -20,6 +20,12 @@ interface TaskItem {
   title: string;
   priority: string | null;
   projectId: string | null;
+  fromInbox: boolean;
+}
+
+interface ProjectInfo {
+  id: string;
+  title: string;
 }
 
 interface InboxItem {
@@ -44,6 +50,8 @@ export interface TimelineItem {
   startTime?: Timestamp;
   endTime?: Timestamp;
   priority?: string | null;
+  projectName?: string | null;
+  fromInbox?: boolean;
 }
 
 export interface DailyPlan {
@@ -62,14 +70,18 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
   const dayEnd = new Date(today);
   dayEnd.setHours(23, 59, 59, 999);
 
-  const [dailyActions, chosenTasks, focusTasks, inboxItems, schedule] =
+  const [dailyActions, chosenTasks, focusTasks, inboxItems, schedule, projects] =
     await Promise.all([
       fetchDailyActions(),
       fetchChosenTasks(),
       fetchFocusTasks(),
       fetchInboxItems(),
       fetchSchedule(dayStart, dayEnd),
+      fetchProjects(),
     ]);
+
+  const projectMap = new Map<string, string>();
+  for (const p of projects) projectMap.set(p.id, p.title);
 
   // Smart ordering: upcoming schedule first, past events last
   const now = new Date();
@@ -112,12 +124,16 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
       type: "chosen" as const,
       title: t.title,
       priority: t.priority,
+      projectName: t.projectId ? projectMap.get(t.projectId) ?? null : null,
+      fromInbox: t.fromInbox,
     })),
     ...dedupedFocus.map((t) => ({
       id: t.id,
       type: "focus" as const,
       title: t.title,
       priority: t.priority,
+      projectName: t.projectId ? projectMap.get(t.projectId) ?? null : null,
+      fromInbox: t.fromInbox,
     })),
     ...dailyActions.map((a) => ({
       id: a.id,
@@ -163,6 +179,7 @@ async function fetchChosenTasks(): Promise<TaskItem[]> {
     title: d.data().title,
     priority: d.data().priority ?? null,
     projectId: d.data().projectId ?? null,
+    fromInbox: !!d.data().sourceCaptureId,
   }));
 }
 
@@ -180,6 +197,19 @@ async function fetchFocusTasks(): Promise<TaskItem[]> {
     title: d.data().title,
     priority: d.data().priority ?? null,
     projectId: d.data().projectId ?? null,
+    fromInbox: !!d.data().sourceCaptureId,
+  }));
+}
+
+async function fetchProjects(): Promise<ProjectInfo[]> {
+  const q = query(
+    collection(db, "projects"),
+    where("archived", "==", false)
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({
+    id: d.id,
+    title: d.data().title,
   }));
 }
 
