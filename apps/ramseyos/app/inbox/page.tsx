@@ -23,6 +23,8 @@ interface Project {
 type CaptureType = "capture" | "task" | "note" | "idea" | "resource";
 type Priority = "low" | "medium" | "high" | null;
 
+type CaptureSource = "manual" | "email" | "api" | "automation";
+
 interface Capture {
   id: string;
   text: string;
@@ -33,6 +35,7 @@ interface Capture {
   projectId?: string | null;
   priority?: Priority;
   processed?: boolean;
+  source?: CaptureSource;
 }
 
 const TYPES: CaptureType[] = ["capture", "task", "note", "idea", "resource"];
@@ -261,6 +264,13 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
             </option>
           ))}
         </select>
+
+        <span className="text-muted/20">·</span>
+
+        {/* Source */}
+        <span className="text-[10px] text-muted/30">
+          via {item.source ?? "manual"}
+        </span>
 
         <span className="text-muted/20">·</span>
 
