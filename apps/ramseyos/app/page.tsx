@@ -2,7 +2,6 @@ import { QuickCapture } from "./quick-capture";
 import { ProjectFocus } from "./dashboard-live";
 import { DailyCard } from "./daily-card";
 import { NowNext } from "./now-next";
-import Link from "next/link";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -21,31 +20,7 @@ function formatDate(): string {
 
 export default function TodayDashboard() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Top bar */}
-      <nav className="border-b border-border bg-surface/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="mx-auto max-w-4xl px-6 h-12 flex items-center justify-between">
-          <span className="text-[11px] font-semibold tracking-widest uppercase text-accent">
-            RamseyOS
-          </span>
-          <div className="flex items-center gap-5">
-            <Link
-              href="/inbox"
-              className="text-[12px] text-muted hover:text-foreground transition-colors"
-            >
-              Inbox
-            </Link>
-            <Link
-              href="/tasks"
-              className="text-[12px] text-muted hover:text-foreground transition-colors"
-            >
-              Tasks
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      <div className="mx-auto max-w-4xl px-6 pt-10 pb-20">
+    <div className="max-w-4xl px-8 pt-10 pb-20">
         {/* Header */}
         <header className="mb-8">
           <p className="text-[12px] text-muted mb-1">{formatDate()}</p>
@@ -121,7 +96,6 @@ export default function TodayDashboard() {
           <p className="text-sm text-muted italic">Available later today</p>
         </DashboardCard>
       </div>
-    </div>
   );
 }
 
