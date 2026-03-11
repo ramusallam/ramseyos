@@ -12,8 +12,9 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { toggleChosenForToday } from "@/lib/tasks";
+import { createTask, toggleChosenForToday } from "@/lib/tasks";
 import Link from "next/link";
+import { useRef } from "react";
 
 interface Project {
   id: string;
@@ -147,10 +148,17 @@ export default function ProjectDetailPage() {
         <span className="tabular-nums">{tasks.length} total</span>
       </div>
 
+      {/* Quick Add Task */}
+      <div className="bg-surface rounded-xl border border-border p-4 shadow-card mb-8">
+        <QuickAddTask projectId={projectId} />
+      </div>
+
       {/* Tasks */}
       {tasks.length === 0 ? (
         <div className="bg-surface rounded-xl border border-border p-8 shadow-card text-center">
-          <p className="text-sm text-muted">No tasks in this project yet.</p>
+          <p className="text-sm text-muted">
+            No tasks yet. Add one above to get started.
+          </p>
         </div>
       ) : (
         <div className="space-y-8">
@@ -184,6 +192,54 @@ export default function ProjectDetailPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function QuickAddTask({ projectId }: { projectId: string }) {
+  const [text, setText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = text.trim();
+    if (!trimmed || saving) return;
+
+    setSaving(true);
+    try {
+      await createTask({
+        title: trimmed,
+        projectId,
+      });
+      setText("");
+      inputRef.current?.focus();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex items-center gap-3">
+      <span className="text-sm text-muted">+</span>
+      <input
+        ref={inputRef}
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Add a task to this project..."
+        className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted/50 outline-none"
+        disabled={saving}
+      />
+      {text.trim() && (
+        <button
+          type="submit"
+          disabled={saving}
+          className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+        >
+          {saving ? "..." : "Add"}
+        </button>
+      )}
+    </form>
   );
 }
 
