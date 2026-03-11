@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   collection,
   query,
+  where,
   orderBy,
   onSnapshot,
   doc,
@@ -13,6 +14,11 @@ import {
 import { db } from "@/lib/firebase";
 import { createTask } from "@/lib/tasks";
 import Link from "next/link";
+
+interface Project {
+  id: string;
+  title: string;
+}
 
 type CaptureType = "capture" | "task" | "note" | "idea" | "resource";
 type Priority = "low" | "medium" | "high" | null;
@@ -57,6 +63,7 @@ async function convertToTask(capture: Capture) {
 
 export default function InboxPage() {
   const [items, setItems] = useState<Capture[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,6 +76,20 @@ export default function InboxPage() {
         })) as Capture[]
       );
       setLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "projects"),
+      where("archived", "==", false),
+      orderBy("createdAt", "desc")
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      setProjects(
+        snap.docs.map((d) => ({ id: d.id, title: d.data().title }))
+      );
     });
     return unsub;
   }, []);
@@ -104,7 +125,7 @@ export default function InboxPage() {
         ) : (
           <ul className="space-y-1">
             {items.map((item) => (
-              <InboxItem key={item.id} item={item} />
+              <InboxItem key={item.id} item={item} projects={projects} />
             ))}
           </ul>
         )}
@@ -115,7 +136,7 @@ export default function InboxPage() {
 
 /* ── Inbox Item ── */
 
-function InboxItem({ item }: { item: Capture }) {
+function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
   const isProcessed = item.processed ?? false;
   const isTask = item.type === "task";
   const [converting, setConverting] = useState(false);
@@ -219,6 +240,27 @@ function InboxItem({ item }: { item: Capture }) {
             );
           })}
         </div>
+
+        <span className="text-muted/20">·</span>
+
+        {/* Project selector */}
+        <select
+          aria-label="Assign project"
+          value={item.projectId ?? ""}
+          onChange={(e) =>
+            updateCapture(item.id, { projectId: e.target.value || null })
+          }
+          className="bg-transparent text-[10px] text-muted/70 outline-none cursor-pointer hover:text-zinc-400 transition-colors max-w-[120px] truncate"
+        >
+          <option value="" className="bg-surface text-foreground">
+            No project
+          </option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id} className="bg-surface text-foreground">
+              {p.title}
+            </option>
+          ))}
+        </select>
 
         <span className="text-muted/20">·</span>
 
