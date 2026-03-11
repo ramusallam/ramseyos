@@ -7,6 +7,7 @@ import {
   updateLessonPlan,
   type LessonPlan,
   type SparkStatus,
+  type MaterialItem,
 } from "@/lib/lesson-plans";
 import { Timestamp } from "firebase/firestore";
 import { getActiveTools, type ToolItem } from "@/lib/tools";
@@ -29,10 +30,17 @@ export default function LessonPlanEditorPage() {
   const [reflection, setReflection] = useState("");
   const [lastTaughtAt, setLastTaughtAt] = useState("");
   const [linkedResourceIds, setLinkedResourceIds] = useState<string[]>([]);
+  const [materials, setMaterials] = useState<MaterialItem[]>([]);
   const [sparkLink, setSparkLink] = useState("");
   const [sparkStatus, setSparkStatus] = useState<SparkStatus>("not-started");
   const [allTools, setAllTools] = useState<ToolItem[]>([]);
   const [showPicker, setShowPicker] = useState(false);
+  const [showMaterialForm, setShowMaterialForm] = useState(false);
+  const [matName, setMatName] = useState("");
+  const [matQty, setMatQty] = useState("");
+  const [matNotes, setMatNotes] = useState("");
+  const [matSource, setMatSource] = useState("");
+  const [matUrl, setMatUrl] = useState("");
 
   useEffect(() => {
     Promise.all([getLessonPlan(id), getActiveTools()]).then(([p, tools]) => {
@@ -48,6 +56,7 @@ export default function LessonPlanEditorPage() {
       setTagInput(p.tags.join(", "));
       setReflection(p.reflection ?? "");
       setLinkedResourceIds(p.linkedResourceIds ?? []);
+      setMaterials(p.materials ?? []);
       setSparkLink(p.sparkLink ?? "");
       setSparkStatus(p.sparkStatus ?? "not-started");
       setLastTaughtAt(
@@ -74,6 +83,7 @@ export default function LessonPlanEditorPage() {
       tags,
       reflection,
       linkedResourceIds,
+      materials,
       sparkLink,
       sparkStatus,
       lastTaughtAt: lastTaughtAt
@@ -83,7 +93,32 @@ export default function LessonPlanEditorPage() {
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  }, [id, title, course, description, tagInput, reflection, linkedResourceIds, sparkLink, sparkStatus, lastTaughtAt, saving]);
+  }, [id, title, course, description, tagInput, reflection, linkedResourceIds, materials, sparkLink, sparkStatus, lastTaughtAt, saving]);
+
+  const addMaterial = useCallback(() => {
+    const name = matName.trim();
+    if (!name) return;
+    setMaterials((prev) => [
+      ...prev,
+      {
+        name,
+        quantity: matQty.trim(),
+        notes: matNotes.trim(),
+        sourceName: matSource.trim(),
+        sourceUrl: matUrl.trim(),
+      },
+    ]);
+    setMatName("");
+    setMatQty("");
+    setMatNotes("");
+    setMatSource("");
+    setMatUrl("");
+    setShowMaterialForm(false);
+  }, [matName, matQty, matNotes, matSource, matUrl]);
+
+  const removeMaterial = useCallback((index: number) => {
+    setMaterials((prev) => prev.filter((_, i) => i !== index));
+  }, []);
 
   if (loading) {
     return (
@@ -357,6 +392,140 @@ export default function LessonPlanEditorPage() {
           </div>
         </section>
       </div>
+
+      {/* ── Materials ── */}
+      <section className="rounded-xl border border-border/60 bg-surface/60 p-5 mb-6">
+        <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted/70 mb-3">
+          Materials &amp; Supplies
+        </h3>
+
+        {materials.length > 0 && (
+          <div className="space-y-2 mb-3">
+            {materials.map((mat, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-3 rounded-md bg-white border border-border/40 px-3 py-2.5"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[12px] font-medium text-foreground/80">
+                      {mat.name}
+                    </span>
+                    {mat.quantity && (
+                      <span className="text-[10px] text-muted/50">
+                        qty: {mat.quantity}
+                      </span>
+                    )}
+                  </div>
+                  {mat.notes && (
+                    <p className="text-[10px] text-muted/50 mt-0.5">
+                      {mat.notes}
+                    </p>
+                  )}
+                  {mat.sourceName && (
+                    <span className="text-[10px] text-muted/40 mt-0.5 inline-flex items-center gap-1">
+                      {mat.sourceUrl ? (
+                        <a
+                          href={mat.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-accent/60 hover:text-accent transition-colors"
+                        >
+                          {mat.sourceName} &rarr;
+                        </a>
+                      ) : (
+                        mat.sourceName
+                      )}
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeMaterial(i)}
+                  className="shrink-0 text-[10px] text-muted/30 hover:text-red-400 transition-colors mt-0.5"
+                  aria-label={`Remove ${mat.name}`}
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!showMaterialForm ? (
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowMaterialForm(true)}
+              className="text-[11px] text-accent/60 hover:text-accent transition-colors"
+            >
+              + Add material
+            </button>
+            {materials.length === 0 && (
+              <p className="text-[10px] text-muted/35 mt-1">
+                No materials added yet.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="rounded-md border border-border/40 bg-white p-3 space-y-2.5">
+            <input
+              type="text"
+              value={matName}
+              onChange={(e) => setMatName(e.target.value)}
+              placeholder="Material name"
+              className="w-full rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={matQty}
+                onChange={(e) => setMatQty(e.target.value)}
+                placeholder="Quantity (optional)"
+                className="rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+              />
+              <input
+                type="text"
+                value={matSource}
+                onChange={(e) => setMatSource(e.target.value)}
+                placeholder="Source (e.g. Flinn)"
+                className="rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+              />
+            </div>
+            <input
+              type="url"
+              value={matUrl}
+              onChange={(e) => setMatUrl(e.target.value)}
+              placeholder="Source URL (optional)"
+              className="w-full rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+            />
+            <input
+              type="text"
+              value={matNotes}
+              onChange={(e) => setMatNotes(e.target.value)}
+              placeholder="Notes (optional)"
+              className="w-full rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+            />
+            <div className="flex gap-2 pt-0.5">
+              <button
+                type="button"
+                onClick={addMaterial}
+                disabled={!matName.trim()}
+                className="rounded-md bg-accent px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-accent/90 disabled:opacity-40"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowMaterialForm(false)}
+                className="text-[11px] text-muted/50 hover:text-foreground/60 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* ── Tertiary: Reflection ── */}
       <section className="rounded-xl border border-border/40 bg-surface/40 p-6 mb-6">
