@@ -148,6 +148,9 @@ export default function ProjectDetailPage() {
         <span className="tabular-nums">{tasks.length} total</span>
       </div>
 
+      {/* Project Focus */}
+      <ProjectFocusPanel tasks={incomplete} />
+
       {/* Quick Add Task */}
       <div className="bg-surface rounded-xl border border-border p-4 shadow-card mb-8">
         <QuickAddTask projectId={projectId} />
@@ -192,6 +195,80 @@ export default function ProjectDetailPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function ProjectFocusPanel({ tasks }: { tasks: Task[] }) {
+  const chosen = tasks.filter((t) => t.chosenForToday);
+  const highPriority = tasks.filter(
+    (t) => t.priority === "high" && !t.chosenForToday
+  );
+  const hasItems = chosen.length > 0 || highPriority.length > 0;
+
+  return (
+    <div className="bg-surface rounded-xl border border-accent/15 p-5 shadow-card mb-8">
+      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-4">
+        Focus
+      </h2>
+      {!hasItems ? (
+        <p className="text-[13px] text-muted/60 italic">
+          No focus items. Choose tasks for today or set high priority to surface
+          them here.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {chosen.length > 0 && (
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-accent font-medium mb-2">
+                Chosen for today
+              </p>
+              <ul className="space-y-0.5">
+                {chosen.map((task) => (
+                  <FocusRow key={task.id} task={task} />
+                ))}
+              </ul>
+            </div>
+          )}
+          {highPriority.length > 0 && (
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-rose-500 font-medium mb-2">
+                High priority
+              </p>
+              <ul className="space-y-0.5">
+                {highPriority.map((task) => (
+                  <FocusRow key={task.id} task={task} />
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FocusRow({ task }: { task: Task }) {
+  return (
+    <li className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised">
+      <button
+        type="button"
+        onClick={() => toggleCompleted(task.id, task.completed)}
+        className="size-4 shrink-0 rounded border border-border-strong hover:border-accent/40 transition-colors"
+        aria-label="Mark complete"
+      />
+      <span className="flex-1 text-[13px] text-foreground/80 truncate">
+        {task.title}
+      </span>
+      {task.priority && (
+        <span
+          className={`text-[9px] px-1.5 py-0.5 rounded font-medium shrink-0 ${
+            PRIORITY_STYLE[task.priority] ?? "text-muted"
+          }`}
+        >
+          {task.priority}
+        </span>
+      )}
+    </li>
   );
 }
 
