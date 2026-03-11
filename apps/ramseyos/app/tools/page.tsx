@@ -1,14 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { getActiveTools, seedTools, type ToolItem } from "@/lib/tools";
 import Link from "next/link";
-
-interface ToolItem {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  url: string;
-}
 
 const CATEGORY_STYLE: Record<string, string> = {
   "teaching": "bg-sky-50 text-sky-600",
@@ -18,45 +12,24 @@ const CATEGORY_STYLE: Record<string, string> = {
   "classroom": "bg-rose-50 text-rose-600",
 };
 
-const TOOLS: ToolItem[] = [
-  {
-    id: "spark-learning",
-    title: "Spark Learning Inquiry Studio",
-    description: "AI-powered inquiry lesson builder for science educators.",
-    category: "teaching",
-    url: "https://sparklearningstudio.ai",
-  },
-  {
-    id: "cycles-blog",
-    title: "Cycles of Learning Blog",
-    description: "Research-backed writing on teaching, learning, and inquiry.",
-    category: "publishing",
-    url: "https://cyclesoflearning.com",
-  },
-  {
-    id: "xbox-adaptive",
-    title: "Xbox Adaptive Controller Emulator",
-    description: "Accessibility controller emulator for inclusive classroom use.",
-    category: "accessibility",
-    url: "#",
-  },
-  {
-    id: "chem-sim",
-    title: "Chemistry Simulation",
-    description: "Interactive molecular and reaction simulations for students.",
-    category: "simulation",
-    url: "#",
-  },
-  {
-    id: "classroom-timer",
-    title: "Classroom Timer",
-    description: "Minimal timer and pacing tool for class activities.",
-    category: "classroom",
-    url: "#",
-  },
-];
-
 export default function ToolsPage() {
+  const [tools, setTools] = useState<ToolItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      const seeded = await seedTools();
+      if (seeded > 0) {
+        // Re-fetch after seeding
+        setTools(await getActiveTools());
+      } else {
+        setTools(await getActiveTools());
+      }
+      setLoading(false);
+    }
+    load();
+  }, []);
+
   return (
     <div className="max-w-4xl px-8 pt-10 pb-20">
       {/* Header */}
@@ -75,12 +48,22 @@ export default function ToolsPage() {
         </p>
       </header>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {TOOLS.map((tool) => (
-          <ToolCard key={tool.id} tool={tool} />
-        ))}
-      </div>
+      {/* Content */}
+      {loading ? (
+        <p className="text-sm text-muted/60">Loading...</p>
+      ) : tools.length === 0 ? (
+        <div className="bg-surface rounded-xl border border-border p-8 shadow-card text-center">
+          <p className="text-sm text-muted">
+            No tools or resources yet.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {tools.map((tool) => (
+            <ToolCard key={tool.id} tool={tool} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
