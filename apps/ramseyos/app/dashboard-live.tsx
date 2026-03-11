@@ -653,7 +653,7 @@ export function SuggestedTools() {
           All tools &rarr;
         </Link>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {suggestions.map((tool) => {
           const isExternal = tool.url !== "#";
           return (
@@ -662,12 +662,9 @@ export function SuggestedTools() {
               href={tool.url}
               target={isExternal ? "_blank" : undefined}
               rel={isExternal ? "noopener noreferrer" : undefined}
-              className="group flex items-start gap-3 rounded-lg border border-border bg-surface-raised/50 px-3.5 py-3 transition-all hover:border-border-strong hover:bg-surface-raised"
+              className="group block bg-surface rounded-xl border border-border p-5 shadow-card transition-all hover:shadow-card-hover hover:border-border-strong"
             >
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium text-foreground/80 truncate group-hover:text-foreground transition-colors">
-                  {tool.title}
-                </p>
+              <div className="flex items-start justify-between mb-3">
                 <span
                   className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
                     CATEGORY_STYLE[tool.category] ?? "bg-gray-50 text-muted"
@@ -675,24 +672,30 @@ export function SuggestedTools() {
                 >
                   {tool.category}
                 </span>
+                {isExternal && (
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    className="text-muted/30 group-hover:text-muted/60 transition-colors shrink-0"
+                  >
+                    <path
+                      d="M4.5 2H10v5.5M10 2L3 9"
+                      stroke="currentColor"
+                      strokeWidth="1.25"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
               </div>
-              {isExternal && (
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  className="text-muted/30 group-hover:text-muted/60 transition-colors shrink-0 mt-1"
-                >
-                  <path
-                    d="M4.5 2H10v5.5M10 2L3 9"
-                    stroke="currentColor"
-                    strokeWidth="1.25"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
+              <h3 className="text-[14px] font-medium text-foreground/90 mb-1 group-hover:text-foreground transition-colors">
+                {tool.title}
+              </h3>
+              <p className="text-[12px] text-muted leading-relaxed">
+                {tool.description}
+              </p>
             </a>
           );
         })}
