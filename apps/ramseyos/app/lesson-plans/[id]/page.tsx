@@ -11,6 +11,7 @@ import {
 } from "@/lib/lesson-plans";
 import { Timestamp } from "firebase/firestore";
 import { getActiveTools, type ToolItem } from "@/lib/tools";
+import { getActiveVendors, type VendorItem } from "@/lib/vendors";
 import Link from "next/link";
 
 export default function LessonPlanEditorPage() {
@@ -34,6 +35,7 @@ export default function LessonPlanEditorPage() {
   const [sparkLink, setSparkLink] = useState("");
   const [sparkStatus, setSparkStatus] = useState<SparkStatus>("not-started");
   const [allTools, setAllTools] = useState<ToolItem[]>([]);
+  const [allVendors, setAllVendors] = useState<VendorItem[]>([]);
   const [showPicker, setShowPicker] = useState(false);
   const [showMaterialForm, setShowMaterialForm] = useState(false);
   const [matName, setMatName] = useState("");
@@ -41,10 +43,12 @@ export default function LessonPlanEditorPage() {
   const [matNotes, setMatNotes] = useState("");
   const [matSource, setMatSource] = useState("");
   const [matUrl, setMatUrl] = useState("");
+  const [matVendorId, setMatVendorId] = useState("");
 
   useEffect(() => {
-    Promise.all([getLessonPlan(id), getActiveTools()]).then(([p, tools]) => {
+    Promise.all([getLessonPlan(id), getActiveTools(), getActiveVendors()]).then(([p, tools, vendors]) => {
       setAllTools(tools);
+      setAllVendors(vendors);
       if (!p) {
         setLoading(false);
         return;
@@ -98,14 +102,16 @@ export default function LessonPlanEditorPage() {
   const addMaterial = useCallback(() => {
     const name = matName.trim();
     if (!name) return;
+    const vendor = matVendorId ? allVendors.find((v) => v.id === matVendorId) : null;
     setMaterials((prev) => [
       ...prev,
       {
         name,
         quantity: matQty.trim(),
         notes: matNotes.trim(),
-        sourceName: matSource.trim(),
-        sourceUrl: matUrl.trim(),
+        sourceName: vendor ? vendor.name : matSource.trim(),
+        sourceUrl: vendor ? vendor.url : matUrl.trim(),
+        ...(vendor ? { vendorId: vendor.id } : {}),
       },
     ]);
     setMatName("");
@@ -113,8 +119,9 @@ export default function LessonPlanEditorPage() {
     setMatNotes("");
     setMatSource("");
     setMatUrl("");
+    setMatVendorId("");
     setShowMaterialForm(false);
-  }, [matName, matQty, matNotes, matSource, matUrl]);
+  }, [matName, matQty, matNotes, matSource, matUrl, matVendorId, allVendors]);
 
   const removeMaterial = useCallback((index: number) => {
     setMaterials((prev) => prev.filter((_, i) => i !== index));
@@ -422,22 +429,40 @@ export default function LessonPlanEditorPage() {
                       {mat.notes}
                     </p>
                   )}
-                  {mat.sourceName && (
-                    <span className="text-[10px] text-muted/40 mt-0.5 inline-flex items-center gap-1">
-                      {mat.sourceUrl ? (
+                  {(() => {
+                    const vendor = mat.vendorId ? allVendors.find((v) => v.id === mat.vendorId) : null;
+                    if (vendor) {
+                      return (
                         <a
-                          href={mat.sourceUrl}
+                          href={vendor.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-accent/60 hover:text-accent transition-colors"
+                          className="inline-flex items-center gap-1 mt-1 rounded-full bg-accent/6 border border-accent/12 px-2 py-0.5 text-[10px] font-medium text-accent/70 hover:text-accent hover:border-accent/25 transition-colors"
                         >
-                          {mat.sourceName} &rarr;
+                          {vendor.name} &rarr;
                         </a>
-                      ) : (
-                        mat.sourceName
-                      )}
-                    </span>
-                  )}
+                      );
+                    }
+                    if (mat.sourceName) {
+                      return (
+                        <span className="text-[10px] text-muted/40 mt-0.5 inline-flex items-center gap-1">
+                          {mat.sourceUrl ? (
+                            <a
+                              href={mat.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-accent/60 hover:text-accent transition-colors"
+                            >
+                              {mat.sourceName} &rarr;
+                            </a>
+                          ) : (
+                            mat.sourceName
+                          )}
+                        </span>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
                 <button
                   type="button"
@@ -476,29 +501,58 @@ export default function LessonPlanEditorPage() {
               placeholder="Material name"
               className="w-full rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
             />
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="text"
-                value={matQty}
-                onChange={(e) => setMatQty(e.target.value)}
-                placeholder="Quantity (optional)"
-                className="rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
-              />
-              <input
-                type="text"
-                value={matSource}
-                onChange={(e) => setMatSource(e.target.value)}
-                placeholder="Source (e.g. Flinn)"
-                className="rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
-              />
-            </div>
             <input
-              type="url"
-              value={matUrl}
-              onChange={(e) => setMatUrl(e.target.value)}
-              placeholder="Source URL (optional)"
+              type="text"
+              value={matQty}
+              onChange={(e) => setMatQty(e.target.value)}
+              placeholder="Quantity (optional)"
               className="w-full rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
             />
+
+            {/* Vendor / Source selector */}
+            <div>
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted/60 mb-1 block">
+                Source
+              </label>
+              <select
+                value={matVendorId}
+                onChange={(e) => {
+                  setMatVendorId(e.target.value);
+                  if (e.target.value) {
+                    setMatSource("");
+                    setMatUrl("");
+                  }
+                }}
+                className="w-full rounded-md border border-border/40 bg-white px-3 py-1.5 text-[12px] text-foreground outline-none focus:border-accent/30 transition-colors"
+              >
+                <option value="">Manual source...</option>
+                {allVendors.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {!matVendorId && (
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  value={matSource}
+                  onChange={(e) => setMatSource(e.target.value)}
+                  placeholder="Source name (optional)"
+                  className="rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+                />
+                <input
+                  type="url"
+                  value={matUrl}
+                  onChange={(e) => setMatUrl(e.target.value)}
+                  placeholder="Source URL (optional)"
+                  className="rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+                />
+              </div>
+            )}
+
             <input
               type="text"
               value={matNotes}
@@ -517,7 +571,10 @@ export default function LessonPlanEditorPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setShowMaterialForm(false)}
+                onClick={() => {
+                  setShowMaterialForm(false);
+                  setMatVendorId("");
+                }}
                 className="text-[11px] text-muted/50 hover:text-foreground/60 transition-colors"
               >
                 Cancel

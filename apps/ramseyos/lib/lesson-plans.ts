@@ -19,6 +19,7 @@ export interface MaterialItem {
   notes: string;
   sourceName: string;
   sourceUrl: string;
+  vendorId?: string;
 }
 
 export interface LessonPlan {
