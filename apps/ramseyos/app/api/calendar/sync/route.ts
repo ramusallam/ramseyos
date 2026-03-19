@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { syncGoogleCalendar } from "@/lib/google-calendar";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
