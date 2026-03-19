@@ -89,7 +89,7 @@ function useShellCounts(): ShellCounts {
   return counts;
 }
 
-type NavKey = "today" | "inbox" | "tasks" | "projects" | "calendar" | "tools" | "lessonPlans" | "materials" | "vendors";
+type NavKey = "today" | "inbox" | "tasks" | "projects" | "calendar" | "tools" | "lessonPlans" | "materials" | "purchasing" | "vendors";
 
 const NAV_ITEMS: {
   href: string;
@@ -105,6 +105,7 @@ const NAV_ITEMS: {
   { href: "/tools", label: "Tools", icon: ToolsIcon, key: "tools" },
   { href: "/lesson-plans", label: "Lesson Plans", icon: LessonPlanIcon, key: "lessonPlans" },
   { href: "/materials", label: "Materials", icon: MaterialsIcon, key: "materials" },
+  { href: "/purchasing", label: "Purchasing", icon: PurchasingIcon, key: "purchasing" },
   { href: "/vendors", label: "Sources", icon: VendorIcon, key: "vendors" },
 ];
 
@@ -484,6 +485,28 @@ function ToolsIcon({ active }: { active: boolean }) {
         rx="1.5"
         stroke="currentColor"
         strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
+function PurchasingIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <circle cx="6" cy="13.5" r="1" fill="currentColor" />
+      <circle cx="12.5" cy="13.5" r="1" fill="currentColor" />
+      <path
+        d="M1 1h2.5l1.3 7.5a1 1 0 001 .8h6.4a1 1 0 001-.8L14.5 4H4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
