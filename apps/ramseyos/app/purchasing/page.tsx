@@ -17,27 +17,68 @@ interface VendorGroup {
   items: BuyItem[];
 }
 
+interface VendorStat {
+  label: string;
+  totalItems: number;
+  toBuyItems: number;
+}
+
+interface Summary {
+  vendorStats: VendorStat[];
+  recurringToBuy: BuyItem[];
+}
+
 export default function PurchasingPage() {
   const [groups, setGroups] = useState<VendorGroup[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [summary, setSummary] = useState<Summary>({ vendorStats: [], recurringToBuy: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([getLessonPlans(), getActiveVendors()]).then(
       ([plans, vendors]) => {
+        const allMats: BuyItem[] = [];
         const buyItems: BuyItem[] = [];
         for (const plan of plans) {
           for (const mat of plan.materials) {
-            if (!mat.needToBuy) continue;
-            buyItems.push({
+            const item: BuyItem = {
               ...mat,
               lessonId: plan.id,
               lessonTitle: plan.title,
               course: plan.course,
-            });
+            };
+            allMats.push(item);
+            if (mat.needToBuy) buyItems.push(item);
           }
         }
 
+        // Vendor stats across ALL materials (not just needToBuy)
+        const vendorCounts = new Map<string, { label: string; total: number; toBuy: number }>();
+        for (const mat of allMats) {
+          let label = "No source";
+          if (mat.vendorId) {
+            const v = vendors.find((vn) => vn.id === mat.vendorId);
+            if (v) label = v.name;
+          } else if (mat.sourceName) {
+            label = mat.sourceName;
+          }
+          const existing = vendorCounts.get(label);
+          if (existing) {
+            existing.total++;
+            if (mat.needToBuy) existing.toBuy++;
+          } else {
+            vendorCounts.set(label, { label, total: 1, toBuy: mat.needToBuy ? 1 : 0 });
+          }
+        }
+        const vendorStats = Array.from(vendorCounts.values())
+          .filter((v) => v.label !== "No source")
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 4)
+          .map((v) => ({ label: v.label, totalItems: v.total, toBuyItems: v.toBuy }));
+
+        const recurringToBuy = buyItems.filter((m) => m.recurring);
+
+        setSummary({ vendorStats, recurringToBuy });
         setTotalCount(buyItems.length);
 
         const vendorMap = new Map<string, VendorGroup>();
@@ -102,6 +143,60 @@ export default function PurchasingPage() {
             : `${totalCount} item${totalCount === 1 ? "" : "s"} to buy`}
         </p>
       </header>
+
+      {/* Summary */}
+      {totalCount > 0 && (summary.vendorStats.length > 0 || summary.recurringToBuy.length > 0) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {/* Top Vendors */}
+          {summary.vendorStats.length > 0 && (
+            <div className="rounded-xl border border-border/40 bg-surface/40 p-4">
+              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted/60 mb-3">
+                Top Sources
+              </h3>
+              <div className="space-y-2">
+                {summary.vendorStats.map((vs) => (
+                  <div key={vs.label} className="flex items-center justify-between">
+                    <span className="text-[12px] text-foreground/70">{vs.label}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted/50">
+                        {vs.totalItems} material{vs.totalItems === 1 ? "" : "s"}
+                      </span>
+                      {vs.toBuyItems > 0 && (
+                        <span className="inline-flex items-center rounded-full bg-rose-50 border border-rose-200/40 px-1.5 py-0 text-[9px] font-medium text-rose-500/70">
+                          {vs.toBuyItems} to buy
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Recurring to Buy */}
+          {summary.recurringToBuy.length > 0 && (
+            <div className="rounded-xl border border-blue-200/40 bg-blue-50/20 p-4">
+              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-blue-600/60 mb-3 flex items-center gap-1.5">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M12.5 6.5A5 5 0 003.5 8M3.5 9.5A5 5 0 0012.5 8" />
+                  <path d="M10.5 6.5h2v-2M5.5 9.5h-2v2" />
+                </svg>
+                Recurring — Need to Buy
+              </h3>
+              <div className="space-y-1.5">
+                {summary.recurringToBuy.map((mat, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <span className="text-[12px] text-foreground/70">{mat.name}</span>
+                    <span className="text-[10px] text-muted/40">
+                      {mat.quantity ? `qty: ${mat.quantity}` : ""}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {totalCount === 0 ? (
         <div className="rounded-xl border border-border/40 bg-surface/40 p-8 text-center">
