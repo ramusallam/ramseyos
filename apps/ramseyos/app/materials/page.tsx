@@ -37,6 +37,7 @@ export default function MaterialsPage() {
     );
   }, []);
 
+  const needToBuy = allMaterials.filter((m) => m.needToBuy);
   const favorites = allMaterials.filter((m) => m.favorite);
   const recurring = allMaterials.filter((m) => m.recurring);
 
@@ -67,6 +68,26 @@ export default function MaterialsPage() {
           All materials across lesson plans
         </p>
       </header>
+
+      {/* Need to Buy */}
+      {needToBuy.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-rose-600/80 mb-3 flex items-center gap-1.5">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="6" cy="13.5" r="1" fill="currentColor" />
+              <circle cx="12.5" cy="13.5" r="1" fill="currentColor" />
+              <path d="M1 1h2.5l1.3 7.5a1 1 0 001 .8h6.4a1 1 0 001-.8L14.5 4H4" />
+            </svg>
+            Need to Buy
+            <span className="text-rose-400/50 font-normal">{needToBuy.length}</span>
+          </h2>
+          <div className="space-y-2">
+            {needToBuy.map((mat, i) => (
+              <MaterialCard key={`buy-${i}`} mat={mat} source={resolveSource(mat)} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Favorites */}
       {favorites.length > 0 && (
@@ -151,6 +172,11 @@ function MaterialCard({
               <path d="M12.5 6.5A5 5 0 003.5 8M3.5 9.5A5 5 0 0012.5 8" />
             </svg>
           )}
+          {mat.needToBuy && (
+            <span className="inline-flex items-center rounded-full bg-rose-50 border border-rose-200/50 px-1.5 py-0 text-[9px] font-medium text-rose-600/80 shrink-0">
+              buy
+            </span>
+          )}
           {mat.quantity && (
             <span className="text-[10px] text-muted/50">
               qty: {mat.quantity}
@@ -159,6 +185,9 @@ function MaterialCard({
         </div>
         {mat.notes && (
           <p className="text-[11px] text-muted/50 mt-0.5">{mat.notes}</p>
+        )}
+        {mat.purchaseNotes && (
+          <p className="text-[11px] text-rose-500/60 mt-0.5">{mat.purchaseNotes}</p>
         )}
         <div className="flex items-center gap-3 mt-1.5">
           {source && (

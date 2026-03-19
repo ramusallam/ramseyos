@@ -46,6 +46,8 @@ export default function LessonPlanEditorPage() {
   const [matVendorId, setMatVendorId] = useState("");
   const [matFavorite, setMatFavorite] = useState(false);
   const [matRecurring, setMatRecurring] = useState(false);
+  const [matNeedToBuy, setMatNeedToBuy] = useState(false);
+  const [matPurchaseNotes, setMatPurchaseNotes] = useState("");
 
   useEffect(() => {
     Promise.all([getLessonPlan(id), getActiveTools(), getActiveVendors()]).then(([p, tools, vendors]) => {
@@ -116,6 +118,8 @@ export default function LessonPlanEditorPage() {
         ...(vendor ? { vendorId: vendor.id } : {}),
         ...(matFavorite ? { favorite: true } : {}),
         ...(matRecurring ? { recurring: true } : {}),
+        ...(matNeedToBuy ? { needToBuy: true } : {}),
+        ...(matPurchaseNotes.trim() ? { purchaseNotes: matPurchaseNotes.trim() } : {}),
       },
     ]);
     setMatName("");
@@ -126,8 +130,10 @@ export default function LessonPlanEditorPage() {
     setMatVendorId("");
     setMatFavorite(false);
     setMatRecurring(false);
+    setMatNeedToBuy(false);
+    setMatPurchaseNotes("");
     setShowMaterialForm(false);
-  }, [matName, matQty, matNotes, matSource, matUrl, matVendorId, allVendors, matFavorite, matRecurring]);
+  }, [matName, matQty, matNotes, matSource, matUrl, matVendorId, allVendors, matFavorite, matRecurring, matNeedToBuy, matPurchaseNotes]);
 
   const removeMaterial = useCallback((index: number) => {
     setMaterials((prev) => prev.filter((_, i) => i !== index));
@@ -434,6 +440,11 @@ export default function LessonPlanEditorPage() {
                         <path d="M12.5 6.5A5 5 0 003.5 8M3.5 9.5A5 5 0 0012.5 8" />
                       </svg>
                     )}
+                    {mat.needToBuy && (
+                      <span className="inline-flex items-center rounded-full bg-rose-50 border border-rose-200/50 px-1.5 py-0 text-[9px] font-medium text-rose-600/80 shrink-0">
+                        buy
+                      </span>
+                    )}
                     {mat.quantity && (
                       <span className="text-[10px] text-muted/50">
                         qty: {mat.quantity}
@@ -443,6 +454,11 @@ export default function LessonPlanEditorPage() {
                   {mat.notes && (
                     <p className="text-[10px] text-muted/50 mt-0.5">
                       {mat.notes}
+                    </p>
+                  )}
+                  {mat.purchaseNotes && (
+                    <p className="text-[10px] text-rose-500/60 mt-0.5">
+                      {mat.purchaseNotes}
                     </p>
                   )}
                   {(() => {
@@ -531,6 +547,7 @@ export default function LessonPlanEditorPage() {
                 Source
               </label>
               <select
+                aria-label="Source vendor"
                 value={matVendorId}
                 onChange={(e) => {
                   setMatVendorId(e.target.value);
@@ -595,7 +612,25 @@ export default function LessonPlanEditorPage() {
                 />
                 <span className="text-[11px] text-muted/60">Recurring</span>
               </label>
+              <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={matNeedToBuy}
+                  onChange={(e) => setMatNeedToBuy(e.target.checked)}
+                  className="rounded border-border/60 text-rose-500 focus:ring-rose-300 w-3.5 h-3.5"
+                />
+                <span className="text-[11px] text-muted/60">Need to buy</span>
+              </label>
             </div>
+            {matNeedToBuy && (
+              <input
+                type="text"
+                value={matPurchaseNotes}
+                onChange={(e) => setMatPurchaseNotes(e.target.value)}
+                placeholder="Purchase notes (optional)"
+                className="w-full rounded-md border border-rose-200/50 bg-rose-50/30 px-3 py-1.5 text-[12px] text-foreground placeholder:text-rose-300/60 outline-none focus:border-rose-300 transition-colors"
+              />
+            )}
             <div className="flex gap-2 pt-0.5">
               <button
                 type="button"
@@ -612,6 +647,8 @@ export default function LessonPlanEditorPage() {
                   setMatVendorId("");
                   setMatFavorite(false);
                   setMatRecurring(false);
+                  setMatNeedToBuy(false);
+                  setMatPurchaseNotes("");
                 }}
                 className="text-[11px] text-muted/50 hover:text-foreground/60 transition-colors"
               >

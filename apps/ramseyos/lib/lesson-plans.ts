@@ -22,6 +22,8 @@ export interface MaterialItem {
   vendorId?: string;
   favorite?: boolean;
   recurring?: boolean;
+  needToBuy?: boolean;
+  purchaseNotes?: string;
 }
 
 export interface LessonPlan {
