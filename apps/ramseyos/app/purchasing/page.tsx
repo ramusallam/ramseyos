@@ -132,44 +132,60 @@ export default function PurchasingPage() {
                 )}
               </div>
               <div className="space-y-1.5">
-                {group.items.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start gap-3 rounded-lg bg-surface border border-border/40 px-4 py-3"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[13px] font-medium text-foreground/85">
-                          {item.name}
-                        </span>
-                        {item.quantity && (
-                          <span className="text-[10px] text-muted/50">
-                            qty: {item.quantity}
+                {group.items.map((item, i) => {
+                  const launchUrl = item.sourceUrl || group.vendor?.url || null;
+                  return (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 rounded-lg bg-surface border border-border/40 px-4 py-3"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-medium text-foreground/85">
+                            {item.name}
                           </span>
+                          {item.quantity && (
+                            <span className="text-[10px] text-muted/50">
+                              qty: {item.quantity}
+                            </span>
+                          )}
+                        </div>
+                        {item.purchaseNotes && (
+                          <p className="text-[11px] text-rose-500/60 mt-0.5">
+                            {item.purchaseNotes}
+                          </p>
                         )}
+                        {item.notes && (
+                          <p className="text-[11px] text-muted/45 mt-0.5">
+                            {item.notes}
+                          </p>
+                        )}
+                        <Link
+                          href={`/lesson-plans/${item.lessonId}`}
+                          className="text-[10px] text-muted/35 hover:text-muted/60 transition-colors mt-1 inline-block"
+                        >
+                          {item.lessonTitle || "Untitled lesson"}
+                          {item.course && (
+                            <span className="ml-1 text-muted/25">· {item.course}</span>
+                          )}
+                        </Link>
                       </div>
-                      {item.purchaseNotes && (
-                        <p className="text-[11px] text-rose-500/60 mt-0.5">
-                          {item.purchaseNotes}
-                        </p>
+                      {launchUrl && (
+                        <a
+                          href={launchUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 mt-0.5 inline-flex items-center gap-1.5 rounded-md border border-border/50 bg-white px-3 py-1.5 text-[11px] font-medium text-foreground/60 hover:text-accent hover:border-accent/30 transition-colors"
+                        >
+                          Open
+                          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
+                            <path d="M5 3h8v8M13 3L6 10" />
+                          </svg>
+                        </a>
                       )}
-                      {item.notes && (
-                        <p className="text-[11px] text-muted/45 mt-0.5">
-                          {item.notes}
-                        </p>
-                      )}
-                      <Link
-                        href={`/lesson-plans/${item.lessonId}`}
-                        className="text-[10px] text-muted/35 hover:text-muted/60 transition-colors mt-1 inline-block"
-                      >
-                        {item.lessonTitle || "Untitled lesson"}
-                        {item.course && (
-                          <span className="ml-1 text-muted/25">· {item.course}</span>
-                        )}
-                      </Link>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
           ))}
