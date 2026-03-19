@@ -20,6 +20,8 @@ export interface MaterialItem {
   sourceName: string;
   sourceUrl: string;
   vendorId?: string;
+  favorite?: boolean;
+  recurring?: boolean;
 }
 
 export interface LessonPlan {

@@ -44,6 +44,8 @@ export default function LessonPlanEditorPage() {
   const [matSource, setMatSource] = useState("");
   const [matUrl, setMatUrl] = useState("");
   const [matVendorId, setMatVendorId] = useState("");
+  const [matFavorite, setMatFavorite] = useState(false);
+  const [matRecurring, setMatRecurring] = useState(false);
 
   useEffect(() => {
     Promise.all([getLessonPlan(id), getActiveTools(), getActiveVendors()]).then(([p, tools, vendors]) => {
@@ -112,6 +114,8 @@ export default function LessonPlanEditorPage() {
         sourceName: vendor ? vendor.name : matSource.trim(),
         sourceUrl: vendor ? vendor.url : matUrl.trim(),
         ...(vendor ? { vendorId: vendor.id } : {}),
+        ...(matFavorite ? { favorite: true } : {}),
+        ...(matRecurring ? { recurring: true } : {}),
       },
     ]);
     setMatName("");
@@ -120,8 +124,10 @@ export default function LessonPlanEditorPage() {
     setMatSource("");
     setMatUrl("");
     setMatVendorId("");
+    setMatFavorite(false);
+    setMatRecurring(false);
     setShowMaterialForm(false);
-  }, [matName, matQty, matNotes, matSource, matUrl, matVendorId, allVendors]);
+  }, [matName, matQty, matNotes, matSource, matUrl, matVendorId, allVendors, matFavorite, matRecurring]);
 
   const removeMaterial = useCallback((index: number) => {
     setMaterials((prev) => prev.filter((_, i) => i !== index));
@@ -414,10 +420,20 @@ export default function LessonPlanEditorPage() {
                 className="flex items-start gap-3 rounded-md bg-white border border-border/40 px-3 py-2.5"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-2">
+                  <div className="flex items-center gap-2">
                     <span className="text-[12px] font-medium text-foreground/80">
                       {mat.name}
                     </span>
+                    {mat.favorite && (
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="text-amber-400 shrink-0">
+                        <path d="M8 1.5l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 12l-4.2 2.5.8-4.7L1.2 6.5l4.7-.7L8 1.5z" />
+                      </svg>
+                    )}
+                    {mat.recurring && (
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="text-blue-400 shrink-0">
+                        <path d="M12.5 6.5A5 5 0 003.5 8M3.5 9.5A5 5 0 0012.5 8" />
+                      </svg>
+                    )}
                     {mat.quantity && (
                       <span className="text-[10px] text-muted/50">
                         qty: {mat.quantity}
@@ -560,6 +576,26 @@ export default function LessonPlanEditorPage() {
               placeholder="Notes (optional)"
               className="w-full rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
             />
+            <div className="flex items-center gap-4 pt-0.5">
+              <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={matFavorite}
+                  onChange={(e) => setMatFavorite(e.target.checked)}
+                  className="rounded border-border/60 text-amber-500 focus:ring-amber-300 w-3.5 h-3.5"
+                />
+                <span className="text-[11px] text-muted/60">Favorite</span>
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={matRecurring}
+                  onChange={(e) => setMatRecurring(e.target.checked)}
+                  className="rounded border-border/60 text-blue-500 focus:ring-blue-300 w-3.5 h-3.5"
+                />
+                <span className="text-[11px] text-muted/60">Recurring</span>
+              </label>
+            </div>
             <div className="flex gap-2 pt-0.5">
               <button
                 type="button"
@@ -574,6 +610,8 @@ export default function LessonPlanEditorPage() {
                 onClick={() => {
                   setShowMaterialForm(false);
                   setMatVendorId("");
+                  setMatFavorite(false);
+                  setMatRecurring(false);
                 }}
                 className="text-[11px] text-muted/50 hover:text-foreground/60 transition-colors"
               >
