@@ -1,7 +1,7 @@
-import { initializeApp, getApps, getApp } from "firebase/app"
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app"
 import { getFirestore } from "firebase/firestore"
-import { getAuth } from "firebase/auth"
-import { getStorage } from "firebase/storage"
+import { getAuth, type Auth } from "firebase/auth"
+import { getStorage, type FirebaseStorage } from "firebase/storage"
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,8 +12,20 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 }
 
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp()
+function getFirebaseApp(): FirebaseApp {
+  return !getApps().length ? initializeApp(firebaseConfig) : getApp()
+}
 
-export const db = getFirestore(app)
-export const auth = getAuth(app)
-export const storage = getStorage(app)
+export const db = getFirestore(getFirebaseApp())
+
+let _auth: Auth | null = null
+export function getFirebaseAuth(): Auth {
+  if (!_auth) _auth = getAuth(getFirebaseApp())
+  return _auth
+}
+
+let _storage: FirebaseStorage | null = null
+export function getFirebaseStorage(): FirebaseStorage {
+  if (!_storage) _storage = getStorage(getFirebaseApp())
+  return _storage
+}
