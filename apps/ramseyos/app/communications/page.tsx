@@ -139,7 +139,7 @@ export default function CommunicationsPage() {
             ) : (
               <div className="space-y-2">
                 {drafts.map((d) => (
-                  <DraftCard key={d.id} draft={d} groups={groups} templates={templates} />
+                  <DraftCard key={d.id} draft={d} groups={groups} templates={templates} members={members} />
                 ))}
               </div>
             )}
@@ -309,11 +309,14 @@ function DraftCard({
   draft: d,
   groups,
   templates,
+  members,
 }: {
   draft: DraftItem;
   groups: GroupItem[];
   templates: TemplateItem[];
+  members: GroupMember[];
 }) {
+  const [expanded, setExpanded] = useState(false);
   const status = DRAFT_STATUS_STYLES[d.status] ?? DRAFT_STATUS_STYLES.draft;
   const linkedTemplate = d.templateId
     ? templates.find((t) => t.id === d.templateId)
@@ -321,12 +324,20 @@ function DraftCard({
   const linkedGroup = d.groupId
     ? groups.find((g) => g.id === d.groupId)
     : undefined;
+  const recipients = linkedGroup
+    ? members.filter((m) => m.groupId === linkedGroup.id)
+    : [];
+  const isAssembled = !!(linkedTemplate && linkedGroup);
   const preview =
     d.body.length > 100 ? d.body.slice(0, 100).trimEnd() + "..." : d.body;
 
   return (
-    <div className="rounded-lg bg-surface border border-border/40 px-5 py-4">
-      <div className="flex items-start gap-3">
+    <div className="rounded-lg bg-surface border border-border/40 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-start gap-3 px-5 py-4 text-left hover:bg-surface-raised/50 transition-colors"
+      >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2.5 mb-1">
             <span className="text-[14px] font-medium text-foreground/85">
@@ -337,25 +348,100 @@ function DraftCard({
               {status.label}
             </span>
           </div>
-          <p className="text-[12px] text-muted/50 leading-relaxed whitespace-pre-line">
-            {preview}
-          </p>
-          {(linkedTemplate || linkedGroup) && (
-            <div className="flex items-center gap-1.5 mt-2">
-              {linkedTemplate && (
-                <span className="inline-flex items-center rounded-full bg-gray-50 border border-border/30 px-2 py-0 text-[9px] font-medium text-foreground/50">
-                  {linkedTemplate.title}
-                </span>
-              )}
-              {linkedGroup && (
-                <span className="inline-flex items-center rounded-full bg-gray-50 border border-border/30 px-2 py-0 text-[9px] font-medium text-foreground/50">
-                  {linkedGroup.name}
-                </span>
-              )}
+          {!expanded && (
+            <p className="text-[12px] text-muted/50 leading-relaxed">
+              {preview}
+            </p>
+          )}
+          <div className="flex items-center gap-1.5 mt-2">
+            {linkedTemplate ? (
+              <span className="inline-flex items-center rounded-full bg-blue-50 border border-blue-200/30 px-2 py-0 text-[9px] font-medium text-blue-600/60">
+                {linkedTemplate.title}
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-full bg-gray-50 border border-dashed border-border/40 px-2 py-0 text-[9px] font-medium text-muted/35">
+                No template
+              </span>
+            )}
+            {linkedGroup ? (
+              <span className="inline-flex items-center rounded-full bg-emerald-50 border border-emerald-200/30 px-2 py-0 text-[9px] font-medium text-emerald-600/60">
+                {linkedGroup.name}
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-full bg-gray-50 border border-dashed border-border/40 px-2 py-0 text-[9px] font-medium text-muted/35">
+                No group
+              </span>
+            )}
+            {recipients.length > 0 && (
+              <span className="text-[9px] text-muted/40 ml-1">
+                {recipients.length} recipient{recipients.length === 1 ? "" : "s"}
+              </span>
+            )}
+          </div>
+        </div>
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          className={`shrink-0 mt-1.5 text-muted/30 transition-transform ${expanded ? "rotate-180" : ""}`}
+        >
+          <path d="M4 6l4 4 4-4" />
+        </svg>
+      </button>
+
+      {expanded && (
+        <div className="border-t border-border/30 px-5 py-4 space-y-4">
+          {!isAssembled && (
+            <div className="rounded-md border border-dashed border-amber-300/50 bg-amber-50/40 px-3.5 py-2.5 flex items-center gap-2">
+              <span className="relative flex h-1.5 w-1.5 shrink-0">
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400/70" />
+              </span>
+              <span className="text-[11px] text-amber-700/60">
+                Incomplete — assign a template and group to fully assemble this draft
+              </span>
             </div>
           )}
+
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/40 mb-1.5">Subject</p>
+            <p className="text-[13px] text-foreground/80">{d.subject || "—"}</p>
+          </div>
+
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/40 mb-1.5">Body</p>
+            <p className="text-[12px] text-foreground/65 leading-relaxed whitespace-pre-line">{d.body}</p>
+          </div>
+
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/40 mb-1.5">
+              Recipients{recipients.length > 0 && <span className="font-normal ml-1">({recipients.length})</span>}
+            </p>
+            {recipients.length === 0 ? (
+              <p className="text-[11px] text-muted/35 italic">No recipients — assign a group to derive recipients</p>
+            ) : (
+              <div className="space-y-1">
+                {recipients.map((r) => (
+                  <div key={r.id} className="flex items-center gap-2.5">
+                    <div className="w-5 h-5 rounded-full bg-gray-100 border border-border/30 flex items-center justify-center shrink-0">
+                      <span className="text-[8px] font-medium text-muted/60">
+                        {r.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-medium text-foreground/70">{r.name}</span>
+                    {r.email && (
+                      <span className="text-[10px] text-muted/35">{r.email}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

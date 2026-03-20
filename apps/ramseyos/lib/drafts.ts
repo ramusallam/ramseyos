@@ -1,6 +1,7 @@
 import {
   collection,
   query,
+  where,
   orderBy,
   getDocs,
   addDoc,
@@ -41,20 +42,43 @@ export async function seedDrafts(): Promise<number> {
   const existing = await getDocs(collection(db, "communicationDrafts"));
   if (existing.size > 0) return 0;
 
+  const templateSnap = await getDocs(
+    query(collection(db, "templates"), where("active", "==", true))
+  );
+  const templatesByTitle = new Map<string, string>();
+  for (const d of templateSnap.docs) {
+    templatesByTitle.set(d.data().title, d.id);
+  }
+
+  const groupSnap = await getDocs(
+    query(collection(db, "groups"), where("active", "==", true))
+  );
+  const groupsByName = new Map<string, string>();
+  for (const d of groupSnap.docs) {
+    groupsByName.set(d.data().name, d.id);
+  }
+
   const seeds: Omit<DraftItem, "id" | "createdAt">[] = [
     {
-      templateId: "",
-      groupId: "",
+      templateId: templatesByTitle.get("Parent Update") ?? "",
+      groupId: groupsByName.get("Parents — AP Chem") ?? "",
       subject: "Quick update from class",
       body: "Dear families,\n\nI wanted to share a quick update on what we've been working on in class this week. Students have been engaged in hands-on inquiry and I'm excited about the progress I'm seeing.\n\nPlease don't hesitate to reach out if you have any questions.\n\nBest,\nRamsey",
+      status: "ready",
+    },
+    {
+      templateId: templatesByTitle.get("Class Reminder") ?? "",
+      groupId: groupsByName.get("AP Chemistry") ?? "",
+      subject: "Upcoming lab schedule change",
+      body: "Hi everyone,\n\nJust a heads-up that our lab schedule will shift next week due to the assembly. Please check the updated calendar and come prepared.\n\nThanks,\nRamsey",
       status: "draft",
     },
     {
       templateId: "",
       groupId: "",
-      subject: "Upcoming lab schedule change",
-      body: "Hi everyone,\n\nJust a heads-up that our lab schedule will shift next week due to the assembly. Please check the updated calendar and come prepared.\n\nThanks,\nRamsey",
-      status: "ready",
+      subject: "Quick note",
+      body: "Just wanted to follow up on our conversation.",
+      status: "draft",
     },
   ];
 
