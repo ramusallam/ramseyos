@@ -18,8 +18,10 @@ import {
 import {
   getDrafts,
   seedDrafts,
+  updateDraftGmailStatus,
   type DraftItem,
   type DraftStatus,
+  type GmailHandoffStatus,
 } from "@/lib/drafts";
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
@@ -55,6 +57,16 @@ export default function CommunicationsPage() {
       setLoading(false);
     });
   }, []);
+
+  const setGmailStatus = useCallback(
+    async (id: string, gmailStatus: GmailHandoffStatus) => {
+      setDrafts((prev) =>
+        prev.map((x) => (x.id === id ? { ...x, gmailStatus } : x))
+      );
+      await updateDraftGmailStatus(id, gmailStatus);
+    },
+    []
+  );
 
   const toggleFavorite = useCallback(
     async (id: string) => {
@@ -139,11 +151,44 @@ export default function CommunicationsPage() {
             ) : (
               <div className="space-y-2">
                 {drafts.map((d) => (
-                  <DraftCard key={d.id} draft={d} groups={groups} templates={templates} members={members} />
+                  <DraftCard key={d.id} draft={d} groups={groups} templates={templates} members={members} onGmailStatus={setGmailStatus} />
                 ))}
               </div>
             )}
           </section>
+
+          {/* Gmail Handoff */}
+          {drafts.some((d) => d.gmailStatus === "ready_for_gmail" || d.gmailStatus === "handed_off") && (
+            <section>
+              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-foreground/60 mb-3 flex items-center gap-1.5">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 3l-8.5 8.5L2 8" />
+                </svg>
+                Gmail Handoff
+                <span className="text-muted/40 font-normal">
+                  {drafts.filter((d) => d.gmailStatus === "ready_for_gmail" || d.gmailStatus === "handed_off").length}
+                </span>
+              </h2>
+
+              <div className="rounded-lg border border-border/40 bg-surface/40 px-4 py-2.5 mb-3 flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-blue-300/40" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-400/70" />
+                </span>
+                <span className="text-[11px] text-muted/55">
+                  Drafts prepared for Gmail — sending will be enabled in a future update
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                {drafts
+                  .filter((d) => d.gmailStatus === "ready_for_gmail" || d.gmailStatus === "handed_off")
+                  .map((d) => (
+                    <DraftCard key={`handoff-${d.id}`} draft={d} groups={groups} templates={templates} members={members} onGmailStatus={setGmailStatus} />
+                  ))}
+              </div>
+            </section>
+          )}
 
           {/* Favorites */}
           {favorites.length > 0 && (
@@ -305,19 +350,28 @@ const DRAFT_STATUS_STYLES: Record<DraftStatus, { dot: string; label: string }> =
   failed: { dot: "bg-red-400", label: "Failed" },
 };
 
+const GMAIL_STATUS_STYLES: Record<GmailHandoffStatus, { dot: string; label: string }> = {
+  not_prepared: { dot: "bg-gray-300", label: "Not prepared" },
+  ready_for_gmail: { dot: "bg-blue-400", label: "Ready for Gmail" },
+  handed_off: { dot: "bg-emerald-400", label: "Handed off" },
+};
+
 function DraftCard({
   draft: d,
   groups,
   templates,
   members,
+  onGmailStatus,
 }: {
   draft: DraftItem;
   groups: GroupItem[];
   templates: TemplateItem[];
   members: GroupMember[];
+  onGmailStatus: (id: string, status: GmailHandoffStatus) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const status = DRAFT_STATUS_STYLES[d.status] ?? DRAFT_STATUS_STYLES.draft;
+  const gmail = GMAIL_STATUS_STYLES[d.gmailStatus] ?? GMAIL_STATUS_STYLES.not_prepared;
   const linkedTemplate = d.templateId
     ? templates.find((t) => t.id === d.templateId)
     : undefined;
@@ -347,6 +401,12 @@ function DraftCard({
               <span className={`inline-block w-1.5 h-1.5 rounded-full ${status.dot}`} />
               {status.label}
             </span>
+            {d.gmailStatus !== "not_prepared" && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200/30 bg-blue-50 px-2 py-0 text-[9px] font-medium text-blue-600/60">
+                <span className={`inline-block w-1.5 h-1.5 rounded-full ${gmail.dot}`} />
+                {gmail.label}
+              </span>
+            )}
           </div>
           {!expanded && (
             <p className="text-[12px] text-muted/50 leading-relaxed">
@@ -438,6 +498,45 @@ function DraftCard({
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+
+          {/* Gmail Handoff Actions */}
+          <div className="border-t border-border/20 pt-3 flex items-center gap-3">
+            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/40">Gmail</p>
+            <span className="inline-flex items-center gap-1.5 text-[10px] text-muted/50">
+              <span className={`inline-block w-1.5 h-1.5 rounded-full ${gmail.dot}`} />
+              {gmail.label}
+            </span>
+            <div className="flex-1" />
+            {d.gmailStatus === "not_prepared" && isAssembled && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onGmailStatus(d.id, "ready_for_gmail");
+                }}
+                className="text-[10px] font-medium text-blue-600/70 bg-blue-50 border border-blue-200/30 rounded-md px-3 py-1 hover:bg-blue-100/60 transition-colors"
+              >
+                Prepare for Gmail
+              </button>
+            )}
+            {d.gmailStatus === "not_prepared" && !isAssembled && (
+              <span className="text-[10px] text-muted/35 italic">
+                Complete draft to prepare
+              </span>
+            )}
+            {d.gmailStatus === "ready_for_gmail" && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onGmailStatus(d.id, "not_prepared");
+                }}
+                className="text-[10px] font-medium text-muted/50 bg-gray-50 border border-border/30 rounded-md px-3 py-1 hover:bg-gray-100/60 transition-colors"
+              >
+                Unprepare
+              </button>
             )}
           </div>
         </div>

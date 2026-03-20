@@ -5,11 +5,14 @@ import {
   orderBy,
   getDocs,
   addDoc,
+  updateDoc,
+  doc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
 export type DraftStatus = "draft" | "ready" | "sent" | "failed";
+export type GmailHandoffStatus = "not_prepared" | "ready_for_gmail" | "handed_off";
 
 export interface DraftItem {
   id: string;
@@ -18,6 +21,7 @@ export interface DraftItem {
   subject: string;
   body: string;
   status: DraftStatus;
+  gmailStatus: GmailHandoffStatus;
   createdAt: string;
 }
 
@@ -34,8 +38,16 @@ export async function getDrafts(): Promise<DraftItem[]> {
     subject: d.data().subject ?? "",
     body: d.data().body ?? "",
     status: d.data().status ?? "draft",
+    gmailStatus: d.data().gmailStatus ?? "not_prepared",
     createdAt: d.data().createdAt?.toDate?.()?.toISOString?.() ?? "",
   }));
+}
+
+export async function updateDraftGmailStatus(
+  id: string,
+  gmailStatus: GmailHandoffStatus
+): Promise<void> {
+  await updateDoc(doc(db, "communicationDrafts", id), { gmailStatus });
 }
 
 export async function seedDrafts(): Promise<number> {
@@ -65,6 +77,7 @@ export async function seedDrafts(): Promise<number> {
       subject: "Quick update from class",
       body: "Dear families,\n\nI wanted to share a quick update on what we've been working on in class this week. Students have been engaged in hands-on inquiry and I'm excited about the progress I'm seeing.\n\nPlease don't hesitate to reach out if you have any questions.\n\nBest,\nRamsey",
       status: "ready",
+      gmailStatus: "not_prepared",
     },
     {
       templateId: templatesByTitle.get("Class Reminder") ?? "",
@@ -72,6 +85,7 @@ export async function seedDrafts(): Promise<number> {
       subject: "Upcoming lab schedule change",
       body: "Hi everyone,\n\nJust a heads-up that our lab schedule will shift next week due to the assembly. Please check the updated calendar and come prepared.\n\nThanks,\nRamsey",
       status: "draft",
+      gmailStatus: "not_prepared",
     },
     {
       templateId: "",
@@ -79,6 +93,7 @@ export async function seedDrafts(): Promise<number> {
       subject: "Quick note",
       body: "Just wanted to follow up on our conversation.",
       status: "draft",
+      gmailStatus: "not_prepared",
     },
   ];
 
