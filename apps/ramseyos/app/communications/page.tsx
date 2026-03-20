@@ -350,6 +350,18 @@ const DRAFT_STATUS_STYLES: Record<DraftStatus, { dot: string; label: string }> =
   failed: { dot: "bg-red-400", label: "Failed" },
 };
 
+function buildMailtoLink(draft: DraftItem, recipients: GroupMember[]): string {
+  const to = recipients
+    .filter((r) => r.email)
+    .map((r) => r.email)
+    .join(",");
+  const params = new URLSearchParams();
+  if (draft.subject) params.set("subject", draft.subject);
+  if (draft.body) params.set("body", draft.body);
+  const qs = params.toString();
+  return `mailto:${encodeURI(to)}${qs ? `?${qs}` : ""}`;
+}
+
 const GMAIL_STATUS_STYLES: Record<GmailHandoffStatus, { dot: string; label: string }> = {
   not_prepared: { dot: "bg-gray-300", label: "Not prepared" },
   ready_for_gmail: { dot: "bg-blue-400", label: "Ready for Gmail" },
@@ -502,41 +514,83 @@ function DraftCard({
           </div>
 
           {/* Gmail Handoff Actions */}
-          <div className="border-t border-border/20 pt-3 flex items-center gap-3">
-            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/40">Gmail</p>
-            <span className="inline-flex items-center gap-1.5 text-[10px] text-muted/50">
-              <span className={`inline-block w-1.5 h-1.5 rounded-full ${gmail.dot}`} />
-              {gmail.label}
-            </span>
-            <div className="flex-1" />
-            {d.gmailStatus === "not_prepared" && isAssembled && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onGmailStatus(d.id, "ready_for_gmail");
-                }}
-                className="text-[10px] font-medium text-blue-600/70 bg-blue-50 border border-blue-200/30 rounded-md px-3 py-1 hover:bg-blue-100/60 transition-colors"
-              >
-                Prepare for Gmail
-              </button>
-            )}
-            {d.gmailStatus === "not_prepared" && !isAssembled && (
-              <span className="text-[10px] text-muted/35 italic">
-                Complete draft to prepare
+          <div className="border-t border-border/20 pt-3">
+            <div className="flex items-center gap-3">
+              <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/40">Gmail</p>
+              <span className="inline-flex items-center gap-1.5 text-[10px] text-muted/50">
+                <span className={`inline-block w-1.5 h-1.5 rounded-full ${gmail.dot}`} />
+                {gmail.label}
               </span>
-            )}
-            {d.gmailStatus === "ready_for_gmail" && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onGmailStatus(d.id, "not_prepared");
-                }}
-                className="text-[10px] font-medium text-muted/50 bg-gray-50 border border-border/30 rounded-md px-3 py-1 hover:bg-gray-100/60 transition-colors"
-              >
-                Unprepare
-              </button>
+              <div className="flex-1" />
+              {d.gmailStatus === "not_prepared" && isAssembled && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onGmailStatus(d.id, "ready_for_gmail");
+                  }}
+                  className="text-[10px] font-medium text-blue-600/70 bg-blue-50 border border-blue-200/30 rounded-md px-3 py-1 hover:bg-blue-100/60 transition-colors"
+                >
+                  Prepare for Gmail
+                </button>
+              )}
+              {d.gmailStatus === "not_prepared" && !isAssembled && (
+                <span className="text-[10px] text-muted/35 italic">
+                  Complete draft to prepare
+                </span>
+              )}
+              {d.gmailStatus === "ready_for_gmail" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onGmailStatus(d.id, "not_prepared");
+                    }}
+                    className="text-[10px] font-medium text-muted/50 bg-gray-50 border border-border/30 rounded-md px-3 py-1 hover:bg-gray-100/60 transition-colors"
+                  >
+                    Unprepare
+                  </button>
+                  <a
+                    href={buildMailtoLink(d, recipients)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onGmailStatus(d.id, "handed_off");
+                    }}
+                    className="text-[10px] font-medium text-white bg-blue-500 border border-blue-600/30 rounded-md px-3 py-1 hover:bg-blue-600 transition-colors inline-flex items-center gap-1.5"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 11L11 5" />
+                      <path d="M7 5h4v4" />
+                    </svg>
+                    Open in Gmail
+                  </a>
+                </>
+              )}
+              {d.gmailStatus === "handed_off" && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onGmailStatus(d.id, "ready_for_gmail");
+                  }}
+                  className="text-[10px] font-medium text-muted/50 bg-gray-50 border border-border/30 rounded-md px-3 py-1 hover:bg-gray-100/60 transition-colors"
+                >
+                  Re-open
+                </button>
+              )}
+            </div>
+            {d.gmailStatus === "handed_off" && (
+              <div className="mt-2.5 rounded-md border border-emerald-200/40 bg-emerald-50/40 px-3.5 py-2 flex items-center gap-2">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500/70 shrink-0">
+                  <path d="M14 3l-8.5 8.5L2 8" />
+                </svg>
+                <span className="text-[11px] text-emerald-700/60">
+                  Opened in Gmail — complete sending in your mail client
+                </span>
+              </div>
             )}
           </div>
         </div>
