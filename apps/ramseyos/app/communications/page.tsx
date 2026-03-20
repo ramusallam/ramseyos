@@ -7,6 +7,13 @@ import {
   updateTemplateFavorite,
   type TemplateItem,
 } from "@/lib/templates";
+import {
+  getActiveGroups,
+  getGroupMembers,
+  seedGroups,
+  type GroupItem,
+  type GroupMember,
+} from "@/lib/groups";
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   school: { bg: "bg-blue-50 border-blue-200/40", text: "text-blue-600/70", label: "School" },
@@ -20,15 +27,20 @@ function categoryMeta(cat: string) {
 
 export default function CommunicationsPage() {
   const [templates, setTemplates] = useState<TemplateItem[]>([]);
+  const [groups, setGroups] = useState<GroupItem[]>([]);
+  const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    seedTemplates().then(() =>
-      getActiveTemplates().then((t) => {
-        setTemplates(t);
-        setLoading(false);
-      })
-    );
+    Promise.all([
+      seedTemplates().then(() => getActiveTemplates()),
+      seedGroups().then(() => Promise.all([getActiveGroups(), getGroupMembers()])),
+    ]).then(([t, [g, m]]) => {
+      setTemplates(t);
+      setGroups(g);
+      setMembers(m);
+      setLoading(false);
+    });
   }, []);
 
   const toggleFavorite = useCallback(
@@ -128,6 +140,31 @@ export default function CommunicationsPage() {
               </section>
             );
           })}
+
+          {/* Groups */}
+          {groups.length > 0 && (
+            <section>
+              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-foreground/60 mb-3 flex items-center gap-1.5">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <circle cx="6" cy="5" r="2.5" />
+                  <path d="M1.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" />
+                  <circle cx="11.5" cy="5.5" r="2" />
+                  <path d="M14.5 13c0-2 1.2-3 0-3" />
+                </svg>
+                Groups
+                <span className="text-muted/40 font-normal">{groups.length}</span>
+              </h2>
+              <div className="space-y-2">
+                {groups.map((g) => (
+                  <GroupCard
+                    key={g.id}
+                    group={g}
+                    members={members.filter((m) => m.groupId === g.id)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       )}
     </div>
@@ -187,6 +224,91 @@ function TemplateCard({
           </svg>
         </button>
       </div>
+    </div>
+  );
+}
+
+function GroupCard({
+  group,
+  members,
+}: {
+  group: GroupItem;
+  members: GroupMember[];
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const style = categoryMeta(group.category);
+
+  return (
+    <div className="rounded-lg bg-surface border border-border/40 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-surface-raised/50 transition-colors"
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2.5">
+            <span className="text-[14px] font-medium text-foreground/85">
+              {group.name}
+            </span>
+            <span
+              className={`inline-flex items-center rounded-full border px-2 py-0 text-[9px] font-medium ${style.bg} ${style.text}`}
+            >
+              {group.category}
+            </span>
+            <span className="text-[10px] text-muted/40">
+              {members.length} member{members.length === 1 ? "" : "s"}
+            </span>
+          </div>
+          {group.description && (
+            <p className="text-[11px] text-muted/45 mt-0.5">{group.description}</p>
+          )}
+        </div>
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          className={`shrink-0 text-muted/30 transition-transform ${expanded ? "rotate-180" : ""}`}
+        >
+          <path d="M4 6l4 4 4-4" />
+        </svg>
+      </button>
+
+      {expanded && (
+        <div className="border-t border-border/30 px-5 py-3">
+          {members.length === 0 ? (
+            <p className="text-[11px] text-muted/40">No members yet.</p>
+          ) : (
+            <div className="space-y-1.5">
+              {members.map((m) => (
+                <div key={m.id} className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-gray-100 border border-border/30 flex items-center justify-center shrink-0">
+                    <span className="text-[9px] font-medium text-muted/60">
+                      {m.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[12px] font-medium text-foreground/75">
+                      {m.name}
+                    </span>
+                    {m.role && (
+                      <span className="ml-2 text-[10px] text-muted/40">{m.role}</span>
+                    )}
+                  </div>
+                  {m.email && (
+                    <span className="text-[10px] text-muted/35 truncate max-w-[180px]">
+                      {m.email}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
