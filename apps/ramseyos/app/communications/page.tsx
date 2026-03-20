@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   getActiveTemplates,
   seedTemplates,
+  seedTemplatePairings,
   updateTemplateFavorite,
   type TemplateItem,
 } from "@/lib/templates";
@@ -32,10 +33,13 @@ export default function CommunicationsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      seedTemplates().then(() => getActiveTemplates()),
-      seedGroups().then(() => Promise.all([getActiveGroups(), getGroupMembers()])),
-    ]).then(([t, [g, m]]) => {
+    Promise.all([seedTemplates(), seedGroups()]).then(async () => {
+      await seedTemplatePairings();
+      const [t, g, m] = await Promise.all([
+        getActiveTemplates(),
+        getActiveGroups(),
+        getGroupMembers(),
+      ]);
       setTemplates(t);
       setGroups(g);
       setMembers(m);
@@ -112,6 +116,7 @@ export default function CommunicationsPage() {
                   <TemplateCard
                     key={t.id}
                     template={t}
+                    groups={groups}
                     onToggleFavorite={toggleFavorite}
                   />
                 ))}
@@ -133,6 +138,7 @@ export default function CommunicationsPage() {
                     <TemplateCard
                       key={t.id}
                       template={t}
+                      groups={groups}
                       onToggleFavorite={toggleFavorite}
                     />
                   ))}
@@ -173,14 +179,19 @@ export default function CommunicationsPage() {
 
 function TemplateCard({
   template: t,
+  groups,
   onToggleFavorite,
 }: {
   template: TemplateItem;
+  groups: GroupItem[];
   onToggleFavorite: (id: string) => void;
 }) {
   const style = categoryMeta(t.category);
   const preview =
     t.body.length > 120 ? t.body.slice(0, 120).trimEnd() + "..." : t.body;
+  const linkedGroups = t.linkedGroupIds
+    .map((gid) => groups.find((g) => g.id === gid))
+    .filter((g): g is GroupItem => !!g);
 
   return (
     <div className="rounded-lg bg-surface border border-border/40 px-5 py-4">
@@ -204,6 +215,22 @@ function TemplateCard({
           <p className="text-[12px] text-muted/50 leading-relaxed whitespace-pre-line">
             {preview}
           </p>
+          {linkedGroups.length > 0 && (
+            <div className="flex items-center gap-1.5 mt-2">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-muted/30 shrink-0">
+                <circle cx="6" cy="5" r="2.5" />
+                <path d="M1.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" />
+              </svg>
+              {linkedGroups.map((g) => (
+                <span
+                  key={g.id}
+                  className="inline-flex items-center rounded-full bg-gray-50 border border-border/30 px-2 py-0 text-[9px] font-medium text-foreground/50"
+                >
+                  {g.name}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         <button
           type="button"

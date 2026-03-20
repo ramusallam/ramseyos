@@ -19,6 +19,7 @@ export interface TemplateItem {
   body: string;
   active: boolean;
   favorite: boolean;
+  linkedGroupIds: string[];
 }
 
 export async function getActiveTemplates(): Promise<TemplateItem[]> {
@@ -36,6 +37,7 @@ export async function getActiveTemplates(): Promise<TemplateItem[]> {
     body: d.data().body,
     active: d.data().active,
     favorite: d.data().favorite ?? false,
+    linkedGroupIds: d.data().linkedGroupIds ?? [],
   }));
 }
 
@@ -92,4 +94,40 @@ export async function seedTemplates(): Promise<number> {
   }
 
   return seeds.length;
+}
+
+export async function seedTemplatePairings(): Promise<number> {
+  const templates = await getActiveTemplates();
+  const alreadyPaired = templates.some((t) => t.linkedGroupIds.length > 0);
+  if (alreadyPaired) return 0;
+
+  const groupSnap = await getDocs(
+    query(collection(db, "groups"), where("active", "==", true))
+  );
+  const groupsByName = new Map<string, string>();
+  for (const d of groupSnap.docs) {
+    groupsByName.set(d.data().name, d.id);
+  }
+
+  const pairings: Record<string, string[]> = {
+    "Parent Update": ["Parents — AP Chem"],
+    "Class Reminder": ["AP Chemistry", "Honors Chemistry"],
+    "Family Check-In": ["Family"],
+    "Student Follow-Up": ["AP Chemistry", "Honors Chemistry"],
+    "General Outreach": ["Consulting Contacts"],
+  };
+
+  let count = 0;
+  for (const t of templates) {
+    const groupNames = pairings[t.title];
+    if (!groupNames) continue;
+    const ids = groupNames
+      .map((n) => groupsByName.get(n))
+      .filter((id): id is string => !!id);
+    if (ids.length === 0) continue;
+    await updateDoc(doc(db, "templates", t.id), { linkedGroupIds: ids });
+    count++;
+  }
+
+  return count;
 }
