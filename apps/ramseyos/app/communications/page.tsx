@@ -1,16 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getActiveTemplates, seedTemplates, type TemplateItem } from "@/lib/templates";
+import { useEffect, useState, useCallback } from "react";
+import {
+  getActiveTemplates,
+  seedTemplates,
+  updateTemplateFavorite,
+  type TemplateItem,
+} from "@/lib/templates";
 
-const CATEGORY_STYLES: Record<string, { bg: string; text: string }> = {
-  school: { bg: "bg-blue-50 border-blue-200/40", text: "text-blue-600/70" },
-  personal: { bg: "bg-amber-50 border-amber-200/40", text: "text-amber-600/70" },
-  professional: { bg: "bg-emerald-50 border-emerald-200/40", text: "text-emerald-600/70" },
+const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+  school: { bg: "bg-blue-50 border-blue-200/40", text: "text-blue-600/70", label: "School" },
+  personal: { bg: "bg-amber-50 border-amber-200/40", text: "text-amber-600/70", label: "Personal" },
+  professional: { bg: "bg-emerald-50 border-emerald-200/40", text: "text-emerald-600/70", label: "Professional" },
 };
 
-function categoryStyle(cat: string) {
-  return CATEGORY_STYLES[cat] ?? { bg: "bg-gray-50 border-gray-200/40", text: "text-gray-500/70" };
+function categoryMeta(cat: string) {
+  return CATEGORY_STYLES[cat] ?? { bg: "bg-gray-50 border-gray-200/40", text: "text-gray-500/70", label: cat || "Other" };
 }
 
 export default function CommunicationsPage() {
@@ -26,13 +31,33 @@ export default function CommunicationsPage() {
     );
   }, []);
 
+  const toggleFavorite = useCallback(
+    async (id: string) => {
+      const t = templates.find((x) => x.id === id);
+      if (!t) return;
+      const next = !t.favorite;
+      setTemplates((prev) =>
+        prev.map((x) => (x.id === id ? { ...x, favorite: next } : x))
+      );
+      await updateTemplateFavorite(id, next);
+    },
+    [templates]
+  );
+
+  const favorites = templates.filter((t) => t.favorite);
+  const nonFavorites = templates.filter((t) => !t.favorite);
+
   const grouped = new Map<string, TemplateItem[]>();
-  for (const t of templates) {
+  for (const t of nonFavorites) {
     const key = t.category || "other";
     const arr = grouped.get(key) ?? [];
     arr.push(t);
     grouped.set(key, arr);
   }
+  const categoryOrder = ["school", "professional", "personal"];
+  const sortedCategories = Array.from(grouped.entries()).sort(
+    ([a], [b]) => (categoryOrder.indexOf(a) === -1 ? 99 : categoryOrder.indexOf(a)) - (categoryOrder.indexOf(b) === -1 ? 99 : categoryOrder.indexOf(b))
+  );
 
   if (loading) {
     return (
@@ -60,39 +85,108 @@ export default function CommunicationsPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {templates.map((t) => {
-            const style = categoryStyle(t.category);
-            const preview =
-              t.body.length > 120 ? t.body.slice(0, 120).trimEnd() + "..." : t.body;
-            return (
-              <div
-                key={t.id}
-                className="rounded-lg bg-surface border border-border/40 px-5 py-4"
-              >
-                <div className="flex items-center gap-2.5 mb-1.5">
-                  <span className="text-[14px] font-medium text-foreground/85">
-                    {t.title}
-                  </span>
-                  <span
-                    className={`inline-flex items-center rounded-full border px-2 py-0 text-[9px] font-medium ${style.bg} ${style.text}`}
-                  >
-                    {t.category}
-                  </span>
-                </div>
-                {t.subject && (
-                  <p className="text-[11px] text-foreground/50 mb-1">
-                    Subject: {t.subject}
-                  </p>
-                )}
-                <p className="text-[12px] text-muted/50 leading-relaxed whitespace-pre-line">
-                  {preview}
-                </p>
+        <div className="space-y-8">
+          {/* Favorites */}
+          {favorites.length > 0 && (
+            <section>
+              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-amber-600/80 mb-3 flex items-center gap-1.5">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 1.5l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 12l-4.2 2.5.8-4.7L1.2 6.5l4.7-.7L8 1.5z" />
+                </svg>
+                Favorites
+              </h2>
+              <div className="space-y-2">
+                {favorites.map((t) => (
+                  <TemplateCard
+                    key={t.id}
+                    template={t}
+                    onToggleFavorite={toggleFavorite}
+                  />
+                ))}
               </div>
+            </section>
+          )}
+
+          {/* By Category */}
+          {sortedCategories.map(([cat, items]) => {
+            const meta = categoryMeta(cat);
+            return (
+              <section key={cat}>
+                <h2 className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${meta.text}`}>
+                  {meta.label}
+                  <span className="ml-2 text-muted/40 font-normal">{items.length}</span>
+                </h2>
+                <div className="space-y-2">
+                  {items.map((t) => (
+                    <TemplateCard
+                      key={t.id}
+                      template={t}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  ))}
+                </div>
+              </section>
             );
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+function TemplateCard({
+  template: t,
+  onToggleFavorite,
+}: {
+  template: TemplateItem;
+  onToggleFavorite: (id: string) => void;
+}) {
+  const style = categoryMeta(t.category);
+  const preview =
+    t.body.length > 120 ? t.body.slice(0, 120).trimEnd() + "..." : t.body;
+
+  return (
+    <div className="rounded-lg bg-surface border border-border/40 px-5 py-4">
+      <div className="flex items-start gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2.5 mb-1.5">
+            <span className="text-[14px] font-medium text-foreground/85">
+              {t.title}
+            </span>
+            <span
+              className={`inline-flex items-center rounded-full border px-2 py-0 text-[9px] font-medium ${style.bg} ${style.text}`}
+            >
+              {t.category}
+            </span>
+          </div>
+          {t.subject && (
+            <p className="text-[11px] text-foreground/50 mb-1">
+              Subject: {t.subject}
+            </p>
+          )}
+          <p className="text-[12px] text-muted/50 leading-relaxed whitespace-pre-line">
+            {preview}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onToggleFavorite(t.id)}
+          className="shrink-0 mt-0.5 p-1 rounded transition-colors hover:bg-amber-50"
+          aria-label={t.favorite ? "Remove from favorites" : "Add to favorites"}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill={t.favorite ? "currentColor" : "none"}
+            stroke="currentColor"
+            strokeWidth="1.2"
+            className={t.favorite ? "text-amber-400" : "text-muted/30 hover:text-amber-300"}
+          >
+            <path d="M8 1.5l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 12l-4.2 2.5.8-4.7L1.2 6.5l4.7-.7L8 1.5z" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

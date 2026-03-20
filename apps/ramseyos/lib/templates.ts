@@ -5,6 +5,8 @@ import {
   orderBy,
   getDocs,
   addDoc,
+  updateDoc,
+  doc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -16,6 +18,7 @@ export interface TemplateItem {
   subject: string;
   body: string;
   active: boolean;
+  favorite: boolean;
 }
 
 export async function getActiveTemplates(): Promise<TemplateItem[]> {
@@ -32,7 +35,15 @@ export async function getActiveTemplates(): Promise<TemplateItem[]> {
     subject: d.data().subject ?? "",
     body: d.data().body,
     active: d.data().active,
+    favorite: d.data().favorite ?? false,
   }));
+}
+
+export async function updateTemplateFavorite(
+  id: string,
+  favorite: boolean
+): Promise<void> {
+  await updateDoc(doc(db, "templates", id), { favorite });
 }
 
 export async function seedTemplates(): Promise<number> {
