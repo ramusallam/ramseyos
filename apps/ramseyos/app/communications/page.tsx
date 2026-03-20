@@ -15,6 +15,12 @@ import {
   type GroupItem,
   type GroupMember,
 } from "@/lib/groups";
+import {
+  getDrafts,
+  seedDrafts,
+  type DraftItem,
+  type DraftStatus,
+} from "@/lib/drafts";
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   school: { bg: "bg-blue-50 border-blue-200/40", text: "text-blue-600/70", label: "School" },
@@ -30,19 +36,22 @@ export default function CommunicationsPage() {
   const [templates, setTemplates] = useState<TemplateItem[]>([]);
   const [groups, setGroups] = useState<GroupItem[]>([]);
   const [members, setMembers] = useState<GroupMember[]>([]);
+  const [drafts, setDrafts] = useState<DraftItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([seedTemplates(), seedGroups()]).then(async () => {
+    Promise.all([seedTemplates(), seedGroups(), seedDrafts()]).then(async () => {
       await seedTemplatePairings();
-      const [t, g, m] = await Promise.all([
+      const [t, g, m, d] = await Promise.all([
         getActiveTemplates(),
         getActiveGroups(),
         getGroupMembers(),
+        getDrafts(),
       ]);
       setTemplates(t);
       setGroups(g);
       setMembers(m);
+      setDrafts(d);
       setLoading(false);
     });
   }, []);
@@ -90,7 +99,7 @@ export default function CommunicationsPage() {
           Communications
         </h1>
         <p className="text-[12px] text-muted/60 mt-1">
-          {templates.length} template{templates.length === 1 ? "" : "s"}
+          {templates.length} template{templates.length === 1 ? "" : "s"} · {drafts.length} draft{drafts.length === 1 ? "" : "s"}
         </p>
       </header>
 
@@ -102,6 +111,40 @@ export default function CommunicationsPage() {
         </div>
       ) : (
         <div className="space-y-8">
+          {/* Mail */}
+          <section>
+            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-foreground/60 mb-3 flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="1" y="3" width="14" height="10" rx="1.5" />
+                <path d="M1 4.5l7 4.5 7-4.5" />
+              </svg>
+              Mail
+              <span className="text-muted/40 font-normal">{drafts.length}</span>
+            </h2>
+
+            <div className="rounded-lg border border-border/40 bg-surface/40 px-4 py-2.5 mb-3 flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-amber-300/40" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400/70" />
+              </span>
+              <span className="text-[11px] text-muted/55">
+                Gmail sending is not connected yet — drafts are saved locally
+              </span>
+            </div>
+
+            {drafts.length === 0 ? (
+              <div className="rounded-lg border border-border/30 bg-surface/30 p-6 text-center">
+                <p className="text-[11px] text-muted/40">No drafts yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {drafts.map((d) => (
+                  <DraftCard key={d.id} draft={d} groups={groups} templates={templates} />
+                ))}
+              </div>
+            )}
+          </section>
+
           {/* Favorites */}
           {favorites.length > 0 && (
             <section>
@@ -250,6 +293,68 @@ function TemplateCard({
             <path d="M8 1.5l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 12l-4.2 2.5.8-4.7L1.2 6.5l4.7-.7L8 1.5z" />
           </svg>
         </button>
+      </div>
+    </div>
+  );
+}
+
+const DRAFT_STATUS_STYLES: Record<DraftStatus, { dot: string; label: string }> = {
+  draft: { dot: "bg-gray-300", label: "Draft" },
+  ready: { dot: "bg-blue-400", label: "Ready" },
+  sent: { dot: "bg-emerald-400", label: "Sent" },
+  failed: { dot: "bg-red-400", label: "Failed" },
+};
+
+function DraftCard({
+  draft: d,
+  groups,
+  templates,
+}: {
+  draft: DraftItem;
+  groups: GroupItem[];
+  templates: TemplateItem[];
+}) {
+  const status = DRAFT_STATUS_STYLES[d.status] ?? DRAFT_STATUS_STYLES.draft;
+  const linkedTemplate = d.templateId
+    ? templates.find((t) => t.id === d.templateId)
+    : undefined;
+  const linkedGroup = d.groupId
+    ? groups.find((g) => g.id === d.groupId)
+    : undefined;
+  const preview =
+    d.body.length > 100 ? d.body.slice(0, 100).trimEnd() + "..." : d.body;
+
+  return (
+    <div className="rounded-lg bg-surface border border-border/40 px-5 py-4">
+      <div className="flex items-start gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2.5 mb-1">
+            <span className="text-[14px] font-medium text-foreground/85">
+              {d.subject || "Untitled draft"}
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/30 bg-gray-50 px-2 py-0 text-[9px] font-medium text-muted/60">
+              <span className={`inline-block w-1.5 h-1.5 rounded-full ${status.dot}`} />
+              {status.label}
+            </span>
+          </div>
+          <p className="text-[12px] text-muted/50 leading-relaxed whitespace-pre-line">
+            {preview}
+          </p>
+          {(linkedTemplate || linkedGroup) && (
+            <div className="flex items-center gap-1.5 mt-2">
+              {linkedTemplate && (
+                <span className="inline-flex items-center rounded-full bg-gray-50 border border-border/30 px-2 py-0 text-[9px] font-medium text-foreground/50">
+                  {linkedTemplate.title}
+                </span>
+              )}
+              {linkedGroup && (
+                <span className="inline-flex items-center rounded-full bg-gray-50 border border-border/30 px-2 py-0 text-[9px] font-medium text-foreground/50">
+                  {linkedGroup.name}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
