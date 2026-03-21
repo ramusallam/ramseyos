@@ -5,8 +5,8 @@ import { getActiveVendors, seedVendors, type VendorItem } from "@/lib/vendors";
 import Link from "next/link";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  general: "bg-gray-50 text-gray-600",
-  science: "bg-emerald-50 text-emerald-600",
+  general: "bg-white/5 text-gray-400",
+  science: "bg-emerald-500/10 text-emerald-400",
 };
 
 export default function VendorsPage() {
@@ -64,7 +64,7 @@ export default function VendorsPage() {
 
 function VendorCard({ vendor }: { vendor: VendorItem }) {
   const colors =
-    CATEGORY_COLORS[vendor.category] ?? "bg-gray-50 text-gray-600";
+    CATEGORY_COLORS[vendor.category] ?? "bg-white/5 text-gray-400";
 
   return (
     <a

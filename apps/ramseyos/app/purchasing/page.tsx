@@ -162,7 +162,7 @@ export default function PurchasingPage() {
                         {vs.totalItems} material{vs.totalItems === 1 ? "" : "s"}
                       </span>
                       {vs.toBuyItems > 0 && (
-                        <span className="inline-flex items-center rounded-full bg-rose-50 border border-rose-200/40 px-1.5 py-0 text-[9px] font-medium text-rose-500/70">
+                        <span className="inline-flex items-center rounded-full bg-rose-500/10 border border-rose-400/20 px-1.5 py-0 text-[9px] font-medium text-rose-500/70">
                           {vs.toBuyItems} to buy
                         </span>
                       )}
@@ -175,8 +175,8 @@ export default function PurchasingPage() {
 
           {/* Recurring to Buy */}
           {summary.recurringToBuy.length > 0 && (
-            <div className="rounded-xl border border-blue-200/40 bg-blue-50/20 p-4">
-              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-blue-600/60 mb-3 flex items-center gap-1.5">
+            <div className="rounded-xl border border-blue-400/20 bg-blue-500/4 p-4">
+              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-blue-400/70 mb-3 flex items-center gap-1.5">
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                   <path d="M12.5 6.5A5 5 0 003.5 8M3.5 9.5A5 5 0 0012.5 8" />
                   <path d="M10.5 6.5h2v-2M5.5 9.5h-2v2" />
@@ -270,7 +270,7 @@ export default function PurchasingPage() {
                           href={launchUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="shrink-0 mt-0.5 inline-flex items-center gap-1.5 rounded-md border border-border/50 bg-white px-3 py-1.5 text-[11px] font-medium text-foreground/60 hover:text-accent hover:border-accent/30 transition-colors"
+                          className="shrink-0 mt-0.5 inline-flex items-center gap-1.5 rounded-md border border-border/50 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-foreground/60 hover:text-accent hover:border-accent/30 transition-colors"
                         >
                           Open
                           <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">

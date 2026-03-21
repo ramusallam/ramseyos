@@ -5,11 +5,11 @@ import { getActiveTools, seedTools, toggleToolPinned, type ToolItem } from "@/li
 import Link from "next/link";
 
 const CATEGORY_STYLE: Record<string, string> = {
-  "teaching": "bg-sky-50 text-sky-600",
-  "publishing": "bg-violet-50 text-violet-600",
-  "accessibility": "bg-emerald-50 text-emerald-600",
-  "simulation": "bg-amber-50 text-amber-600",
-  "classroom": "bg-rose-50 text-rose-600",
+  "teaching": "bg-sky-500/10 text-sky-400",
+  "publishing": "bg-violet-500/10 text-violet-400",
+  "accessibility": "bg-emerald-500/10 text-emerald-400",
+  "simulation": "bg-amber-500/10 text-amber-400",
+  "classroom": "bg-rose-500/10 text-rose-400",
 };
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -128,7 +128,7 @@ export default function ToolsPage() {
                 }
                 className={`text-[10px] px-2 py-1 rounded-md font-medium transition-colors ${
                   activeCategory === cat
-                    ? CATEGORY_STYLE[cat] ?? "bg-gray-50 text-muted"
+                    ? CATEGORY_STYLE[cat] ?? "bg-white/5 text-muted"
                     : "text-muted/50 hover:text-muted/80"
                 }`}
               >
@@ -215,7 +215,7 @@ function ToolCard({
         <div className="flex items-start justify-between mb-3">
           <span
             className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
-              CATEGORY_STYLE[tool.category] ?? "bg-gray-50 text-muted"
+              CATEGORY_STYLE[tool.category] ?? "bg-white/5 text-muted"
             }`}
           >
             {tool.category}

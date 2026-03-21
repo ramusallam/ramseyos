@@ -34,15 +34,15 @@ interface Task {
 }
 
 const PRIORITY_STYLE: Record<string, string> = {
-  high: "bg-rose-50 text-rose-600",
-  medium: "bg-amber-50 text-amber-600",
-  low: "bg-sky-50 text-sky-600",
+  high: "bg-rose-500/10 text-rose-400",
+  medium: "bg-amber-500/10 text-amber-400",
+  low: "bg-sky-500/10 text-sky-400",
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  active: "bg-emerald-50 text-emerald-600",
-  paused: "bg-amber-50 text-amber-600",
-  completed: "bg-sky-50 text-sky-600",
+  active: "bg-emerald-500/10 text-emerald-400",
+  paused: "bg-amber-500/10 text-amber-400",
+  completed: "bg-sky-500/10 text-sky-400",
 };
 
 async function toggleCompleted(id: string, current: boolean) {
@@ -128,7 +128,7 @@ export default function ProjectDetailPage() {
           </h1>
           <span
             className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
-              STATUS_STYLE[project.status] ?? "bg-gray-50 text-muted"
+              STATUS_STYLE[project.status] ?? "bg-white/5 text-muted"
             }`}
           >
             {project.status}

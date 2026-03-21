@@ -25,13 +25,13 @@ import {
 } from "@/lib/drafts";
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  school: { bg: "bg-blue-50 border-blue-200/40", text: "text-blue-600/70", label: "School" },
-  personal: { bg: "bg-amber-50 border-amber-200/40", text: "text-amber-600/70", label: "Personal" },
-  professional: { bg: "bg-emerald-50 border-emerald-200/40", text: "text-emerald-600/70", label: "Professional" },
+  school: { bg: "bg-blue-500/100/10 border-blue-400/20", text: "text-blue-400/80", label: "School" },
+  personal: { bg: "bg-amber-500/10 border-amber-400/20", text: "text-amber-400/80", label: "Personal" },
+  professional: { bg: "bg-emerald-500/100/10 border-emerald-400/20", text: "text-emerald-400/80", label: "Professional" },
 };
 
 function categoryMeta(cat: string) {
-  return CATEGORY_STYLES[cat] ?? { bg: "bg-gray-50 border-gray-200/40", text: "text-gray-500/70", label: cat || "Other" };
+  return CATEGORY_STYLES[cat] ?? { bg: "bg-white/5 border-white/10", text: "text-gray-500/70", label: cat || "Other" };
 }
 
 export default function CommunicationsPage() {
@@ -193,7 +193,7 @@ export default function CommunicationsPage() {
           {/* Favorites */}
           {favorites.length > 0 && (
             <section>
-              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-amber-600/80 mb-3 flex items-center gap-1.5">
+              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-amber-400/90 mb-3 flex items-center gap-1.5">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M8 1.5l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 12l-4.2 2.5.8-4.7L1.2 6.5l4.7-.7L8 1.5z" />
                 </svg>
@@ -312,7 +312,7 @@ function TemplateCard({
               {linkedGroups.map((g) => (
                 <span
                   key={g.id}
-                  className="inline-flex items-center rounded-full bg-gray-50 border border-border/30 px-2 py-0 text-[9px] font-medium text-foreground/50"
+                  className="inline-flex items-center rounded-full bg-white/5 border border-border/30 px-2 py-0 text-[9px] font-medium text-foreground/50"
                 >
                   {g.name}
                 </span>
@@ -323,7 +323,7 @@ function TemplateCard({
         <button
           type="button"
           onClick={() => onToggleFavorite(t.id)}
-          className="shrink-0 mt-0.5 p-1 rounded transition-colors hover:bg-amber-50"
+          className="shrink-0 mt-0.5 p-1 rounded transition-colors hover:bg-amber-500/10"
           aria-label={t.favorite ? "Remove from favorites" : "Add to favorites"}
         >
           <svg
@@ -409,12 +409,12 @@ function DraftCard({
             <span className="text-[14px] font-medium text-foreground/85">
               {d.subject || "Untitled draft"}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/30 bg-gray-50 px-2 py-0 text-[9px] font-medium text-muted/60">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/30 bg-white/5 px-2 py-0 text-[9px] font-medium text-muted/60">
               <span className={`inline-block w-1.5 h-1.5 rounded-full ${status.dot}`} />
               {status.label}
             </span>
             {d.gmailStatus !== "not_prepared" && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200/30 bg-blue-50 px-2 py-0 text-[9px] font-medium text-blue-600/60">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/15 bg-blue-500/10 px-2 py-0 text-[9px] font-medium text-blue-400/70">
                 <span className={`inline-block w-1.5 h-1.5 rounded-full ${gmail.dot}`} />
                 {gmail.label}
               </span>
@@ -427,20 +427,20 @@ function DraftCard({
           )}
           <div className="flex items-center gap-1.5 mt-2">
             {linkedTemplate ? (
-              <span className="inline-flex items-center rounded-full bg-blue-50 border border-blue-200/30 px-2 py-0 text-[9px] font-medium text-blue-600/60">
+              <span className="inline-flex items-center rounded-full bg-blue-500/10 border border-blue-400/15 px-2 py-0 text-[9px] font-medium text-blue-400/70">
                 {linkedTemplate.title}
               </span>
             ) : (
-              <span className="inline-flex items-center rounded-full bg-gray-50 border border-dashed border-border/40 px-2 py-0 text-[9px] font-medium text-muted/35">
+              <span className="inline-flex items-center rounded-full bg-white/5 border border-dashed border-border/40 px-2 py-0 text-[9px] font-medium text-muted/35">
                 No template
               </span>
             )}
             {linkedGroup ? (
-              <span className="inline-flex items-center rounded-full bg-emerald-50 border border-emerald-200/30 px-2 py-0 text-[9px] font-medium text-emerald-600/60">
+              <span className="inline-flex items-center rounded-full bg-emerald-500/10 border border-emerald-400/15 px-2 py-0 text-[9px] font-medium text-emerald-400/70">
                 {linkedGroup.name}
               </span>
             ) : (
-              <span className="inline-flex items-center rounded-full bg-gray-50 border border-dashed border-border/40 px-2 py-0 text-[9px] font-medium text-muted/35">
+              <span className="inline-flex items-center rounded-full bg-white/5 border border-dashed border-border/40 px-2 py-0 text-[9px] font-medium text-muted/35">
                 No group
               </span>
             )}
@@ -468,11 +468,11 @@ function DraftCard({
       {expanded && (
         <div className="border-t border-border/30 px-5 py-4 space-y-4">
           {!isAssembled && (
-            <div className="rounded-md border border-dashed border-amber-300/50 bg-amber-50/40 px-3.5 py-2.5 flex items-center gap-2">
+            <div className="rounded-md border border-dashed border-amber-400/20 bg-amber-500/8 px-3.5 py-2.5 flex items-center gap-2">
               <span className="relative flex h-1.5 w-1.5 shrink-0">
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400/70" />
               </span>
-              <span className="text-[11px] text-amber-700/60">
+              <span className="text-[11px] text-amber-400/70">
                 Incomplete — assign a template and group to fully assemble this draft
               </span>
             </div>
@@ -498,7 +498,7 @@ function DraftCard({
               <div className="space-y-1">
                 {recipients.map((r) => (
                   <div key={r.id} className="flex items-center gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-gray-100 border border-border/30 flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/8 border border-border/30 flex items-center justify-center shrink-0">
                       <span className="text-[8px] font-medium text-muted/60">
                         {r.name.charAt(0).toUpperCase()}
                       </span>
@@ -529,7 +529,7 @@ function DraftCard({
                     e.stopPropagation();
                     onGmailStatus(d.id, "ready_for_gmail");
                   }}
-                  className="text-[10px] font-medium text-blue-600/70 bg-blue-50 border border-blue-200/30 rounded-md px-3 py-1 hover:bg-blue-100/60 transition-colors"
+                  className="text-[10px] font-medium text-blue-400/80 bg-blue-500/10 border border-blue-400/15 rounded-md px-3 py-1 hover:bg-blue-500/15 transition-colors"
                 >
                   Prepare for Gmail
                 </button>
@@ -547,7 +547,7 @@ function DraftCard({
                       e.stopPropagation();
                       onGmailStatus(d.id, "not_prepared");
                     }}
-                    className="text-[10px] font-medium text-muted/50 bg-gray-50 border border-border/30 rounded-md px-3 py-1 hover:bg-gray-100/60 transition-colors"
+                    className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border/30 rounded-md px-3 py-1 hover:bg-white/8/60 transition-colors"
                   >
                     Unprepare
                   </button>
@@ -559,7 +559,7 @@ function DraftCard({
                       e.stopPropagation();
                       onGmailStatus(d.id, "handed_off");
                     }}
-                    className="text-[10px] font-medium text-white bg-blue-500 border border-blue-600/30 rounded-md px-3 py-1 hover:bg-blue-600 transition-colors inline-flex items-center gap-1.5"
+                    className="text-[10px] font-medium text-white bg-blue-500/100 border border-blue-600/30 rounded-md px-3 py-1 hover:bg-blue-600 transition-colors inline-flex items-center gap-1.5"
                   >
                     <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 11L11 5" />
@@ -576,18 +576,18 @@ function DraftCard({
                     e.stopPropagation();
                     onGmailStatus(d.id, "ready_for_gmail");
                   }}
-                  className="text-[10px] font-medium text-muted/50 bg-gray-50 border border-border/30 rounded-md px-3 py-1 hover:bg-gray-100/60 transition-colors"
+                  className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border/30 rounded-md px-3 py-1 hover:bg-white/8/60 transition-colors"
                 >
                   Re-open
                 </button>
               )}
             </div>
             {d.gmailStatus === "handed_off" && (
-              <div className="mt-2.5 rounded-md border border-emerald-200/40 bg-emerald-50/40 px-3.5 py-2 flex items-center gap-2">
+              <div className="mt-2.5 rounded-md border border-emerald-400/20 bg-emerald-500/8 px-3.5 py-2 flex items-center gap-2">
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500/70 shrink-0">
                   <path d="M14 3l-8.5 8.5L2 8" />
                 </svg>
-                <span className="text-[11px] text-emerald-700/60">
+                <span className="text-[11px] text-emerald-400/70">
                   Opened in Gmail — complete sending in your mail client
                 </span>
               </div>
@@ -656,7 +656,7 @@ function GroupCard({
             <div className="space-y-1.5">
               {members.map((m) => (
                 <div key={m.id} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-gray-100 border border-border/30 flex items-center justify-center shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-white/8 border border-border/30 flex items-center justify-center shrink-0">
                     <span className="text-[9px] font-medium text-muted/60">
                       {m.name.charAt(0).toUpperCase()}
                     </span>

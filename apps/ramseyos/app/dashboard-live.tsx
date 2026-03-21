@@ -37,9 +37,9 @@ interface Project {
 }
 
 const PRIORITY_STYLE: Record<string, string> = {
-  high: "bg-rose-50 text-rose-600",
-  medium: "bg-amber-50 text-amber-600",
-  low: "bg-sky-50 text-sky-600",
+  high: "bg-rose-500/10 text-rose-400",
+  medium: "bg-amber-500/10 text-amber-400",
+  low: "bg-sky-500/10 text-sky-400",
 };
 
 export function TodayFocus() {
@@ -521,11 +521,11 @@ export function DailyActions() {
 /* ── Suggested Tools ── */
 
 const CATEGORY_STYLE: Record<string, string> = {
-  teaching: "bg-sky-50 text-sky-600",
-  publishing: "bg-violet-50 text-violet-600",
-  accessibility: "bg-emerald-50 text-emerald-600",
-  simulation: "bg-amber-50 text-amber-600",
-  classroom: "bg-rose-50 text-rose-600",
+  teaching: "bg-sky-500/10 text-sky-400",
+  publishing: "bg-violet-500/10 text-violet-400",
+  accessibility: "bg-emerald-500/10 text-emerald-400",
+  simulation: "bg-amber-500/10 text-amber-400",
+  classroom: "bg-rose-500/10 text-rose-400",
 };
 
 const MAX_SUGGESTIONS = 5;
@@ -667,7 +667,7 @@ export function SuggestedTools() {
               <div className="flex items-start justify-between mb-3">
                 <span
                   className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
-                    CATEGORY_STYLE[tool.category] ?? "bg-gray-50 text-muted"
+                    CATEGORY_STYLE[tool.category] ?? "bg-white/5 text-muted"
                   }`}
                 >
                   {tool.category}

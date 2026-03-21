@@ -152,7 +152,7 @@ function FocusCard({
           {label}
         </span>
         {isInProgress && (
-          <span className="text-[9px] font-semibold uppercase tracking-wide text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+          <span className="text-[9px] font-semibold uppercase tracking-wide text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
             In progress
           </span>
         )}

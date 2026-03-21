@@ -11,9 +11,9 @@ import { type Timestamp } from "firebase/firestore";
 import Link from "next/link";
 
 const PRIORITY_STYLE: Record<string, string> = {
-  high: "bg-rose-50 text-rose-600",
-  medium: "bg-amber-50 text-amber-600",
-  low: "bg-sky-50 text-sky-600",
+  high: "bg-rose-500/10 text-rose-400",
+  medium: "bg-amber-500/10 text-amber-400",
+  low: "bg-sky-500/10 text-sky-400",
 };
 
 const TYPE_LABEL: Record<TimelineItemType, string> = {

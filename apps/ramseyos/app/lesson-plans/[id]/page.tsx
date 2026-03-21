@@ -175,7 +175,7 @@ export default function LessonPlanEditorPage() {
         </Link>
         <div className="flex items-center gap-3">
           {saved && (
-            <span className="text-[11px] text-emerald-600 font-medium">
+            <span className="text-[11px] text-emerald-400 font-medium">
               Saved
             </span>
           )}
@@ -210,7 +210,7 @@ export default function LessonPlanEditorPage() {
               value={course}
               onChange={(e) => setCourse(e.target.value)}
               placeholder="e.g. AP Chemistry"
-              className="w-full rounded-lg border border-border/60 bg-white px-3 py-2 text-[13px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+              className="w-full rounded-lg border border-border/60 bg-white/5 px-3 py-2 text-[13px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
             />
           </div>
           <div>
@@ -222,7 +222,7 @@ export default function LessonPlanEditorPage() {
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               placeholder="inquiry, atomic structure, lab"
-              className="w-full rounded-lg border border-border/60 bg-white px-3 py-2 text-[13px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+              className="w-full rounded-lg border border-border/60 bg-white/5 px-3 py-2 text-[13px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
             />
           </div>
         </div>
@@ -235,7 +235,7 @@ export default function LessonPlanEditorPage() {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="What is this lesson about?"
           rows={8}
-          className="w-full rounded-lg border border-border/60 bg-white px-4 py-3 text-[13px] text-foreground leading-relaxed placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors resize-none"
+          className="w-full rounded-lg border border-border/60 bg-white/5 px-4 py-3 text-[13px] text-foreground leading-relaxed placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors resize-none"
         />
       </section>
 
@@ -255,7 +255,7 @@ export default function LessonPlanEditorPage() {
                 return (
                   <div
                     key={rid}
-                    className="group flex items-center gap-2 rounded-md bg-white border border-border/40 px-3 py-2"
+                    className="group flex items-center gap-2 rounded-md bg-white/5 border border-border/40 px-3 py-2"
                   >
                     <a
                       href={tool.url}
@@ -294,7 +294,7 @@ export default function LessonPlanEditorPage() {
               + Link a resource
             </button>
           ) : (
-            <div className="rounded-md border border-border/40 bg-white p-2 space-y-0.5">
+            <div className="rounded-md border border-border/40 bg-white/5 p-2 space-y-0.5">
               <div className="flex items-center justify-between mb-1 px-1">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">
                   Select
@@ -316,7 +316,7 @@ export default function LessonPlanEditorPage() {
                     onClick={() => {
                       setLinkedResourceIds((prev) => [...prev, tool.id]);
                     }}
-                    className="w-full text-left rounded px-2 py-1.5 hover:bg-gray-50 transition-colors"
+                    className="w-full text-left rounded px-2 py-1.5 hover:bg-white/5 transition-colors"
                   >
                     <span className="text-[12px] font-medium text-foreground/70">
                       {tool.title}
@@ -340,12 +340,12 @@ export default function LessonPlanEditorPage() {
         </section>
 
         {/* Inquiry Studio */}
-        <section className="rounded-xl border border-amber-200/60 bg-amber-50/30 p-5">
+        <section className="rounded-xl border border-amber-400/25 bg-amber-500/6 p-5">
           <div className="flex items-center gap-1.5 mb-3">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className="text-amber-500">
               <path d="M8 1l2 3h3l-2.5 2.5L11.5 10 8 8l-3.5 2 1-3.5L3 4h3l2-3z" fill="currentColor" />
             </svg>
-            <h3 className="text-[10px] font-semibold uppercase tracking-wider text-amber-700/70">
+            <h3 className="text-[10px] font-semibold uppercase tracking-wider text-amber-400/80">
               Inquiry Studio
             </h3>
           </div>
@@ -360,7 +360,7 @@ export default function LessonPlanEditorPage() {
                 value={sparkLink}
                 onChange={(e) => setSparkLink(e.target.value)}
                 placeholder="https://sparklearningstudio.ai/..."
-                className="w-full rounded-md border border-amber-200/60 bg-white px-3 py-2 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-amber-300 transition-colors"
+                className="w-full rounded-md border border-amber-400/25 bg-white/5 px-3 py-2 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-amber-300 transition-colors"
               />
             </div>
 
@@ -374,10 +374,10 @@ export default function LessonPlanEditorPage() {
                     className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium transition-colors ${
                       sparkStatus === s
                         ? s === "deployed"
-                          ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200"
+                          ? "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-400/30"
                           : s === "in-progress"
-                            ? "bg-amber-100 text-amber-700 ring-1 ring-amber-200"
-                            : "bg-gray-100 text-foreground/50 ring-1 ring-gray-200"
+                            ? "bg-amber-500/15 text-amber-400 ring-1 ring-amber-400/30"
+                            : "bg-white/8 text-foreground/50 ring-1 ring-white/15"
                         : "bg-white/60 text-muted/40 hover:text-muted/60"
                     }`}
                   >
@@ -404,7 +404,7 @@ export default function LessonPlanEditorPage() {
                 </svg>
               </a>
             ) : (
-              <p className="text-[10px] text-amber-600/40">
+              <p className="text-[10px] text-amber-400/40">
                 Add a link to connect this lesson to Spark.
               </p>
             )}
@@ -423,7 +423,7 @@ export default function LessonPlanEditorPage() {
             {materials.map((mat, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3 rounded-md bg-white border border-border/40 px-3 py-2.5"
+                className="flex items-start gap-3 rounded-md bg-white/5 border border-border/40 px-3 py-2.5"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -441,7 +441,7 @@ export default function LessonPlanEditorPage() {
                       </svg>
                     )}
                     {mat.needToBuy && (
-                      <span className="inline-flex items-center rounded-full bg-rose-50 border border-rose-200/50 px-1.5 py-0 text-[9px] font-medium text-rose-600/80 shrink-0">
+                      <span className="inline-flex items-center rounded-full bg-rose-500/10 border border-rose-400/20 px-1.5 py-0 text-[9px] font-medium text-rose-400/80 shrink-0">
                         buy
                       </span>
                     )}
@@ -525,7 +525,7 @@ export default function LessonPlanEditorPage() {
             )}
           </div>
         ) : (
-          <div className="rounded-md border border-border/40 bg-white p-3 space-y-2.5">
+          <div className="rounded-md border border-border/40 bg-white/5 p-3 space-y-2.5">
             <input
               type="text"
               value={matName}
@@ -556,7 +556,7 @@ export default function LessonPlanEditorPage() {
                     setMatUrl("");
                   }
                 }}
-                className="w-full rounded-md border border-border/40 bg-white px-3 py-1.5 text-[12px] text-foreground outline-none focus:border-accent/30 transition-colors"
+                className="w-full rounded-md border border-border/40 bg-white/5 px-3 py-1.5 text-[12px] text-foreground outline-none focus:border-accent/30 transition-colors"
               >
                 <option value="">Manual source...</option>
                 {allVendors.map((v) => (
@@ -628,7 +628,7 @@ export default function LessonPlanEditorPage() {
                 value={matPurchaseNotes}
                 onChange={(e) => setMatPurchaseNotes(e.target.value)}
                 placeholder="Purchase notes (optional)"
-                className="w-full rounded-md border border-rose-200/50 bg-rose-50/30 px-3 py-1.5 text-[12px] text-foreground placeholder:text-rose-300/60 outline-none focus:border-rose-300 transition-colors"
+                className="w-full rounded-md border border-rose-400/20 bg-rose-500/6 px-3 py-1.5 text-[12px] text-foreground placeholder:text-rose-300/60 outline-none focus:border-rose-300 transition-colors"
               />
             )}
             <div className="flex gap-2 pt-0.5">
@@ -674,7 +674,7 @@ export default function LessonPlanEditorPage() {
               value={lastTaughtAt}
               onChange={(e) => setLastTaughtAt(e.target.value)}
               aria-label="Last taught date"
-              className="rounded-md border border-border/40 bg-white px-2 py-1 text-[11px] text-foreground outline-none focus:border-accent/30 transition-colors"
+              className="rounded-md border border-border/40 bg-white/5 px-2 py-1 text-[11px] text-foreground outline-none focus:border-accent/30 transition-colors"
             />
           </div>
         </div>
@@ -683,14 +683,14 @@ export default function LessonPlanEditorPage() {
           onChange={(e) => setReflection(e.target.value)}
           placeholder="What worked? What would you change next time?"
           rows={4}
-          className="w-full rounded-lg border border-border/40 bg-white px-4 py-3 text-[13px] text-foreground leading-relaxed placeholder:text-muted/30 outline-none focus:border-accent/30 transition-colors resize-none"
+          className="w-full rounded-lg border border-border/40 bg-white/5 px-4 py-3 text-[13px] text-foreground leading-relaxed placeholder:text-muted/30 outline-none focus:border-accent/30 transition-colors resize-none"
         />
       </section>
 
       {/* ── Bottom Save (mobile convenience) ── */}
       <div className="flex items-center justify-end gap-3">
         {saved && (
-          <span className="text-[11px] text-emerald-600 font-medium">
+          <span className="text-[11px] text-emerald-400 font-medium">
             Saved
           </span>
         )}

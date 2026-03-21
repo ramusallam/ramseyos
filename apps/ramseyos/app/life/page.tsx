@@ -12,14 +12,14 @@ import {
 /* ── Style maps ── */
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  family: { bg: "bg-rose-50 border-rose-200/40", text: "text-rose-600/70", label: "Family" },
-  home: { bg: "bg-amber-50 border-amber-200/40", text: "text-amber-600/70", label: "Home" },
-  reminder: { bg: "bg-blue-50 border-blue-200/40", text: "text-blue-600/70", label: "Reminder" },
-  "life-admin": { bg: "bg-slate-100 border-slate-200/40", text: "text-slate-600/70", label: "Life Admin" },
+  family: { bg: "bg-rose-500/10 border-rose-400/20", text: "text-rose-400/80", label: "Family" },
+  home: { bg: "bg-amber-500/10 border-amber-400/20", text: "text-amber-400/80", label: "Home" },
+  reminder: { bg: "bg-blue-500/10 border-blue-400/20", text: "text-blue-400/80", label: "Reminder" },
+  "life-admin": { bg: "bg-slate-500/10 border-slate-400/20", text: "text-slate-400/80", label: "Life Admin" },
 };
 
 function categoryMeta(cat: string) {
-  return CATEGORY_STYLES[cat] ?? { bg: "bg-gray-50 border-gray-200/40", text: "text-gray-500/70", label: cat || "Other" };
+  return CATEGORY_STYLES[cat] ?? { bg: "bg-white/5 border-white/10", text: "text-gray-500/70", label: cat || "Other" };
 }
 
 const STATUS_META: Record<LifeItemStatus, { dot: string; label: string }> = {
@@ -168,12 +168,12 @@ function LifeItemCard({
             >
               {style.label}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/30 bg-gray-50 px-2 py-0 text-[9px] font-medium text-muted/60">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/30 bg-white/5 px-2 py-0 text-[9px] font-medium text-muted/60">
               <span className={`inline-block w-1.5 h-1.5 rounded-full ${status.dot}`} />
               {status.label}
             </span>
             {i.recurring && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-violet-200/30 bg-violet-50 px-2 py-0 text-[9px] font-medium text-violet-600/60">
+              <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/15 bg-violet-500/10 px-2 py-0 text-[9px] font-medium text-violet-400/70">
                 <svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12.5 8a4.5 4.5 0 11-1.3-3.2" />
                   <path d="M12.5 2.5v2.3h-2.3" />

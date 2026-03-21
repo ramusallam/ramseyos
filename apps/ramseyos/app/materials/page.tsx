@@ -72,7 +72,7 @@ export default function MaterialsPage() {
       {/* Need to Buy */}
       {needToBuy.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-rose-600/80 mb-3 flex items-center gap-1.5">
+          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-rose-400/80 mb-3 flex items-center gap-1.5">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="6" cy="13.5" r="1" fill="currentColor" />
               <circle cx="12.5" cy="13.5" r="1" fill="currentColor" />
@@ -92,7 +92,7 @@ export default function MaterialsPage() {
       {/* Favorites */}
       {favorites.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-amber-600/80 mb-3 flex items-center gap-1.5">
+          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-amber-400/90 mb-3 flex items-center gap-1.5">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
               <path d="M8 1.5l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 12l-4.2 2.5.8-4.7L1.2 6.5l4.7-.7L8 1.5z" />
             </svg>
@@ -109,7 +109,7 @@ export default function MaterialsPage() {
       {/* Recurring Supplies */}
       {recurring.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-blue-600/80 mb-3 flex items-center gap-1.5">
+          <h2 className="text-[10px] font-semibold uppercase tracking-wider text-blue-400/90 mb-3 flex items-center gap-1.5">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <path d="M12.5 6.5A5 5 0 003.5 8M3.5 9.5A5 5 0 0012.5 8" />
               <path d="M10.5 6.5h2v-2M5.5 9.5h-2v2" />
@@ -173,7 +173,7 @@ function MaterialCard({
             </svg>
           )}
           {mat.needToBuy && (
-            <span className="inline-flex items-center rounded-full bg-rose-50 border border-rose-200/50 px-1.5 py-0 text-[9px] font-medium text-rose-600/80 shrink-0">
+            <span className="inline-flex items-center rounded-full bg-rose-500/10 border border-rose-400/20 px-1.5 py-0 text-[9px] font-medium text-rose-400/80 shrink-0">
               buy
             </span>
           )}

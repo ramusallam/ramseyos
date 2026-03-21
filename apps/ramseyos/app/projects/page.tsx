@@ -26,9 +26,9 @@ interface TaskCount {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  active: "bg-emerald-50 text-emerald-600",
-  paused: "bg-amber-50 text-amber-600",
-  completed: "bg-sky-50 text-sky-600",
+  active: "bg-emerald-500/10 text-emerald-400",
+  paused: "bg-amber-500/10 text-amber-400",
+  completed: "bg-sky-500/10 text-sky-400",
 };
 
 export default function ProjectsPage() {
@@ -115,7 +115,7 @@ export default function ProjectsPage() {
                   </div>
                   <span
                     className={`text-[9px] px-1.5 py-0.5 rounded font-medium shrink-0 ${
-                      STATUS_STYLE[project.status] ?? "bg-gray-50 text-muted"
+                      STATUS_STYLE[project.status] ?? "bg-white/5 text-muted"
                     }`}
                   >
                     {project.status}

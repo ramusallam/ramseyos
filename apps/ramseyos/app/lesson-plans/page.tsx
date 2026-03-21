@@ -92,7 +92,7 @@ function LessonPlanCard({ plan }: { plan: LessonPlan }) {
       href={`/lesson-plans/${plan.id}`}
       className="group block bg-surface rounded-xl border border-border p-5 shadow-card transition-all hover:shadow-card-hover hover:border-border-strong"
     >
-      <span className="text-[9px] px-1.5 py-0.5 rounded font-medium bg-sky-50 text-sky-600">
+      <span className="text-[9px] px-1.5 py-0.5 rounded font-medium bg-sky-500/10 text-sky-400">
         {plan.course}
       </span>
       <h3 className="text-[14px] font-medium text-foreground/90 mt-3 mb-1 group-hover:text-foreground transition-colors">
@@ -106,7 +106,7 @@ function LessonPlanCard({ plan }: { plan: LessonPlan }) {
           {plan.tags.map((tag) => (
             <span
               key={tag}
-              className="text-[9px] px-1.5 py-0.5 rounded bg-gray-50 text-muted/70 font-medium"
+              className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-muted/70 font-medium"
             >
               {tag}
             </span>
