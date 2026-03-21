@@ -11,15 +11,17 @@ import {
 
 /* ── Style maps ── */
 
-const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  family: { bg: "bg-rose-500/10 border-rose-400/20", text: "text-rose-400/80", label: "Family" },
-  home: { bg: "bg-amber-500/10 border-amber-400/20", text: "text-amber-400/80", label: "Home" },
-  reminder: { bg: "bg-blue-500/10 border-blue-400/20", text: "text-blue-400/80", label: "Reminder" },
-  "life-admin": { bg: "bg-slate-500/10 border-slate-400/20", text: "text-slate-400/80", label: "Life Admin" },
+const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string; icon: string }> = {
+  family: { bg: "bg-rose-500/10 border-rose-400/20", text: "text-rose-400/80", label: "Family", icon: "M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z" },
+  home: { bg: "bg-amber-500/10 border-amber-400/20", text: "text-amber-400/80", label: "Home", icon: "M2 8.5l6-5.5 6 5.5M3.5 7.5V13a1 1 0 001 1h7a1 1 0 001-1V7.5" },
+  reminder: { bg: "bg-blue-500/10 border-blue-400/20", text: "text-blue-400/80", label: "Reminder", icon: "M8 2v1M8 13v1M3.5 8H2.5M13.5 8H12.5M8 4.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z" },
+  "life-admin": { bg: "bg-slate-500/10 border-slate-400/20", text: "text-slate-400/80", label: "Life Admin", icon: "M3 3h10a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1zM5 7h6M5 9.5h3" },
 };
 
+const CATEGORY_ORDER = ["family", "home", "reminder", "life-admin"];
+
 function categoryMeta(cat: string) {
-  return CATEGORY_STYLES[cat] ?? { bg: "bg-white/5 border-white/10", text: "text-gray-500/70", label: cat || "Other" };
+  return CATEGORY_STYLES[cat] ?? { bg: "bg-white/5 border-white/10", text: "text-gray-500/70", label: cat || "Other", icon: "M8 2v12M2 8h12" };
 }
 
 const STATUS_META: Record<LifeItemStatus, { dot: string; label: string }> = {
@@ -54,17 +56,22 @@ export default function LifePage() {
     []
   );
 
-  const recurring = items.filter((i) => i.recurring && i.status !== "done");
-  const nonRecurring = items.filter((i) => !i.recurring || i.status === "done");
-
-  const statusGroups = new Map<LifeItemStatus, LifeItem[]>();
-  for (const i of nonRecurring) {
-    const arr = statusGroups.get(i.status) ?? [];
-    arr.push(i);
-    statusGroups.set(i.status, arr);
-  }
-
   const openCount = items.filter((i) => i.status !== "done").length;
+  const recurringCount = items.filter((i) => i.recurring && i.status !== "done").length;
+
+  /* Group by category */
+  const byCategory = new Map<string, LifeItem[]>();
+  for (const i of items) {
+    const key = i.category || "other";
+    const arr = byCategory.get(key) ?? [];
+    arr.push(i);
+    byCategory.set(key, arr);
+  }
+  const sortedCategories = Array.from(byCategory.entries()).sort(
+    ([a], [b]) =>
+      (CATEGORY_ORDER.indexOf(a) === -1 ? 99 : CATEGORY_ORDER.indexOf(a)) -
+      (CATEGORY_ORDER.indexOf(b) === -1 ? 99 : CATEGORY_ORDER.indexOf(b))
+  );
 
   if (loading) {
     return (
@@ -81,57 +88,52 @@ export default function LifePage() {
           Life
         </h1>
         <p className="text-[12px] text-muted/60 mt-1">
-          {openCount} open item{openCount === 1 ? "" : "s"} · Personal &amp; family
+          {openCount} open item{openCount === 1 ? "" : "s"}
+          {recurringCount > 0 && <> · {recurringCount} recurring</>}
         </p>
       </header>
 
-      <div className="space-y-10">
-        {/* ── Recurring ── */}
-        {recurring.length > 0 && (
-          <section>
-            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-foreground/60 mb-3 flex items-center gap-1.5">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12.5 8a4.5 4.5 0 11-1.3-3.2" />
-                <path d="M12.5 2.5v2.3h-2.3" />
-              </svg>
-              Recurring
-              <span className="text-muted/40 font-normal">{recurring.length}</span>
-            </h2>
-            <div className="space-y-2">
-              {recurring.map((i) => (
-                <LifeItemCard key={i.id} item={i} onStatusChange={setStatus} />
-              ))}
-            </div>
-          </section>
-        )}
+      {items.length === 0 ? (
+        <div className="rounded-xl border border-border/40 bg-surface/40 p-8 text-center">
+          <p className="text-[12px] text-muted/50">No life items yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {sortedCategories.map(([cat, catItems]) => {
+            const meta = categoryMeta(cat);
+            const catOpen = catItems.filter((i) => i.status !== "done").length;
+            const catRecurring = catItems.filter((i) => i.recurring && i.status !== "done");
+            const catOther = catItems.filter((i) => !i.recurring || i.status === "done");
 
-        {/* ── Items by Status ── */}
-        {STATUS_ORDER.map((status) => {
-          const group = statusGroups.get(status);
-          if (!group || group.length === 0) return null;
-          const meta = STATUS_META[status];
-          return (
-            <section key={status}>
-              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-foreground/60 mb-3 flex items-center gap-1.5">
-                <span className={`inline-block w-2 h-2 rounded-full ${meta.dot}`} />
-                {meta.label}
-                <span className="text-muted/40 font-normal">{group.length}</span>
-              </h2>
-              <div className="space-y-2">
-                {group.map((i) => (
-                  <LifeItemCard key={i.id} item={i} onStatusChange={setStatus} />
-                ))}
-              </div>
-            </section>
-          );
-        })}
+            return (
+              <section key={cat}>
+                <h2 className={`text-[10px] font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5 ${meta.text}`}>
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={meta.icon} />
+                  </svg>
+                  {meta.label}
+                  <span className="text-muted/40 font-normal">{catOpen > 0 ? `${catOpen} open` : "all done"}</span>
+                </h2>
 
-        {items.length === 0 && (
-          <div className="rounded-xl border border-border/40 bg-surface/40 p-8 text-center">
-            <p className="text-[12px] text-muted/50">No life items yet.</p>
-          </div>
-        )}
-      </div>
+                <div className="space-y-2">
+                  {/* Recurring items first within each category */}
+                  {catRecurring.map((i) => (
+                    <LifeItemCard key={i.id} item={i} onStatusChange={setStatus} />
+                  ))}
+                  {/* Then the rest, ordered by status */}
+                  {STATUS_ORDER.flatMap((s) =>
+                    catOther
+                      .filter((i) => i.status === s)
+                      .map((i) => (
+                        <LifeItemCard key={i.id} item={i} onStatusChange={setStatus} />
+                      ))
+                  )}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -152,7 +154,7 @@ function LifeItemCard({
     i.body.length > 120 ? i.body.slice(0, 120).trimEnd() + "..." : i.body;
 
   return (
-    <div className="rounded-lg bg-surface border border-border/40 overflow-hidden">
+    <div className={`rounded-lg bg-surface border border-border/40 overflow-hidden ${i.recurring && i.status !== "done" ? "border-l-2 border-l-violet-400/30" : ""}`}>
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
@@ -162,11 +164,6 @@ function LifeItemCard({
           <div className="flex items-center gap-2.5 mb-1">
             <span className={`text-[14px] font-medium ${i.status === "done" ? "text-foreground/45 line-through" : "text-foreground/85"}`}>
               {i.title}
-            </span>
-            <span
-              className={`inline-flex items-center rounded-full border px-2 py-0 text-[9px] font-medium ${style.bg} ${style.text}`}
-            >
-              {style.label}
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border/30 bg-white/5 px-2 py-0 text-[9px] font-medium text-muted/60">
               <span className={`inline-block w-1.5 h-1.5 rounded-full ${status.dot}`} />
