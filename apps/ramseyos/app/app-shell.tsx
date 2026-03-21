@@ -89,7 +89,7 @@ function useShellCounts(): ShellCounts {
   return counts;
 }
 
-type NavKey = "today" | "inbox" | "tasks" | "projects" | "calendar" | "tools" | "lessonPlans" | "materials" | "purchasing" | "vendors" | "communications";
+type NavKey = "today" | "inbox" | "tasks" | "projects" | "calendar" | "tools" | "lessonPlans" | "materials" | "purchasing" | "vendors" | "communications" | "admin";
 
 const NAV_ITEMS: {
   href: string;
@@ -108,6 +108,7 @@ const NAV_ITEMS: {
   { href: "/purchasing", label: "Purchasing", icon: PurchasingIcon, key: "purchasing" },
   { href: "/vendors", label: "Sources", icon: VendorIcon, key: "vendors" },
   { href: "/communications", label: "Comms", icon: CommsIcon, key: "communications" },
+  { href: "/admin", label: "Admin", icon: AdminIcon, key: "admin" },
 ];
 
 function getNavCount(
@@ -589,6 +590,34 @@ function VendorIcon({ active }: { active: boolean }) {
       />
       <path
         d="M6 10h4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function AdminIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <rect
+        x="2"
+        y="2"
+        width="12"
+        height="12"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M5 5.5h6M5 8h6M5 10.5h4"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
