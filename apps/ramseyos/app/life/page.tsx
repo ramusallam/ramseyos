@@ -143,6 +143,46 @@ export default function LifePage() {
         </button>
       </header>
 
+      {/* Dashboard Summary */}
+      <div className="mb-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
+        {CATEGORY_ORDER.map((cat) => {
+          const meta = categoryMeta(cat);
+          const catCount = openItems.filter((i) => i.category === cat).length;
+          return (
+            <div
+              key={cat}
+              className={`rounded-xl border ${meta.bg} px-4 py-3`}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={meta.text}>
+                  <path d={meta.icon} />
+                </svg>
+                <span className={`text-[10px] font-semibold uppercase tracking-wider ${meta.text}`}>
+                  {meta.label}
+                </span>
+              </div>
+              <span className="text-[20px] font-semibold text-foreground/80 tabular-nums">
+                {catCount}
+              </span>
+            </div>
+          );
+        })}
+        <div className="rounded-xl border border-violet-400/15 bg-violet-500/5 px-4 py-3">
+          <div className="flex items-center gap-1.5 mb-1">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-violet-400/70">
+              <path d="M12.5 8a4.5 4.5 0 11-1.3-3.2" />
+              <path d="M12.5 2.5v2.3h-2.3" />
+            </svg>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-400/70">
+              Recurring
+            </span>
+          </div>
+          <span className="text-[20px] font-semibold text-foreground/80 tabular-nums">
+            {activeRecurring.length}
+          </span>
+        </div>
+      </div>
+
       {/* Quick-Add Form */}
       {showAdd && (
         <QuickAddForm
