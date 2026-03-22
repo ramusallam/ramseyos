@@ -47,3 +47,11 @@ body {
 ::selection {
   background: var(--accent-dim);
 }
+
+/* Safe area insets for notched devices */
+.pt-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

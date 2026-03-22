@@ -9,6 +9,7 @@ import {
   type TimelineItemType,
   type LifeContextItem,
 } from "@/lib/orchestration";
+import { formatDailyCardText } from "@/lib/daily-card-format";
 import { type Timestamp } from "firebase/firestore";
 
 /* ── Constants ── */
@@ -95,14 +96,42 @@ function getNextItem(timeline: TimelineItem[], currentId: string): TimelineItem 
 
 export default function MobileDailyCard() {
   const [plan, setPlan] = useState<DailyPlan | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [shared, setShared] = useState(false);
 
   useEffect(() => {
     generateDailyPlan().then(setPlan);
   }, []);
 
+  async function handleCopy() {
+    if (!plan) return;
+    const text = formatDailyCardText(plan);
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleShare() {
+    if (!plan) return;
+    const text = formatDailyCardText(plan);
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `RamseyOS — ${formatDate()}`, text });
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+      } catch {
+        // User cancelled — no action needed
+      }
+    } else {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
   if (!plan) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <div className="size-5 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
       </div>
     );
@@ -120,103 +149,144 @@ export default function MobileDailyCard() {
   const dailyActions = plan.timeline.filter((i) => i.type === "daily-action");
 
   return (
-    <div className="max-w-lg mx-auto px-5 py-8 pb-16 space-y-8">
-      {/* Header */}
-      <header>
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-accent mb-1">
-          RamseyOS
-        </p>
-        <h1 className="text-lg font-semibold text-foreground">{formatDate()}</h1>
-        <div className="flex items-center gap-2 mt-2">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={mode.color}>
-            <path d={mode.icon} />
-          </svg>
-          <span className={`text-[12px] font-medium ${mode.color}`}>
-            {mode.label}
-          </span>
-        </div>
-      </header>
-
-      {/* Now / Next */}
-      {nowItem && (
-        <section className="space-y-3">
-          <MobileNowCard item={nowItem} />
-          {nextItem && <MobileNextCard item={nextItem} />}
-        </section>
-      )}
-
-      {/* Schedule */}
-      {scheduleItems.length > 0 && (
-        <section>
-          <SectionHeader label="Schedule" count={scheduleItems.length} />
-          <ul className="space-y-1">
-            {scheduleItems.map((item) => (
-              <ScheduleRow key={item.id} item={item} />
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Tasks */}
-      {taskItems.length > 0 && (
-        <section>
-          <SectionHeader label="Tasks" count={taskItems.length} />
-          <ul className="space-y-1">
-            {taskItems.map((item) => (
-              <TaskRow key={item.id} item={item} />
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Daily Actions */}
-      {dailyActions.length > 0 && (
-        <section>
-          <SectionHeader label="Daily Actions" count={dailyActions.length} />
-          <ul className="space-y-1">
-            {dailyActions.map((item) => (
-              <li
-                key={item.id}
-                className="flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3"
+    <div className="max-w-lg mx-auto px-4 sm:px-5 pt-safe-top pb-safe-bottom">
+      <div className="py-6 sm:py-8 space-y-6">
+        {/* Header */}
+        <header className="px-1">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-accent">
+              RamseyOS
+            </p>
+            {/* Delivery actions */}
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="p-2 rounded-lg text-muted/50 hover:text-foreground/70 hover:bg-surface-raised transition-colors active:scale-95"
+                aria-label="Copy daily card"
               >
-                <span className="size-2 shrink-0 rounded-full bg-gray-400" />
-                <span className="flex-1 text-[14px] text-foreground/70">
-                  {item.title}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+                {copied ? (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
+                    <path d="M3.5 8.5l3 3 6-7" />
+                  </svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="5" y="5" width="8" height="8" rx="1.5" />
+                    <path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" />
+                  </svg>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="p-2 rounded-lg text-muted/50 hover:text-foreground/70 hover:bg-surface-raised transition-colors active:scale-95"
+                aria-label="Share daily card"
+              >
+                {shared ? (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
+                    <path d="M3.5 8.5l3 3 6-7" />
+                  </svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 8v5a1 1 0 001 1h6a1 1 0 001-1V8" />
+                    <path d="M8 2v8M5 5l3-3 3 3" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+          <h1 className="text-lg font-semibold text-foreground mt-1">{formatDate()}</h1>
+          <div className="flex items-center gap-2 mt-1.5">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={mode.color}>
+              <path d={mode.icon} />
+            </svg>
+            <span className={`text-[12px] font-medium ${mode.color}`}>
+              {mode.label}
+            </span>
+          </div>
+        </header>
 
-      {/* Life Context */}
-      {plan.lifeContext.length > 0 && (
-        <section>
-          <SectionHeader label="Life" count={plan.lifeContext.length} />
-          <ul className="space-y-1">
-            {plan.lifeContext.map((item) => (
-              <LifeRow key={item.id} item={item} />
-            ))}
-          </ul>
-        </section>
-      )}
+        {/* Now / Next */}
+        {nowItem && (
+          <section className="space-y-2">
+            <MobileNowCard item={nowItem} />
+            {nextItem && <MobileNextCard item={nextItem} />}
+          </section>
+        )}
 
-      {/* Inbox nudge */}
-      {plan.inboxItems.length > 0 && (
-        <section className="rounded-xl bg-amber-500/5 border border-amber-500/10 px-4 py-3 flex items-center gap-3">
-          <span className="size-2 shrink-0 rounded-full bg-amber-500" />
-          <span className="flex-1 text-[13px] text-foreground/70">
-            {plan.inboxItems.length} inbox item{plan.inboxItems.length !== 1 ? "s" : ""} need attention
-          </span>
-        </section>
-      )}
+        {/* Schedule */}
+        {scheduleItems.length > 0 && (
+          <section>
+            <SectionHeader label="Schedule" count={scheduleItems.length} />
+            <ul className="space-y-1.5">
+              {scheduleItems.map((item) => (
+                <ScheduleRow key={item.id} item={item} />
+              ))}
+            </ul>
+          </section>
+        )}
 
-      {/* Footer */}
-      <footer className="text-center pt-4">
-        <p className="text-[10px] text-muted/40 tracking-wide">
-          RamseyOS · {new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-        </p>
-      </footer>
+        {/* Tasks */}
+        {taskItems.length > 0 && (
+          <section>
+            <SectionHeader label="Tasks" count={taskItems.length} />
+            <ul className="space-y-1.5">
+              {taskItems.map((item) => (
+                <TaskRow key={item.id} item={item} />
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Daily Actions */}
+        {dailyActions.length > 0 && (
+          <section>
+            <SectionHeader label="Daily Actions" count={dailyActions.length} />
+            <ul className="space-y-1.5">
+              {dailyActions.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3.5"
+                >
+                  <span className="size-2 shrink-0 rounded-full bg-gray-400" />
+                  <span className="flex-1 text-[14px] text-foreground/70">
+                    {item.title}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Life Context */}
+        {plan.lifeContext.length > 0 && (
+          <section>
+            <SectionHeader label="Life" count={plan.lifeContext.length} />
+            <ul className="space-y-1.5">
+              {plan.lifeContext.map((item) => (
+                <LifeRow key={item.id} item={item} />
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Inbox nudge */}
+        {plan.inboxItems.length > 0 && (
+          <section className="rounded-xl bg-amber-500/5 border border-amber-500/10 px-4 py-3.5 flex items-center gap-3">
+            <span className="size-2 shrink-0 rounded-full bg-amber-500" />
+            <span className="flex-1 text-[14px] text-foreground/70">
+              {plan.inboxItems.length} inbox item{plan.inboxItems.length !== 1 ? "s" : ""} need attention
+            </span>
+          </section>
+        )}
+
+        {/* Footer */}
+        <footer className="text-center pt-2 pb-4">
+          <p className="text-[10px] text-muted/30 tracking-wide">
+            RamseyOS · {new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }
@@ -225,11 +295,11 @@ export default function MobileDailyCard() {
 
 function SectionHeader({ label, count }: { label: string; count: number }) {
   return (
-    <div className="flex items-center justify-between mb-2">
+    <div className="flex items-center justify-between mb-2 px-1">
       <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
         {label}
       </h2>
-      <span className="text-[11px] text-muted/50 tabular-nums">{count}</span>
+      <span className="text-[11px] text-muted/40 tabular-nums">{count}</span>
     </div>
   );
 }
@@ -280,13 +350,11 @@ function MobileNowCard({ item }: { item: TimelineItem }) {
 
 function MobileNextCard({ item }: { item: TimelineItem }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface px-5 py-4">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted">
+    <div className="rounded-2xl border border-border bg-surface px-5 py-3.5">
+      <div className="flex items-center gap-3">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted shrink-0">
           Next
         </span>
-      </div>
-      <div className="flex items-center gap-3">
         <span className={`size-2 shrink-0 rounded-full ${TYPE_DOT[item.type]}`} />
         <p className="flex-1 text-[14px] text-foreground/80 truncate">
           {item.title}
@@ -313,8 +381,8 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
 
   return (
     <li
-      className={`flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3 ${
-        isPast ? "opacity-40" : ""
+      className={`flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3.5 ${
+        isPast ? "opacity-35" : ""
       }`}
     >
       {isActive ? (
@@ -322,7 +390,7 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
       ) : (
         <span className="size-2 shrink-0 rounded-full bg-sky-500" />
       )}
-      <span className="text-[11px] text-muted tabular-nums shrink-0 w-24">
+      <span className="text-[12px] text-muted tabular-nums shrink-0 min-w-[6rem]">
         {item.startTime && item.endTime
           ? `${formatTime(item.startTime)} – ${formatTime(item.endTime)}`
           : ""}
@@ -338,7 +406,7 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
 
 function TaskRow({ item }: { item: TimelineItem }) {
   return (
-    <li className="flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3">
+    <li className="flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3.5">
       <span className={`size-2 shrink-0 rounded-full ${TYPE_DOT[item.type]}`} />
       <span className="flex-1 text-[14px] text-foreground/80 truncate">
         {item.title}
@@ -365,7 +433,7 @@ function TaskRow({ item }: { item: TimelineItem }) {
 
 function LifeRow({ item }: { item: LifeContextItem }) {
   return (
-    <li className="flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3">
+    <li className="flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3.5">
       <span
         className={`size-2 shrink-0 rounded-full ${LIFE_CAT_DOT[item.category] ?? "bg-gray-400"}`}
       />

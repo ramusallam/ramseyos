@@ -20,7 +20,7 @@ function formatDate(): string {
 
 export default function TodayDashboard() {
   return (
-    <div className="max-w-4xl px-8 pt-10 pb-20">
+    <div className="max-w-4xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         {/* Header */}
         <header className="mb-8">
           <p className="text-[12px] text-muted mb-1">{formatDate()}</p>
