@@ -37,9 +37,9 @@ export default function LessonPlansPage() {
   const grouped = useMemo(() => groupByCourse(plans), [plans]);
 
   return (
-    <div className="max-w-4xl px-8 pt-10 pb-20">
+    <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
       {/* Header */}
-      <header className="mb-8">
+      <header className="mb-10">
         <Link
           href="/"
           className="text-[11px] tracking-wide text-muted hover:text-foreground/60 transition-colors"
@@ -50,30 +50,43 @@ export default function LessonPlansPage() {
           Lesson Plans
         </h1>
         <p className="text-[13px] text-muted mt-1">
-          Design and organize lessons across courses.
+          Browse and open lessons by course.
         </p>
       </header>
 
       {/* Content */}
       {loading ? (
-        <p className="text-sm text-muted/60">Loading...</p>
+        <div className="flex items-center gap-2 py-12">
+          <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+          <span className="text-sm text-muted/60">Loading lesson plans…</span>
+        </div>
       ) : plans.length === 0 ? (
-        <div className="bg-surface rounded-xl border border-border p-8 shadow-card text-center">
+        <div className="rounded-xl border border-border/60 bg-surface p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+            <rect x="3" y="1" width="10" height="14" rx="1.5" />
+            <path d="M5.5 5h5M5.5 8h3" />
+          </svg>
           <p className="text-sm text-muted">
-            No lesson plans yet.
+            No lesson plans yet
           </p>
-          <p className="text-[12px] text-muted/50 mt-1">
-            Lesson plans created in RamseyOS will appear here.
+          <p className="text-[12px] text-muted/40 mt-1">
+            Lessons you create will be organized here by course.
           </p>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {[...grouped.entries()].map(([course, coursePlans]) => (
             <section key={course}>
-              <h2 className="text-[13px] font-semibold text-foreground/70 uppercase tracking-wider mb-3">
-                {course}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                  {course}
+                </h2>
+                <span className="text-[10px] tabular-nums text-muted/40">
+                  {coursePlans.length} lesson{coursePlans.length !== 1 ? "s" : ""}
+                </span>
+                <div className="flex-1 border-t border-border/40" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {coursePlans.map((plan) => (
                   <LessonPlanCard key={plan.id} plan={plan} />
                 ))}
@@ -87,30 +100,36 @@ export default function LessonPlansPage() {
 }
 
 function LessonPlanCard({ plan }: { plan: LessonPlan }) {
+  const hasDescription = plan.description && plan.description.trim().length > 0;
+
   return (
     <Link
       href={`/lesson-plans/${plan.id}`}
-      className="group block bg-surface rounded-xl border border-border p-5 shadow-card transition-all hover:shadow-card-hover hover:border-border-strong"
+      className="group flex flex-col bg-surface rounded-xl border border-border/60 p-4 transition-all hover:border-border-strong hover:bg-surface-raised/30"
     >
-      <span className="text-[9px] px-1.5 py-0.5 rounded font-medium bg-sky-500/10 text-sky-400">
-        {plan.course}
-      </span>
-      <h3 className="text-[14px] font-medium text-foreground/90 mt-3 mb-1 group-hover:text-foreground transition-colors">
-        {plan.title}
+      <h3 className="text-[13px] font-medium text-foreground/90 group-hover:text-foreground transition-colors leading-snug">
+        {plan.title || "Untitled lesson"}
       </h3>
-      <p className="text-[12px] text-muted leading-relaxed line-clamp-2">
-        {plan.description}
-      </p>
+
+      {hasDescription && (
+        <p className="text-[12px] text-muted/60 leading-relaxed line-clamp-2 mt-1.5">
+          {plan.description}
+        </p>
+      )}
+
       {plan.tags.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-3">
-          {plan.tags.map((tag) => (
+          {plan.tags.slice(0, 4).map((tag) => (
             <span
               key={tag}
-              className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-muted/70 font-medium"
+              className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-muted/50 font-medium"
             >
               {tag}
             </span>
           ))}
+          {plan.tags.length > 4 && (
+            <span className="text-[9px] text-muted/30">+{plan.tags.length - 4}</span>
+          )}
         </div>
       )}
     </Link>
