@@ -25,13 +25,13 @@ import {
 } from "@/lib/drafts";
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  school: { bg: "bg-blue-500/100/10 border-blue-400/20", text: "text-blue-400/80", label: "School" },
+  school: { bg: "bg-blue-500/10 border-blue-400/20", text: "text-blue-400/80", label: "School" },
   personal: { bg: "bg-amber-500/10 border-amber-400/20", text: "text-amber-400/80", label: "Personal" },
-  professional: { bg: "bg-emerald-500/100/10 border-emerald-400/20", text: "text-emerald-400/80", label: "Professional" },
+  professional: { bg: "bg-emerald-500/10 border-emerald-400/20", text: "text-emerald-400/80", label: "Professional" },
 };
 
 function categoryMeta(cat: string) {
-  return CATEGORY_STYLES[cat] ?? { bg: "bg-white/5 border-white/10", text: "text-gray-500/70", label: cat || "Other" };
+  return CATEGORY_STYLES[cat] ?? { bg: "bg-white/5 border-white/10", text: "text-muted/70", label: cat || "Other" };
 }
 
 export default function CommunicationsPage() {
@@ -81,6 +81,8 @@ export default function CommunicationsPage() {
     [templates]
   );
 
+  /* ── Derived data ── */
+
   const favorites = templates.filter((t) => t.favorite);
   const nonFavorites = templates.filter((t) => !t.favorite);
 
@@ -93,177 +95,270 @@ export default function CommunicationsPage() {
   }
   const categoryOrder = ["school", "professional", "personal"];
   const sortedCategories = Array.from(grouped.entries()).sort(
-    ([a], [b]) => (categoryOrder.indexOf(a) === -1 ? 99 : categoryOrder.indexOf(a)) - (categoryOrder.indexOf(b) === -1 ? 99 : categoryOrder.indexOf(b))
+    ([a], [b]) =>
+      (categoryOrder.indexOf(a) === -1 ? 99 : categoryOrder.indexOf(a)) -
+      (categoryOrder.indexOf(b) === -1 ? 99 : categoryOrder.indexOf(b))
+  );
+
+  const handoffDrafts = drafts.filter(
+    (d) => d.gmailStatus === "ready_for_gmail" || d.gmailStatus === "handed_off"
+  );
+  const regularDrafts = drafts.filter(
+    (d) => d.gmailStatus === "not_prepared"
   );
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-8 pt-10 pb-20">
-        <p className="text-sm text-muted/60">Loading...</p>
+      <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
+        <div className="flex items-center gap-2 py-12">
+          <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+          <span className="text-sm text-muted/60">Loading communications…</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-8 pt-10 pb-20">
-      <header className="mb-8">
-        <h1 className="text-xl font-semibold text-foreground tracking-tight">
+    <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
+      {/* Header */}
+      <header className="mb-10">
+        <h1 className="text-xl font-normal text-foreground tracking-tight">
           Communications
         </h1>
-        <p className="text-[12px] text-muted/60 mt-1">
-          {templates.length} template{templates.length === 1 ? "" : "s"} · {drafts.length} draft{drafts.length === 1 ? "" : "s"}
+        <p className="text-[13px] text-muted mt-1">
+          Templates, groups, and drafts for outbound communication.
         </p>
       </header>
 
-      {templates.length === 0 ? (
-        <div className="rounded-xl border border-border/40 bg-surface/40 p-8 text-center">
-          <p className="text-[12px] text-muted/50">
-            No communication templates yet.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {/* Mail */}
-          <section>
-            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-foreground/60 mb-3 flex items-center gap-1.5">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="1" y="3" width="14" height="10" rx="1.5" />
-                <path d="M1 4.5l7 4.5 7-4.5" />
-              </svg>
-              Mail
-              <span className="text-muted/40 font-normal">{drafts.length}</span>
-            </h2>
+      {/* ═══ Workflow zones ═══ */}
+      <div className="space-y-12">
 
-            <div className="rounded-lg border border-border/40 bg-surface/40 px-4 py-2.5 mb-3 flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-amber-300/40" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400/70" />
-              </span>
-              <span className="text-[11px] text-muted/55">
-                Gmail sending is not connected yet — drafts are saved locally
-              </span>
-            </div>
+        {/* ── Zone 1: Drafts & Handoff ── */}
+        <section>
+          <SectionHeader
+            icon={<path d="M1 3h14v10H1zM1 4.5l7 4.5 7-4.5" />}
+            title="Drafts"
+            count={drafts.length}
+          />
 
-            {drafts.length === 0 ? (
-              <div className="rounded-lg border border-border/30 bg-surface/30 p-6 text-center">
-                <p className="text-[11px] text-muted/40">No drafts yet.</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {drafts.map((d) => (
-                  <DraftCard key={d.id} draft={d} groups={groups} templates={templates} members={members} onGmailStatus={setGmailStatus} />
-                ))}
-              </div>
-            )}
-          </section>
+          <div className="rounded-lg border border-border/40 bg-surface/40 px-4 py-2.5 mb-4 flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-amber-300/40" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400/70" />
+            </span>
+            <span className="text-[11px] text-muted/55">
+              Gmail sending is not connected yet — drafts are saved locally
+            </span>
+          </div>
 
-          {/* Gmail Handoff */}
-          {drafts.some((d) => d.gmailStatus === "ready_for_gmail" || d.gmailStatus === "handed_off") && (
-            <section>
-              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-foreground/60 mb-3 flex items-center gap-1.5">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14 3l-8.5 8.5L2 8" />
-                </svg>
-                Gmail Handoff
-                <span className="text-muted/40 font-normal">
-                  {drafts.filter((d) => d.gmailStatus === "ready_for_gmail" || d.gmailStatus === "handed_off").length}
-                </span>
-              </h2>
-
-              <div className="rounded-lg border border-border/40 bg-surface/40 px-4 py-2.5 mb-3 flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-blue-300/40" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-400/70" />
-                </span>
-                <span className="text-[11px] text-muted/55">
-                  Drafts prepared for Gmail — sending will be enabled in a future update
-                </span>
-              </div>
-
-              <div className="space-y-2">
-                {drafts
-                  .filter((d) => d.gmailStatus === "ready_for_gmail" || d.gmailStatus === "handed_off")
-                  .map((d) => (
-                    <DraftCard key={`handoff-${d.id}`} draft={d} groups={groups} templates={templates} members={members} onGmailStatus={setGmailStatus} />
-                  ))}
-              </div>
-            </section>
-          )}
-
-          {/* Favorites */}
-          {favorites.length > 0 && (
-            <section>
-              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-amber-400/90 mb-3 flex items-center gap-1.5">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M8 1.5l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 12l-4.2 2.5.8-4.7L1.2 6.5l4.7-.7L8 1.5z" />
-                </svg>
-                Favorites
-              </h2>
-              <div className="space-y-2">
-                {favorites.map((t) => (
-                  <TemplateCard
-                    key={t.id}
-                    template={t}
-                    groups={groups}
-                    onToggleFavorite={toggleFavorite}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* By Category */}
-          {sortedCategories.map(([cat, items]) => {
-            const meta = categoryMeta(cat);
-            return (
-              <section key={cat}>
-                <h2 className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${meta.text}`}>
-                  {meta.label}
-                  <span className="ml-2 text-muted/40 font-normal">{items.length}</span>
-                </h2>
-                <div className="space-y-2">
-                  {items.map((t) => (
-                    <TemplateCard
-                      key={t.id}
-                      template={t}
-                      groups={groups}
-                      onToggleFavorite={toggleFavorite}
-                    />
-                  ))}
+          {drafts.length === 0 ? (
+            <EmptyState message="No drafts yet" detail="Drafts you create from templates will appear here." />
+          ) : (
+            <div className="space-y-6">
+              {/* Gmail-ready drafts first */}
+              {handoffDrafts.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-blue-400/70">
+                      Ready for Gmail
+                    </span>
+                    <span className="text-[10px] tabular-nums text-muted/40">
+                      {handoffDrafts.length}
+                    </span>
+                    <div className="flex-1 border-t border-blue-400/10" />
+                  </div>
+                  <div className="space-y-2">
+                    {handoffDrafts.map((d) => (
+                      <DraftCard
+                        key={d.id}
+                        draft={d}
+                        groups={groups}
+                        templates={templates}
+                        members={members}
+                        onGmailStatus={setGmailStatus}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </section>
-            );
-          })}
+              )}
 
-          {/* Groups */}
-          {groups.length > 0 && (
-            <section>
-              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-foreground/60 mb-3 flex items-center gap-1.5">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                  <circle cx="6" cy="5" r="2.5" />
-                  <path d="M1.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" />
-                  <circle cx="11.5" cy="5.5" r="2" />
-                  <path d="M14.5 13c0-2 1.2-3 0-3" />
-                </svg>
-                Groups
-                <span className="text-muted/40 font-normal">{groups.length}</span>
-              </h2>
-              <div className="space-y-2">
-                {groups.map((g) => (
-                  <GroupCard
-                    key={g.id}
-                    group={g}
-                    members={members.filter((m) => m.groupId === g.id)}
-                  />
-                ))}
-              </div>
-            </section>
+              {/* Regular drafts */}
+              {regularDrafts.length > 0 && (
+                <div>
+                  {handoffDrafts.length > 0 && (
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/50">
+                        In progress
+                      </span>
+                      <span className="text-[10px] tabular-nums text-muted/40">
+                        {regularDrafts.length}
+                      </span>
+                      <div className="flex-1 border-t border-border/40" />
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    {regularDrafts.map((d) => (
+                      <DraftCard
+                        key={d.id}
+                        draft={d}
+                        groups={groups}
+                        templates={templates}
+                        members={members}
+                        onGmailStatus={setGmailStatus}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
-        </div>
-      )}
+        </section>
+
+        {/* ── Zone 2: Templates ── */}
+        <section>
+          <SectionHeader
+            icon={<path d="M3 1h10a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1zM5 5h6M5 8h4" />}
+            title="Templates"
+            count={templates.length}
+          />
+
+          {templates.length === 0 ? (
+            <EmptyState message="No templates yet" detail="Communication templates will appear here." />
+          ) : (
+            <div className="space-y-8">
+              {/* Favorites */}
+              {favorites.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" className="text-amber-400/80">
+                      <path d="M8 1.5l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 12l-4.2 2.5.8-4.7L1.2 6.5l4.7-.7L8 1.5z" />
+                    </svg>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400/70">
+                      Favorites
+                    </span>
+                    <div className="flex-1 border-t border-amber-400/10" />
+                  </div>
+                  <div className="space-y-2">
+                    {favorites.map((t) => (
+                      <TemplateCard
+                        key={t.id}
+                        template={t}
+                        groups={groups}
+                        onToggleFavorite={toggleFavorite}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* By category */}
+              {sortedCategories.map(([cat, items]) => {
+                const meta = categoryMeta(cat);
+                return (
+                  <div key={cat}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider ${meta.text}`}>
+                        {meta.label}
+                      </span>
+                      <span className="text-[10px] tabular-nums text-muted/40">
+                        {items.length}
+                      </span>
+                      <div className="flex-1 border-t border-border/40" />
+                    </div>
+                    <div className="space-y-2">
+                      {items.map((t) => (
+                        <TemplateCard
+                          key={t.id}
+                          template={t}
+                          groups={groups}
+                          onToggleFavorite={toggleFavorite}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* ── Zone 3: Groups & Recipients ── */}
+        <section>
+          <SectionHeader
+            icon={<><circle cx="6" cy="5" r="2.5" /><path d="M1.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" /><circle cx="11.5" cy="5.5" r="2" /><path d="M14.5 13c0-2 1.2-3 0-3" /></>}
+            title="Groups"
+            count={groups.length}
+          />
+
+          {groups.length === 0 ? (
+            <EmptyState message="No groups yet" detail="Recipient groups will appear here." />
+          ) : (
+            <div className="space-y-2">
+              {groups.map((g) => (
+                <GroupCard
+                  key={g.id}
+                  group={g}
+                  members={members.filter((m) => m.groupId === g.id)}
+                  linkedTemplates={templates.filter((t) =>
+                    t.linkedGroupIds.includes(g.id)
+                  )}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
+
+/* ── Shared UI ── */
+
+function SectionHeader({
+  icon,
+  title,
+  count,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  count: number;
+}) {
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-muted/50"
+      >
+        {icon}
+      </svg>
+      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+        {title}
+      </h2>
+      <span className="text-[10px] tabular-nums text-muted/40">
+        {count}
+      </span>
+      <div className="flex-1 border-t border-border/40" />
+    </div>
+  );
+}
+
+function EmptyState({ message, detail }: { message: string; detail: string }) {
+  return (
+    <div className="rounded-xl border border-border/40 bg-surface/40 p-8 text-center">
+      <p className="text-sm text-muted/60">{message}</p>
+      <p className="text-[12px] text-muted/35 mt-1">{detail}</p>
+    </div>
+  );
+}
+
+/* ── Template card ── */
 
 function TemplateCard({
   template: t,
@@ -286,13 +381,13 @@ function TemplateCard({
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2.5 mb-1.5">
-            <span className="text-[14px] font-medium text-foreground/85">
+            <span className="text-[13px] font-medium text-foreground/85">
               {t.title}
             </span>
             <span
               className={`inline-flex items-center rounded-full border px-2 py-0 text-[9px] font-medium ${style.bg} ${style.text}`}
             >
-              {t.category}
+              {style.label}
             </span>
           </div>
           {t.subject && (
@@ -304,10 +399,9 @@ function TemplateCard({
             {preview}
           </p>
           {linkedGroups.length > 0 && (
-            <div className="flex items-center gap-1.5 mt-2">
+            <div className="flex items-center gap-1.5 mt-2.5">
               <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-muted/30 shrink-0">
-                <circle cx="6" cy="5" r="2.5" />
-                <path d="M1.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" />
+                <path d="M8 4l4 4-4 4M4 4l4 4-4 4" />
               </svg>
               {linkedGroups.map((g) => (
                 <span
@@ -343,11 +437,19 @@ function TemplateCard({
   );
 }
 
+/* ── Draft card ── */
+
 const DRAFT_STATUS_STYLES: Record<DraftStatus, { dot: string; label: string }> = {
   draft: { dot: "bg-gray-300", label: "Draft" },
   ready: { dot: "bg-blue-400", label: "Ready" },
   sent: { dot: "bg-emerald-400", label: "Sent" },
   failed: { dot: "bg-red-400", label: "Failed" },
+};
+
+const GMAIL_STATUS_STYLES: Record<GmailHandoffStatus, { dot: string; label: string }> = {
+  not_prepared: { dot: "bg-gray-300", label: "Not prepared" },
+  ready_for_gmail: { dot: "bg-blue-400", label: "Ready for Gmail" },
+  handed_off: { dot: "bg-emerald-400", label: "Handed off" },
 };
 
 function buildMailtoLink(draft: DraftItem, recipients: GroupMember[]): string {
@@ -361,12 +463,6 @@ function buildMailtoLink(draft: DraftItem, recipients: GroupMember[]): string {
   const qs = params.toString();
   return `mailto:${encodeURI(to)}${qs ? `?${qs}` : ""}`;
 }
-
-const GMAIL_STATUS_STYLES: Record<GmailHandoffStatus, { dot: string; label: string }> = {
-  not_prepared: { dot: "bg-gray-300", label: "Not prepared" },
-  ready_for_gmail: { dot: "bg-blue-400", label: "Ready for Gmail" },
-  handed_off: { dot: "bg-emerald-400", label: "Handed off" },
-};
 
 function DraftCard({
   draft: d,
@@ -405,8 +501,8 @@ function DraftCard({
         className="w-full flex items-start gap-3 px-5 py-4 text-left hover:bg-surface-raised/50 transition-colors"
       >
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2.5 mb-1">
-            <span className="text-[14px] font-medium text-foreground/85">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[13px] font-medium text-foreground/85">
               {d.subject || "Untitled draft"}
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border/30 bg-white/5 px-2 py-0 text-[9px] font-medium text-muted/60">
@@ -420,14 +516,17 @@ function DraftCard({
               </span>
             )}
           </div>
-          {!expanded && (
-            <p className="text-[12px] text-muted/50 leading-relaxed">
+
+          {!expanded && preview && (
+            <p className="text-[12px] text-muted/50 leading-relaxed mb-1.5">
               {preview}
             </p>
           )}
-          <div className="flex items-center gap-1.5 mt-2">
+
+          {/* Assembly indicators */}
+          <div className="flex items-center gap-1.5 mt-1">
             {linkedTemplate ? (
-              <span className="inline-flex items-center rounded-full bg-blue-500/10 border border-blue-400/15 px-2 py-0 text-[9px] font-medium text-blue-400/70">
+              <span className="inline-flex items-center rounded-full bg-violet-500/10 border border-violet-400/15 px-2 py-0 text-[9px] font-medium text-violet-400/70">
                 {linkedTemplate.title}
               </span>
             ) : (
@@ -547,7 +646,7 @@ function DraftCard({
                       e.stopPropagation();
                       onGmailStatus(d.id, "not_prepared");
                     }}
-                    className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border/30 rounded-md px-3 py-1 hover:bg-white/8/60 transition-colors"
+                    className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border/30 rounded-md px-3 py-1 hover:bg-white/8 transition-colors"
                   >
                     Unprepare
                   </button>
@@ -559,7 +658,7 @@ function DraftCard({
                       e.stopPropagation();
                       onGmailStatus(d.id, "handed_off");
                     }}
-                    className="text-[10px] font-medium text-white bg-blue-500/100 border border-blue-600/30 rounded-md px-3 py-1 hover:bg-blue-600 transition-colors inline-flex items-center gap-1.5"
+                    className="text-[10px] font-medium text-white bg-blue-500 border border-blue-600/30 rounded-md px-3 py-1 hover:bg-blue-600 transition-colors inline-flex items-center gap-1.5"
                   >
                     <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 11L11 5" />
@@ -576,7 +675,7 @@ function DraftCard({
                     e.stopPropagation();
                     onGmailStatus(d.id, "ready_for_gmail");
                   }}
-                  className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border/30 rounded-md px-3 py-1 hover:bg-white/8/60 transition-colors"
+                  className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border/30 rounded-md px-3 py-1 hover:bg-white/8 transition-colors"
                 >
                   Re-open
                 </button>
@@ -599,12 +698,16 @@ function DraftCard({
   );
 }
 
+/* ── Group card ── */
+
 function GroupCard({
   group,
   members,
+  linkedTemplates,
 }: {
   group: GroupItem;
   members: GroupMember[];
+  linkedTemplates: TemplateItem[];
 }) {
   const [expanded, setExpanded] = useState(false);
   const style = categoryMeta(group.category);
@@ -618,20 +721,33 @@ function GroupCard({
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2.5">
-            <span className="text-[14px] font-medium text-foreground/85">
+            <span className="text-[13px] font-medium text-foreground/85">
               {group.name}
             </span>
             <span
               className={`inline-flex items-center rounded-full border px-2 py-0 text-[9px] font-medium ${style.bg} ${style.text}`}
             >
-              {group.category}
+              {style.label}
             </span>
             <span className="text-[10px] text-muted/40">
               {members.length} member{members.length === 1 ? "" : "s"}
             </span>
           </div>
-          {group.description && (
-            <p className="text-[11px] text-muted/45 mt-0.5">{group.description}</p>
+          {/* Show linked templates */}
+          {linkedTemplates.length > 0 && (
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-muted/25 shrink-0">
+                <path d="M4 4l4 4-4 4M8 4l4 4-4 4" />
+              </svg>
+              {linkedTemplates.map((t) => (
+                <span
+                  key={t.id}
+                  className="inline-flex items-center rounded-full bg-violet-500/8 border border-violet-400/10 px-2 py-0 text-[9px] font-medium text-violet-400/60"
+                >
+                  {t.title}
+                </span>
+              ))}
+            </div>
           )}
         </div>
         <svg
