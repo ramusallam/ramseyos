@@ -130,9 +130,17 @@ function getNavCount(
   }
 }
 
+const SHELL_HIDDEN_ROUTES = ["/today"];
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const counts = useShellCounts();
+
+  const hideShell = SHELL_HIDDEN_ROUTES.some((r) => pathname.startsWith(r));
+
+  if (hideShell) {
+    return <div className="min-h-screen bg-background">{children}</div>;
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
