@@ -24,13 +24,6 @@ const TYPE_DOT: Record<TimelineItemType, string> = {
   "daily-action": "bg-gray-400",
 };
 
-const TYPE_ROUTE: Record<TimelineItemType, { href: string; label: string }> = {
-  schedule: { href: "/", label: "View schedule" },
-  chosen: { href: "/tasks", label: "Open tasks" },
-  focus: { href: "/tasks", label: "Open tasks" },
-  "daily-action": { href: "/", label: "View plan" },
-};
-
 function formatTime(ts: Timestamp): string {
   return ts.toDate().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -38,10 +31,55 @@ function formatTime(ts: Timestamp): string {
   });
 }
 
+/* ── Action resolution ── */
+
+interface ActionTarget {
+  href: string;
+  label: string;
+  icon: string;
+}
+
+function resolveAction(item: TimelineItem): ActionTarget {
+  // Project-linked task → open that project
+  if (item.projectId && (item.type === "chosen" || item.type === "focus")) {
+    return {
+      href: `/projects/${item.projectId}`,
+      label: "Open Project",
+      icon: "M2 5V4a1 1 0 011-1h3l1.5 2H13a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V5z",
+    };
+  }
+
+  // Schedule item → calendar
+  if (item.type === "schedule") {
+    return {
+      href: "/calendar",
+      label: "Open Calendar",
+      icon: "M2 7h12M5 1.5v3M11 1.5v3M2 3h12a1 1 0 011 1v9a1 1 0 01-1 1H2a1 1 0 01-1-1V4a1 1 0 011-1z",
+    };
+  }
+
+  // Task (chosen/focus) without project → tasks page
+  if (item.type === "chosen" || item.type === "focus") {
+    return {
+      href: "/tasks",
+      label: "Open Tasks",
+      icon: "M2 2h12a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1zM5 6h6M5 9h4",
+    };
+  }
+
+  // Daily action → today dashboard
+  return {
+    href: "/",
+    label: "View Plan",
+    icon: "M8 2v1M8 13v1M3.5 8H2.5M13.5 8H12.5M8 4.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z",
+  };
+}
+
+/* ── Item selection ── */
+
 function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
   const now = new Date();
 
-  // First: find an in-progress schedule event
   const active = timeline.find(
     (item) =>
       item.type === "schedule" &&
@@ -52,7 +90,6 @@ function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
   );
   if (active) return active;
 
-  // Second: find the next upcoming schedule event
   const upcoming = timeline.find(
     (item) =>
       item.type === "schedule" &&
@@ -61,7 +98,6 @@ function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
   );
   if (upcoming) return upcoming;
 
-  // Third: first non-schedule item (chosen > focus > daily)
   const task = timeline.find((item) => item.type !== "schedule");
   return task ?? null;
 }
@@ -77,6 +113,8 @@ function getNextItem(
   return timeline[idx + 1];
 }
 
+/* ── Component ── */
+
 export function NowNext() {
   const [plan, setPlan] = useState<DailyPlan | null>(null);
 
@@ -90,7 +128,6 @@ export function NowNext() {
   const nowKey = now ? `${now.type}-${now.id}` : "";
   const next = now ? getNextItem(plan.timeline, nowKey) : null;
 
-  // Also check inbox
   const hasInbox = plan.inboxItems.length > 0;
 
   if (!now && !hasInbox) return null;
@@ -131,7 +168,7 @@ function FocusCard({
   label: string;
   isPrimary: boolean;
 }) {
-  const route = TYPE_ROUTE[item.type];
+  const action = resolveAction(item);
   const isInProgress =
     item.type === "schedule" &&
     item.startTime &&
@@ -181,10 +218,16 @@ function FocusCard({
       </div>
 
       <Link
-        href={route.href}
-        className="inline-flex items-center text-[12px] font-medium text-accent hover:text-accent/80 transition-colors"
+        href={action.href}
+        className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-surface-raised/50 px-3 py-1.5 text-[11px] font-medium text-foreground/70 hover:bg-surface-raised hover:text-foreground/90 transition-colors"
       >
-        {route.label} &rarr;
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent/70">
+          <path d={action.icon} />
+        </svg>
+        {action.label}
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+          <path d="M6 4l4 4-4 4" />
+        </svg>
       </Link>
     </div>
   );
@@ -225,9 +268,16 @@ function InboxCard({
 
       <Link
         href="/inbox"
-        className="inline-flex items-center text-[12px] font-medium text-accent hover:text-accent/80 transition-colors"
+        className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-surface-raised/50 px-3 py-1.5 text-[11px] font-medium text-foreground/70 hover:bg-surface-raised hover:text-foreground/90 transition-colors"
       >
-        Open inbox &rarr;
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent/70">
+          <rect x="2" y="3" width="12" height="10" rx="2" />
+          <path d="M2 9h3.5a1 1 0 011 1v0a1 1 0 001 1h1a1 1 0 001-1v0a1 1 0 011-1H14" />
+        </svg>
+        Open Inbox
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+          <path d="M6 4l4 4-4 4" />
+        </svg>
       </Link>
     </div>
   );

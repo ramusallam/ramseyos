@@ -50,6 +50,7 @@ export interface TimelineItem {
   startTime?: Timestamp;
   endTime?: Timestamp;
   priority?: string | null;
+  projectId?: string | null;
   projectName?: string | null;
   fromInbox?: boolean;
 }
@@ -170,6 +171,7 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
       type,
       title: t.title,
       priority: t.priority,
+      projectId: t.projectId ?? null,
       projectName: t.projectId ? projectMap.get(t.projectId) ?? null : null,
       fromInbox: t.fromInbox,
     })),
