@@ -3,19 +3,9 @@ import { syncGoogleCalendar } from "@/lib/google-calendar";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
-    const body = await request.json();
-    const { accessToken, refreshToken } = body;
-
-    if (!accessToken) {
-      return NextResponse.json(
-        { error: "accessToken is required" },
-        { status: 400 }
-      );
-    }
-
-    const result = await syncGoogleCalendar(accessToken, refreshToken);
+    const result = await syncGoogleCalendar();
 
     return NextResponse.json({
       success: true,
