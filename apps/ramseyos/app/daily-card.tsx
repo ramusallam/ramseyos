@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   generateDailyPlan,
   type DailyPlan,
+  type DayMode,
   type TimelineItem,
   type TimelineItemType,
   type LifeContextItem,
@@ -15,6 +16,14 @@ const PRIORITY_STYLE: Record<string, string> = {
   high: "bg-rose-500/10 text-rose-400",
   medium: "bg-amber-500/10 text-amber-400",
   low: "bg-sky-500/10 text-sky-400",
+};
+
+const DAY_MODE_META: Record<DayMode, { label: string; icon: string; color: string }> = {
+  scheduled: { label: "Scheduled day", icon: "M2 7h12M5 1.5v3M11 1.5v3", color: "text-sky-400/70" },
+  "deep-work": { label: "Deep work day", icon: "M8 2v12M4 6l4-4 4 4", color: "text-violet-400/70" },
+  "life-focus": { label: "Life focus day", icon: "M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z", color: "text-rose-400/70" },
+  balanced: { label: "Balanced day", icon: "M2 8h12M8 2v12", color: "text-emerald-400/70" },
+  light: { label: "Light day", icon: "M8 2a6 6 0 100 12A6 6 0 008 2z", color: "text-amber-400/70" },
 };
 
 const TYPE_LABEL: Record<TimelineItemType, string> = {
@@ -47,8 +56,20 @@ export function DailyCard() {
 
   if (!plan) return null;
 
+  const mode = DAY_MODE_META[plan.dayMode];
+
   return (
     <div className="space-y-6">
+      {/* Day mode */}
+      <div className="flex items-center gap-2">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={mode.color}>
+          <path d={mode.icon} />
+        </svg>
+        <span className={`text-[11px] font-medium ${mode.color}`}>
+          {mode.label}
+        </span>
+      </div>
+
       {/* Timeline header */}
       <div>
         <div className="flex items-center justify-between mb-4">

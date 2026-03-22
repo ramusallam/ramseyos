@@ -61,6 +61,8 @@ export interface LifeContextItem {
   recurring: boolean;
 }
 
+export type DayMode = "scheduled" | "deep-work" | "life-focus" | "balanced" | "light";
+
 export interface DailyPlan {
   dailyActions: DailyAction[];
   chosenTasks: TaskItem[];
@@ -69,6 +71,7 @@ export interface DailyPlan {
   schedule: ScheduleItem[];
   timeline: TimelineItem[];
   lifeContext: LifeContextItem[];
+  dayMode: DayMode;
 }
 
 const MAX_FOCUS_TASKS = 5;
@@ -185,6 +188,8 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
     .filter((s) => s.type === "focus")
     .map((s) => s.task);
 
+  const dayMode = deriveDayMode(orderedSchedule.length, topTasks.length, lifeContext.length);
+
   return {
     dailyActions,
     chosenTasks: orderedChosen,
@@ -193,7 +198,31 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
     schedule: orderedSchedule,
     timeline,
     lifeContext,
+    dayMode,
   };
+}
+
+function deriveDayMode(
+  scheduleCount: number,
+  taskCount: number,
+  lifeCount: number
+): DayMode {
+  const total = scheduleCount + taskCount + lifeCount;
+
+  // Light day — very little on the plate
+  if (total <= 2) return "light";
+
+  // Scheduled — calendar-heavy (3+ events dominate)
+  if (scheduleCount >= 3 && scheduleCount > taskCount) return "scheduled";
+
+  // Life-focus — life items outnumber work items
+  if (lifeCount > 0 && lifeCount >= taskCount && lifeCount >= scheduleCount) return "life-focus";
+
+  // Deep-work — tasks dominate with few meetings
+  if (taskCount >= 3 && scheduleCount <= 1) return "deep-work";
+
+  // Balanced — a mix of everything
+  return "balanced";
 }
 
 async function fetchDailyActions(): Promise<DailyAction[]> {
