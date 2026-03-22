@@ -24,17 +24,17 @@ export default function VendorsPage() {
   }, []);
 
   return (
-    <div className="max-w-4xl px-8 pt-10 pb-20">
+    <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
       {/* Header */}
-      <header className="mb-8">
+      <header className="mb-10">
         <Link
-          href="/"
+          href="/materials"
           className="text-[11px] tracking-wide text-muted hover:text-foreground/60 transition-colors"
         >
-          &larr; Today
+          &larr; Materials
         </Link>
         <h1 className="text-xl font-normal text-foreground mt-2">
-          Materials Sources
+          Sources
         </h1>
         <p className="text-[13px] text-muted mt-1">
           Vendor and supplier directory for lab materials and classroom supplies.
@@ -43,16 +43,23 @@ export default function VendorsPage() {
 
       {/* Content */}
       {loading ? (
-        <p className="text-sm text-muted/60">Loading...</p>
+        <div className="flex items-center gap-2 py-12">
+          <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+          <span className="text-sm text-muted/60">Loading sources…</span>
+        </div>
       ) : vendors.length === 0 ? (
-        <div className="bg-surface rounded-xl border border-border p-8 shadow-card text-center">
-          <p className="text-sm text-muted">No vendors yet.</p>
-          <p className="text-[12px] text-muted/50 mt-1">
+        <div className="rounded-xl border border-border/40 bg-surface/40 p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+            <rect x="2" y="3" width="12" height="10" rx="1.5" />
+            <path d="M2 7h12" />
+          </svg>
+          <p className="text-sm text-muted/60">No sources yet</p>
+          <p className="text-[12px] text-muted/35 mt-1">
             Vendors added to RamseyOS will appear here.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {vendors.map((vendor) => (
             <VendorCard key={vendor.id} vendor={vendor} />
           ))}
@@ -71,17 +78,17 @@ function VendorCard({ vendor }: { vendor: VendorItem }) {
       href={vendor.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block bg-surface rounded-xl border border-border p-5 shadow-card transition-all hover:shadow-card-hover hover:border-border-strong"
+      className="group flex flex-col bg-surface rounded-xl border border-border/60 p-4 transition-all hover:border-border-strong hover:bg-surface-raised/30"
     >
       <span
-        className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${colors}`}
+        className={`text-[9px] px-1.5 py-0.5 rounded font-medium self-start ${colors}`}
       >
         {vendor.category}
       </span>
-      <h3 className="text-[14px] font-medium text-foreground/90 mt-3 mb-1 group-hover:text-foreground transition-colors">
+      <h3 className="text-[13px] font-medium text-foreground/90 mt-3 mb-1 group-hover:text-foreground transition-colors leading-snug">
         {vendor.name}
       </h3>
-      <p className="text-[12px] text-muted leading-relaxed line-clamp-2">
+      <p className="text-[12px] text-muted/60 leading-relaxed line-clamp-2">
         {vendor.description}
       </p>
       <span className="inline-block mt-3 text-[11px] text-accent/70 group-hover:text-accent transition-colors">

@@ -52,7 +52,7 @@ export default function PurchasingPage() {
           }
         }
 
-        // Vendor stats across ALL materials (not just needToBuy)
+        // Vendor stats across ALL materials
         const vendorCounts = new Map<string, { label: string; total: number; toBuy: number }>();
         for (const mat of allMats) {
           let label = "No source";
@@ -125,44 +125,53 @@ export default function PurchasingPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-8 pt-10 pb-20">
-        <p className="text-sm text-muted/60">Loading...</p>
+      <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
+        <div className="flex items-center gap-2 py-12">
+          <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+          <span className="text-sm text-muted/60">Loading purchasing…</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-8 pt-10 pb-20">
-      <header className="mb-8">
-        <h1 className="text-xl font-semibold text-foreground tracking-tight">
+    <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
+      <header className="mb-10">
+        <h1 className="text-xl font-normal text-foreground tracking-tight">
           Purchasing
         </h1>
-        <p className="text-[12px] text-muted/60 mt-1">
+        <p className="text-[13px] text-muted mt-1">
           {totalCount === 0
-            ? "Nothing to buy right now"
-            : `${totalCount} item${totalCount === 1 ? "" : "s"} to buy`}
+            ? "Nothing to buy right now."
+            : `${totalCount} item${totalCount === 1 ? "" : "s"} marked for purchase across your lessons.`}
         </p>
       </header>
 
-      {/* Summary */}
+      {/* Summary cards */}
       {totalCount > 0 && (summary.vendorStats.length > 0 || summary.recurringToBuy.length > 0) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          {/* Top Vendors */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+          {/* Top Sources */}
           {summary.vendorStats.length > 0 && (
-            <div className="rounded-xl border border-border/40 bg-surface/40 p-4">
-              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted/60 mb-3">
-                Top Sources
-              </h3>
+            <div className="rounded-xl border border-border/40 bg-surface/40 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/50">
+                  <rect x="2" y="3" width="12" height="10" rx="1.5" />
+                  <path d="M2 7h12" />
+                </svg>
+                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                  Top Sources
+                </h3>
+              </div>
               <div className="space-y-2">
                 {summary.vendorStats.map((vs) => (
                   <div key={vs.label} className="flex items-center justify-between">
                     <span className="text-[12px] text-foreground/70">{vs.label}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted/50">
-                        {vs.totalItems} material{vs.totalItems === 1 ? "" : "s"}
+                      <span className="text-[10px] text-muted/50 tabular-nums">
+                        {vs.totalItems} item{vs.totalItems === 1 ? "" : "s"}
                       </span>
                       {vs.toBuyItems > 0 && (
-                        <span className="inline-flex items-center rounded-full bg-rose-500/10 border border-rose-400/20 px-1.5 py-0 text-[9px] font-medium text-rose-500/70">
+                        <span className="inline-flex items-center rounded-full bg-rose-500/10 border border-rose-400/20 px-1.5 py-0 text-[9px] font-medium text-rose-400/70 tabular-nums">
                           {vs.toBuyItems} to buy
                         </span>
                       )}
@@ -175,21 +184,25 @@ export default function PurchasingPage() {
 
           {/* Recurring to Buy */}
           {summary.recurringToBuy.length > 0 && (
-            <div className="rounded-xl border border-blue-400/20 bg-blue-500/4 p-4">
-              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-blue-400/70 mb-3 flex items-center gap-1.5">
-                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <div className="rounded-xl border border-blue-400/15 bg-blue-500/4 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-blue-400/70">
                   <path d="M12.5 6.5A5 5 0 003.5 8M3.5 9.5A5 5 0 0012.5 8" />
                   <path d="M10.5 6.5h2v-2M5.5 9.5h-2v2" />
                 </svg>
-                Recurring — Need to Buy
-              </h3>
+                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-blue-400/70">
+                  Recurring — Need to Buy
+                </h3>
+              </div>
               <div className="space-y-1.5">
                 {summary.recurringToBuy.map((mat, i) => (
                   <div key={i} className="flex items-center justify-between">
                     <span className="text-[12px] text-foreground/70">{mat.name}</span>
-                    <span className="text-[10px] text-muted/40">
-                      {mat.quantity ? `qty: ${mat.quantity}` : ""}
-                    </span>
+                    {mat.quantity && (
+                      <span className="text-[10px] text-muted/40 tabular-nums">
+                        qty: {mat.quantity}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -198,35 +211,47 @@ export default function PurchasingPage() {
         </div>
       )}
 
+      {/* Vendor groups */}
       {totalCount === 0 ? (
-        <div className="rounded-xl border border-border/40 bg-surface/40 p-8 text-center">
-          <p className="text-[12px] text-muted/50">
+        <div className="rounded-xl border border-border/40 bg-surface/40 p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+            <circle cx="6" cy="13.5" r="1" fill="currentColor" />
+            <circle cx="12.5" cy="13.5" r="1" fill="currentColor" />
+            <path d="M1 1h2.5l1.3 7.5a1 1 0 001 .8h6.4a1 1 0 001-.8L14.5 4H4" />
+          </svg>
+          <p className="text-sm text-muted/60">Nothing to buy right now</p>
+          <p className="text-[12px] text-muted/35 mt-1">
             Mark materials as &ldquo;Need to buy&rdquo; in your lesson plans to see them here.
           </p>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {groups.map((group) => (
             <section key={group.label}>
-              <div className="flex items-center gap-2 mb-3">
-                <h2 className="text-[10px] font-semibold uppercase tracking-wider text-foreground/60">
+              <div className="flex items-center gap-2 mb-4">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/50">
+                  <rect x="2" y="3" width="12" height="10" rx="1.5" />
+                  <path d="M2 7h12" />
+                </svg>
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                   {group.label}
                 </h2>
-                <span className="text-[10px] text-muted/40">
-                  {group.items.length}
+                <span className="text-[10px] tabular-nums text-muted/40">
+                  {group.items.length} item{group.items.length === 1 ? "" : "s"}
                 </span>
+                <div className="flex-1 border-t border-border/40" />
                 {group.vendor?.url && (
                   <a
                     href={group.vendor.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[10px] text-accent/50 hover:text-accent transition-colors ml-auto"
+                    className="text-[10px] font-medium text-accent/60 hover:text-accent transition-colors"
                   >
                     Open site &rarr;
                   </a>
                 )}
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {group.items.map((item, i) => {
                   const launchUrl = item.sourceUrl || group.vendor?.url || null;
                   return (
@@ -235,18 +260,23 @@ export default function PurchasingPage() {
                       className="flex items-start gap-3 rounded-lg bg-surface border border-border/40 px-4 py-3"
                     >
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-[13px] font-medium text-foreground/85">
                             {item.name}
                           </span>
+                          {item.recurring && (
+                            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="text-blue-400 shrink-0">
+                              <path d="M12.5 6.5A5 5 0 003.5 8M3.5 9.5A5 5 0 0012.5 8" />
+                            </svg>
+                          )}
                           {item.quantity && (
-                            <span className="text-[10px] text-muted/50">
+                            <span className="text-[10px] text-muted/50 tabular-nums">
                               qty: {item.quantity}
                             </span>
                           )}
                         </div>
                         {item.purchaseNotes && (
-                          <p className="text-[11px] text-rose-500/60 mt-0.5">
+                          <p className="text-[11px] text-rose-400/60 mt-0.5">
                             {item.purchaseNotes}
                           </p>
                         )}
@@ -257,11 +287,15 @@ export default function PurchasingPage() {
                         )}
                         <Link
                           href={`/lesson-plans/${item.lessonId}`}
-                          className="text-[10px] text-muted/35 hover:text-muted/60 transition-colors mt-1 inline-block"
+                          className="text-[10px] text-muted/35 hover:text-muted/60 transition-colors mt-1.5 inline-flex items-center gap-1"
                         >
+                          <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                            <rect x="3" y="1" width="10" height="14" rx="1.5" />
+                            <path d="M5.5 5h5M5.5 8h3" />
+                          </svg>
                           {item.lessonTitle || "Untitled lesson"}
                           {item.course && (
-                            <span className="ml-1 text-muted/25">· {item.course}</span>
+                            <span className="text-muted/25">· {item.course}</span>
                           )}
                         </Link>
                       </div>
