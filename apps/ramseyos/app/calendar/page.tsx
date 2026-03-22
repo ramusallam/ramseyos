@@ -50,6 +50,8 @@ function CalendarContent() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+  const [seeding, setSeeding] = useState(false);
+  const [seedMsg, setSeedMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
@@ -99,6 +101,24 @@ function CalendarContent() {
     await fetch("/api/calendar/disconnect", { method: "POST" });
     setStatus({ connected: false, lastSyncedAt: null, email: null });
     setSyncResult(null);
+  }
+
+  async function handleSeed() {
+    setSeeding(true);
+    setSeedMsg(null);
+    try {
+      const res = await fetch("/api/calendar/seed", { method: "POST" });
+      const data = await res.json();
+      setSeedMsg(data.message ?? data.error ?? "Done");
+      if (data.success) {
+        const evts = await getCalendarEvents(new Date());
+        setEvents(evts);
+      }
+    } catch {
+      setSeedMsg("Seed failed");
+    } finally {
+      setSeeding(false);
+    }
   }
 
   if (loading) return null;
@@ -277,9 +297,9 @@ function CalendarContent() {
                   </span>
                 )}
 
-                {evt.source === "google" && (
+                {(evt.source === "google" || evt.source === "seed") && (
                   <span className="text-[9px] text-muted/40 shrink-0">
-                    google
+                    {evt.source}
                   </span>
                 )}
               </li>
@@ -319,6 +339,29 @@ function CalendarContent() {
           </div>
         </div>
       )}
+
+      {/* Test seed */}
+      <div className="rounded-xl border border-border bg-surface p-5 space-y-3">
+        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+          Test Data
+        </h3>
+        <p className="text-[12px] text-muted">
+          Seed realistic schedule events for today to test the full Daily Card pipeline.
+        </p>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSeed}
+            disabled={seeding}
+            className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-surface-raised/50 px-3 py-1.5 text-[11px] font-medium text-foreground/70 hover:bg-surface-raised hover:text-foreground/90 transition-colors disabled:opacity-50"
+          >
+            {seeding ? "Seeding..." : "Seed test events"}
+          </button>
+          {seedMsg && (
+            <span className="text-[11px] text-muted">{seedMsg}</span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
