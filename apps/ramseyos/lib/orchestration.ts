@@ -54,6 +54,13 @@ export interface TimelineItem {
   fromInbox?: boolean;
 }
 
+export interface LifeContextItem {
+  id: string;
+  title: string;
+  category: string;
+  recurring: boolean;
+}
+
 export interface DailyPlan {
   dailyActions: DailyAction[];
   chosenTasks: TaskItem[];
@@ -61,6 +68,7 @@ export interface DailyPlan {
   inboxItems: InboxItem[];
   schedule: ScheduleItem[];
   timeline: TimelineItem[];
+  lifeContext: LifeContextItem[];
 }
 
 const MAX_FOCUS_TASKS = 5;
@@ -72,7 +80,7 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
   const dayEnd = new Date(today);
   dayEnd.setHours(23, 59, 59, 999);
 
-  const [dailyActions, chosenTasks, focusTasks, recentTasks, inboxItems, schedule, projects] =
+  const [dailyActions, chosenTasks, focusTasks, recentTasks, inboxItems, schedule, projects, lifeContext] =
     await Promise.all([
       fetchDailyActions(),
       fetchChosenTasks(),
@@ -81,6 +89,7 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
       fetchInboxItems(),
       fetchSchedule(dayStart, dayEnd),
       fetchProjects(),
+      fetchLifeContext(),
     ]);
 
   const projectMap = new Map<string, string>();
@@ -183,6 +192,7 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
     inboxItems: orderedInbox,
     schedule: orderedSchedule,
     timeline,
+    lifeContext,
   };
 }
 
@@ -296,4 +306,29 @@ async function fetchSchedule(
     startTime: d.data().startTime,
     endTime: d.data().endTime,
   }));
+}
+
+const MAX_LIFE_CONTEXT = 4;
+
+async function fetchLifeContext(): Promise<LifeContextItem[]> {
+  const q = query(
+    collection(db, "lifeItems"),
+    where("active", "==", true),
+    orderBy("createdAt", "asc")
+  );
+  const snap = await getDocs(q);
+  const all = snap.docs.map((d) => ({
+    id: d.id,
+    title: d.data().title,
+    category: d.data().category ?? "",
+    status: d.data().status ?? "pending",
+    recurring: d.data().recurring ?? false,
+  }));
+
+  // Only surface open items that are recurring or in the reminder category
+  const relevant = all.filter(
+    (i) => i.status !== "done" && (i.recurring || i.category === "reminder")
+  );
+
+  return relevant.slice(0, MAX_LIFE_CONTEXT).map(({ status: _s, ...rest }) => rest);
 }
