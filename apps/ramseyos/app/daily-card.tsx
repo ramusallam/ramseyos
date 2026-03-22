@@ -58,6 +58,12 @@ export function DailyCard() {
 
   const mode = DAY_MODE_META[plan.dayMode];
 
+  // Split timeline for cleaner presentation
+  const scheduleItems = plan.timeline.filter((i) => i.type === "schedule");
+  const taskItems = plan.timeline.filter(
+    (i) => i.type === "chosen" || i.type === "focus" || i.type === "daily-action"
+  );
+
   return (
     <div className="space-y-6">
       {/* Day mode */}
@@ -68,31 +74,44 @@ export function DailyCard() {
         <span className={`text-[11px] font-medium ${mode.color}`}>
           {mode.label}
         </span>
+        <span className="text-[11px] text-muted/40 ml-auto tabular-nums">
+          {plan.timeline.length} items
+        </span>
       </div>
 
-      {/* Timeline header */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-            Today&apos;s plan
+      {/* Schedule section */}
+      {scheduleItems.length > 0 && (
+        <div>
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-3">
+            Schedule
           </h3>
-          <span className="text-[11px] text-muted/60 tabular-nums">
-            {plan.timeline.length} items
-          </span>
-        </div>
-
-        {plan.timeline.length === 0 ? (
-          <p className="text-sm text-muted italic py-4 text-center">
-            Nothing planned for today.
-          </p>
-        ) : (
           <ul className="space-y-1">
-            {plan.timeline.map((item) => (
-              <TimelineRow key={`${item.type}-${item.id}`} item={item} />
+            {scheduleItems.map((item) => (
+              <ScheduleRow key={`schedule-${item.id}`} item={item} />
             ))}
           </ul>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Tasks + Daily Actions */}
+      {taskItems.length > 0 && (
+        <div>
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-3">
+            Tasks
+          </h3>
+          <ul className="space-y-1">
+            {taskItems.map((item) => (
+              <TaskRow key={`${item.type}-${item.id}`} item={item} />
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {plan.timeline.length === 0 && (
+        <p className="text-sm text-muted italic py-4 text-center">
+          Nothing planned for today.
+        </p>
+      )}
 
       {/* Divider */}
       <div className="border-t border-border" />
@@ -184,26 +203,33 @@ export function DailyCard() {
   );
 }
 
-/* ── Timeline row ── */
+/* ── Schedule row — with active/past awareness ── */
 
-function TimelineRow({ item }: { item: TimelineItem }) {
+function ScheduleRow({ item }: { item: TimelineItem }) {
+  const now = new Date();
   const isPast =
-    item.type === "schedule" && item.endTime
-      ? item.endTime.toDate() < new Date()
+    item.endTime ? item.endTime.toDate() < now : false;
+  const isActive =
+    item.startTime && item.endTime
+      ? item.startTime.toDate() <= now && item.endTime.toDate() > now
       : false;
 
   return (
     <li
       className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised ${
-        isPast ? "opacity-40" : ""
-      }`}
+        isPast ? "opacity-35" : ""
+      } ${isActive ? "bg-emerald-500/[0.04]" : ""}`}
     >
-      <span
-        className={`size-2 shrink-0 rounded-full ${TYPE_DOT[item.type]}`}
-      />
+      {isActive ? (
+        <span className="size-2 shrink-0 rounded-full bg-emerald-400 animate-pulse" />
+      ) : (
+        <span className="size-2 shrink-0 rounded-full bg-sky-500" />
+      )}
 
       {item.startTime && item.endTime ? (
-        <span className="text-[11px] text-muted tabular-nums shrink-0 w-28">
+        <span className={`text-[11px] tabular-nums shrink-0 w-28 ${
+          isActive ? "text-emerald-400/80 font-medium" : "text-muted"
+        }`}>
           {formatTime(item.startTime)} – {formatTime(item.endTime)}
         </span>
       ) : (
@@ -212,6 +238,40 @@ function TimelineRow({ item }: { item: TimelineItem }) {
         </span>
       )}
 
+      <span className={`flex-1 text-[13px] truncate ${
+        isActive ? "text-foreground font-medium" : "text-foreground/80"
+      }`}>
+        {item.title}
+      </span>
+
+      {isActive && (
+        <span className="text-[9px] font-semibold uppercase tracking-wide text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded shrink-0">
+          now
+        </span>
+      )}
+
+      {item.source === "google" && !isActive && (
+        <span className="text-[9px] text-muted/30 shrink-0">
+          gcal
+        </span>
+      )}
+    </li>
+  );
+}
+
+/* ── Task row ── */
+
+function TaskRow({ item }: { item: TimelineItem }) {
+  return (
+    <li className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised">
+      <span
+        className={`size-2 shrink-0 rounded-full ${TYPE_DOT[item.type]}`}
+      />
+
+      <span className="text-[10px] text-muted/50 uppercase tracking-wide shrink-0 w-28 font-medium">
+        {TYPE_LABEL[item.type]}
+      </span>
+
       <span className="flex-1 text-[13px] text-foreground/80 truncate">
         {item.title}
       </span>
@@ -219,12 +279,6 @@ function TimelineRow({ item }: { item: TimelineItem }) {
       {item.projectName && (
         <span className="text-[9px] text-muted/50 shrink-0 truncate max-w-[80px]">
           {item.projectName}
-        </span>
-      )}
-
-      {item.fromInbox && (
-        <span className="text-[9px] text-amber-500/70 shrink-0">
-          inbox
         </span>
       )}
 

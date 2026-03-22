@@ -39,6 +39,7 @@ interface ScheduleItem {
   title: string;
   startTime: Timestamp;
   endTime: Timestamp;
+  source: string;
 }
 
 export type TimelineItemType = "schedule" | "chosen" | "focus" | "daily-action";
@@ -53,6 +54,7 @@ export interface TimelineItem {
   projectId?: string | null;
   projectName?: string | null;
   fromInbox?: boolean;
+  source?: string;
 }
 
 export interface LifeContextItem {
@@ -84,12 +86,11 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
   const dayEnd = new Date(today);
   dayEnd.setHours(23, 59, 59, 999);
 
-  const [dailyActions, chosenTasks, focusTasks, recentTasks, inboxItems, schedule, projects, lifeContext] =
+  const [dailyActions, chosenTasks, focusTasks, inboxItems, schedule, projects, lifeContext] =
     await Promise.all([
       fetchDailyActions(),
       fetchChosenTasks(),
       fetchFocusTasks(),
-      fetchRecentTasks(),
       fetchInboxItems(),
       fetchSchedule(dayStart, dayEnd),
       fetchProjects(),
@@ -99,27 +100,35 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
   const projectMap = new Map<string, string>();
   for (const p of projects) projectMap.set(p.id, p.title);
 
-  // Smart ordering: upcoming schedule first, past events last
+  // Partition schedule by time relevance
   const now = new Date();
-  const upcoming = schedule.filter((e) => e.endTime.toDate() >= now);
-  const past = schedule.filter((e) => e.endTime.toDate() < now);
-  const orderedSchedule = [...upcoming, ...past];
+  const activeEvents = schedule.filter(
+    (e) => e.startTime.toDate() <= now && e.endTime.toDate() > now
+  );
+  const upcomingEvents = schedule.filter(
+    (e) => e.startTime.toDate() > now
+  );
+  const pastEvents = schedule.filter(
+    (e) => e.endTime.toDate() <= now
+  );
+
+  // Ordered schedule: active → upcoming → past
+  const orderedSchedule = [...activeEvents, ...upcomingEvents, ...pastEvents];
 
   const priorityRank: Record<string, number> = { high: 0, medium: 1, low: 2 };
 
-  // Score-based task ranking across all sources
-  // Higher score = higher in the list
+  // Score-based task ranking
   function scoreTask(t: TaskItem, isChosen: boolean): number {
     let s = 0;
-    if (isChosen) s += 100;                          // chosen for today
-    if (t.priority === "high") s += 40;              // high priority
-    else if (t.priority === "medium") s += 20;       // medium priority
-    if (t.projectId) s += 10;                        // project-linked
-    if (t.fromInbox) s += 5;                         // recently triaged from inbox
+    if (isChosen) s += 100;
+    if (t.priority === "high") s += 40;
+    else if (t.priority === "medium") s += 20;
+    if (t.projectId) s += 10;
+    if (t.fromInbox) s += 5;
     return s;
   }
 
-  // Merge all task sources, deduplicate by id, score and rank
+  // Merge chosen + focus tasks, deduplicate by id
   const seen = new Set<string>();
   const scored: { task: TaskItem; score: number; type: TimelineItemType }[] = [];
 
@@ -133,11 +142,6 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
     seen.add(t.id);
     scored.push({ task: t, score: scoreTask(t, false), type: "focus" });
   }
-  for (const t of recentTasks) {
-    if (seen.has(t.id)) continue;
-    seen.add(t.id);
-    scored.push({ task: t, score: scoreTask(t, false), type: "focus" });
-  }
 
   // Sort by score descending, then by priority as tiebreaker
   scored.sort((a, b) => {
@@ -147,7 +151,6 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
     return pa - pb;
   });
 
-  // Cap task items to MAX_FOCUS_TASKS
   const topTasks = scored.slice(0, MAX_FOCUS_TASKS);
 
   // Sort inbox: prioritized items first
@@ -157,15 +160,10 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
     return pa - pb;
   });
 
-  // Build timeline: schedule → scored tasks → daily actions
+  // Build timeline: active events → upcoming events → tasks → daily actions → past events
   const timeline: TimelineItem[] = [
-    ...orderedSchedule.map((e) => ({
-      id: e.id,
-      type: "schedule" as const,
-      title: e.title,
-      startTime: e.startTime,
-      endTime: e.endTime,
-    })),
+    ...activeEvents.map((e) => scheduleToTimeline(e)),
+    ...upcomingEvents.map((e) => scheduleToTimeline(e)),
     ...topTasks.map(({ task: t, type }) => ({
       id: t.id,
       type,
@@ -180,9 +178,9 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
       type: "daily-action" as const,
       title: a.title,
     })),
+    ...pastEvents.map((e) => scheduleToTimeline(e)),
   ];
 
-  // Split for backward compat on the DailyPlan interface
   const orderedChosen = topTasks
     .filter((s) => s.type === "chosen")
     .map((s) => s.task);
@@ -190,7 +188,9 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
     .filter((s) => s.type === "focus")
     .map((s) => s.task);
 
-  const dayMode = deriveDayMode(orderedSchedule.length, topTasks.length, lifeContext.length);
+  // Day mode uses only forward-looking counts
+  const forwardSchedule = activeEvents.length + upcomingEvents.length;
+  const dayMode = deriveDayMode(forwardSchedule, topTasks.length, lifeContext.length);
 
   return {
     dailyActions,
@@ -204,26 +204,28 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
   };
 }
 
+function scheduleToTimeline(e: ScheduleItem): TimelineItem {
+  return {
+    id: e.id,
+    type: "schedule" as const,
+    title: e.title,
+    startTime: e.startTime,
+    endTime: e.endTime,
+    source: e.source,
+  };
+}
+
 function deriveDayMode(
-  scheduleCount: number,
+  forwardSchedule: number,
   taskCount: number,
   lifeCount: number
 ): DayMode {
-  const total = scheduleCount + taskCount + lifeCount;
+  const total = forwardSchedule + taskCount + lifeCount;
 
-  // Light day — very little on the plate
   if (total <= 2) return "light";
-
-  // Scheduled — calendar-heavy (3+ events dominate)
-  if (scheduleCount >= 3 && scheduleCount > taskCount) return "scheduled";
-
-  // Life-focus — life items outnumber work items
-  if (lifeCount > 0 && lifeCount >= taskCount && lifeCount >= scheduleCount) return "life-focus";
-
-  // Deep-work — tasks dominate with few meetings
-  if (taskCount >= 3 && scheduleCount <= 1) return "deep-work";
-
-  // Balanced — a mix of everything
+  if (forwardSchedule >= 3 && forwardSchedule > taskCount) return "scheduled";
+  if (lifeCount > 0 && lifeCount >= taskCount && lifeCount >= forwardSchedule) return "life-focus";
+  if (taskCount >= 3 && forwardSchedule <= 1) return "deep-work";
   return "balanced";
 }
 
@@ -265,23 +267,6 @@ async function fetchFocusTasks(): Promise<TaskItem[]> {
     where("priority", "==", "high"),
     orderBy("createdAt", "desc"),
     limit(5)
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({
-    id: d.id,
-    title: d.data().title,
-    priority: d.data().priority ?? null,
-    projectId: d.data().projectId ?? null,
-    fromInbox: !!d.data().sourceCaptureId,
-  }));
-}
-
-async function fetchRecentTasks(): Promise<TaskItem[]> {
-  const q = query(
-    collection(db, "tasks"),
-    where("completed", "==", false),
-    orderBy("createdAt", "desc"),
-    limit(10)
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({
@@ -336,6 +321,7 @@ async function fetchSchedule(
     title: d.data().title,
     startTime: d.data().startTime,
     endTime: d.data().endTime,
+    source: d.data().source ?? "manual",
   }));
 }
 
@@ -356,7 +342,6 @@ async function fetchLifeContext(): Promise<LifeContextItem[]> {
     recurring: d.data().recurring ?? false,
   }));
 
-  // Only surface open items that are recurring or in the reminder category
   const relevant = all.filter(
     (i) => i.status !== "done" && (i.recurring || i.category === "reminder")
   );

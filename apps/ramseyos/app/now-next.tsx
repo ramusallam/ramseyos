@@ -11,7 +11,7 @@ import { type Timestamp } from "firebase/firestore";
 import Link from "next/link";
 
 const TYPE_LABEL: Record<TimelineItemType, string> = {
-  schedule: "Event",
+  schedule: "Scheduled",
   chosen: "Chosen for today",
   focus: "High priority",
   "daily-action": "Daily action",
@@ -40,46 +40,45 @@ interface ActionTarget {
 }
 
 function resolveAction(item: TimelineItem): ActionTarget {
-  // Project-linked task → open that project
   if (item.projectId && (item.type === "chosen" || item.type === "focus")) {
     return {
       href: `/projects/${item.projectId}`,
-      label: "Open Project",
+      label: "Go to project",
       icon: "M2 5V4a1 1 0 011-1h3l1.5 2H13a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V5z",
     };
   }
 
-  // Schedule item → calendar
   if (item.type === "schedule") {
     return {
       href: "/calendar",
-      label: "Open Calendar",
+      label: "View schedule",
       icon: "M2 7h12M5 1.5v3M11 1.5v3M2 3h12a1 1 0 011 1v9a1 1 0 01-1 1H2a1 1 0 01-1-1V4a1 1 0 011-1z",
     };
   }
 
-  // Task (chosen/focus) without project → tasks page
   if (item.type === "chosen" || item.type === "focus") {
     return {
       href: "/tasks",
-      label: "Open Tasks",
+      label: "View tasks",
       icon: "M2 2h12a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1zM5 6h6M5 9h4",
     };
   }
 
-  // Daily action → today dashboard
   return {
     href: "/",
-    label: "View Plan",
+    label: "View plan",
     icon: "M8 2v1M8 13v1M3.5 8H2.5M13.5 8H12.5M8 4.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z",
   };
 }
 
-/* ── Item selection ── */
+/* ── Smarter item selection ── */
+
+const NEAR_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 
 function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
   const now = new Date();
 
+  // 1. Active (in-progress) schedule event — always wins
   const active = timeline.find(
     (item) =>
       item.type === "schedule" &&
@@ -90,6 +89,23 @@ function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
   );
   if (active) return active;
 
+  // 2. Schedule event starting within 30 min — takes priority
+  const nearUpcoming = timeline.find(
+    (item) =>
+      item.type === "schedule" &&
+      item.startTime &&
+      item.startTime.toDate() > now &&
+      item.startTime.toDate().getTime() - now.getTime() <= NEAR_THRESHOLD_MS
+  );
+  if (nearUpcoming) return nearUpcoming;
+
+  // 3. Highest-priority task (chosen > focus > daily-action)
+  const task = timeline.find(
+    (item) => item.type === "chosen" || item.type === "focus"
+  );
+  if (task) return task;
+
+  // 4. Next upcoming schedule event (even if far away)
   const upcoming = timeline.find(
     (item) =>
       item.type === "schedule" &&
@@ -98,19 +114,30 @@ function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
   );
   if (upcoming) return upcoming;
 
-  const task = timeline.find((item) => item.type !== "schedule");
-  return task ?? null;
+  // 5. Daily action
+  return timeline.find((item) => item.type === "daily-action") ?? null;
 }
 
 function getNextItem(
   timeline: TimelineItem[],
   currentId: string
 ): TimelineItem | null {
+  const now = new Date();
   const idx = timeline.findIndex(
     (item) => `${item.type}-${item.id}` === currentId
   );
-  if (idx === -1 || idx + 1 >= timeline.length) return null;
-  return timeline[idx + 1];
+  if (idx === -1) return null;
+
+  // Find next non-past item after current
+  for (let i = idx + 1; i < timeline.length; i++) {
+    const item = timeline[i];
+    // Skip past schedule events
+    if (item.type === "schedule" && item.endTime && item.endTime.toDate() <= now) {
+      continue;
+    }
+    return item;
+  }
+  return null;
 }
 
 /* ── Component ── */
@@ -176,6 +203,11 @@ function FocusCard({
     item.startTime.toDate() <= new Date() &&
     item.endTime.toDate() > new Date();
 
+  // Time context for upcoming schedule items
+  const startsIn = item.type === "schedule" && item.startTime && !isInProgress
+    ? getRelativeTime(item.startTime.toDate())
+    : null;
+
   return (
     <div
       className={`rounded-xl border p-5 shadow-card ${
@@ -191,6 +223,11 @@ function FocusCard({
         {isInProgress && (
           <span className="text-[9px] font-semibold uppercase tracking-wide text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
             In progress
+          </span>
+        )}
+        {startsIn && (
+          <span className="text-[9px] font-medium text-muted/60">
+            {startsIn}
           </span>
         )}
       </div>
@@ -209,9 +246,6 @@ function FocusCard({
               : TYPE_LABEL[item.type]}
             {item.projectName && (
               <span className="text-muted/50"> · {item.projectName}</span>
-            )}
-            {item.fromInbox && (
-              <span className="text-amber-500/60"> · from inbox</span>
             )}
           </p>
         </div>
@@ -274,11 +308,23 @@ function InboxCard({
           <rect x="2" y="3" width="12" height="10" rx="2" />
           <path d="M2 9h3.5a1 1 0 011 1v0a1 1 0 001 1h1a1 1 0 001-1v0a1 1 0 011-1H14" />
         </svg>
-        Open Inbox
+        Review inbox
         <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
           <path d="M6 4l4 4-4 4" />
         </svg>
       </Link>
     </div>
   );
+}
+
+function getRelativeTime(date: Date): string {
+  const diffMs = date.getTime() - Date.now();
+  if (diffMs < 0) return "";
+  const mins = Math.round(diffMs / 60000);
+  if (mins < 1) return "starting now";
+  if (mins < 60) return `in ${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  const remaining = mins % 60;
+  if (remaining === 0) return `in ${hrs}h`;
+  return `in ${hrs}h ${remaining}m`;
 }
