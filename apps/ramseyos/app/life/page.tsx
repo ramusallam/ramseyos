@@ -25,7 +25,7 @@ const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string;
 const CATEGORY_ORDER: LifeItemCategory[] = ["family", "home", "reminder", "life-admin"];
 
 function categoryMeta(cat: string) {
-  return CATEGORY_STYLES[cat] ?? { bg: "bg-white/5 border-white/10", text: "text-gray-500/70", label: cat || "Other", icon: "M8 2v12M2 8h12" };
+  return CATEGORY_STYLES[cat] ?? { bg: "bg-white/5 border-white/10", text: "text-muted/70", label: cat || "Other", icon: "M8 2v12M2 8h12" };
 }
 
 const STATUS_META: Record<LifeItemStatus, { dot: string; label: string }> = {
@@ -92,8 +92,7 @@ export default function LifePage() {
   const openItems = items.filter((i) => i.status !== "done");
   const doneItems = items.filter((i) => i.status === "done");
   const activeRecurring = items.filter((i) => i.recurring && i.status !== "done");
-  const openCount = openItems.length;
-  const doneCount = doneItems.length;
+  const inProgressItems = openItems.filter((i) => i.status === "in_progress");
 
   /* Group open items by category */
   const byCategory = new Map<string, LifeItem[]>();
@@ -111,25 +110,34 @@ export default function LifePage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-8 pt-10 pb-20">
-        <p className="text-sm text-muted/60">Loading...</p>
+      <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
+        <div className="flex items-center gap-2 py-12">
+          <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+          <span className="text-sm text-muted/60">Loading life items…</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-8 pt-10 pb-20">
+    <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
       {/* Header */}
-      <header className="mb-6 flex items-start justify-between">
+      <header className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-foreground tracking-tight">
+          <h1 className="text-xl font-normal text-foreground tracking-tight">
             Life
           </h1>
-          <p className="text-[12px] text-muted/60 mt-1">
-            {openCount} open item{openCount === 1 ? "" : "s"}
-            {activeRecurring.length > 0 && <> · {activeRecurring.length} recurring</>}
-            {doneCount > 0 && <> · {doneCount} completed</>}
+          <p className="text-[13px] text-muted mt-1">
+            Family, home, reminders, and personal admin.
           </p>
+          {openItems.length > 0 && (
+            <div className="flex items-center gap-4 mt-3">
+              <Stat label="open" value={openItems.length} />
+              {inProgressItems.length > 0 && <Stat label="active" value={inProgressItems.length} accent="blue" />}
+              {activeRecurring.length > 0 && <Stat label="recurring" value={activeRecurring.length} accent="violet" />}
+              {doneItems.length > 0 && <Stat label="done" value={doneItems.length} accent="emerald" />}
+            </div>
+          )}
         </div>
         <button
           type="button"
@@ -143,46 +151,6 @@ export default function LifePage() {
         </button>
       </header>
 
-      {/* Dashboard Summary */}
-      <div className="mb-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {CATEGORY_ORDER.map((cat) => {
-          const meta = categoryMeta(cat);
-          const catCount = openItems.filter((i) => i.category === cat).length;
-          return (
-            <div
-              key={cat}
-              className={`rounded-xl border ${meta.bg} px-4 py-3`}
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={meta.text}>
-                  <path d={meta.icon} />
-                </svg>
-                <span className={`text-[10px] font-semibold uppercase tracking-wider ${meta.text}`}>
-                  {meta.label}
-                </span>
-              </div>
-              <span className="text-[20px] font-semibold text-foreground/80 tabular-nums">
-                {catCount}
-              </span>
-            </div>
-          );
-        })}
-        <div className="rounded-xl border border-violet-400/15 bg-violet-500/5 px-4 py-3">
-          <div className="flex items-center gap-1.5 mb-1">
-            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-violet-400/70">
-              <path d="M12.5 8a4.5 4.5 0 11-1.3-3.2" />
-              <path d="M12.5 2.5v2.3h-2.3" />
-            </svg>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-violet-400/70">
-              Recurring
-            </span>
-          </div>
-          <span className="text-[20px] font-semibold text-foreground/80 tabular-nums">
-            {activeRecurring.length}
-          </span>
-        </div>
-      </div>
-
       {/* Quick-Add Form */}
       {showAdd && (
         <QuickAddForm
@@ -191,58 +159,74 @@ export default function LifePage() {
         />
       )}
 
-      {/* Recurring Strip */}
-      {activeRecurring.length > 0 && (
-        <div className="mb-6 rounded-xl border border-violet-400/10 bg-violet-500/5 px-5 py-3.5">
-          <h3 className="text-[9px] font-semibold uppercase tracking-wider text-violet-400/60 mb-2.5 flex items-center gap-1.5">
-            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12.5 8a4.5 4.5 0 11-1.3-3.2" />
-              <path d="M12.5 2.5v2.3h-2.3" />
-            </svg>
-            Recurring
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {activeRecurring.map((i) => {
-              const meta = categoryMeta(i.category);
-              return (
-                <span
-                  key={i.id}
-                  className={`inline-flex items-center gap-1.5 rounded-md border ${meta.bg} px-2.5 py-1 text-[11px] font-medium text-foreground/60`}
-                >
-                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={meta.text}>
-                    <path d={meta.icon} />
-                  </svg>
-                  {i.title}
-                  <span className="text-[9px] text-muted/40">{FREQUENCY_LABELS[i.frequency]}</span>
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* ═══ Workflow zones ═══ */}
+      <div className="space-y-10">
 
-      {/* Category Sections (open items only) */}
-      {openItems.length === 0 && doneItems.length === 0 ? (
-        <div className="rounded-xl border border-border/40 bg-surface/40 p-8 text-center">
-          <p className="text-[12px] text-muted/50">No life items yet.</p>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {sortedCategories.map(([cat, catItems]) => {
+        {/* ── In Progress ── */}
+        {inProgressItems.length > 0 && (
+          <section>
+            <SectionHeader
+              icon={<><circle cx="8" cy="8" r="3" /><path d="M8 5v3l2 1" /></>}
+              title="In Progress"
+              count={inProgressItems.length}
+              color="text-blue-400/80"
+              ruleColor="border-blue-400/10"
+            />
+            <div className="space-y-2">
+              {inProgressItems.map((i) => (
+                <LifeItemCard key={i.id} item={i} onStatusChange={setStatus} onArchive={handleArchive} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Recurring ── */}
+        {activeRecurring.length > 0 && (
+          <section>
+            <SectionHeader
+              icon={<><path d="M12.5 8a4.5 4.5 0 11-1.3-3.2" /><path d="M12.5 2.5v2.3h-2.3" /></>}
+              title="Recurring"
+              count={activeRecurring.length}
+              color="text-violet-400/70"
+              ruleColor="border-violet-400/10"
+            />
+            <div className="flex flex-wrap gap-2">
+              {activeRecurring.map((i) => {
+                const meta = categoryMeta(i.category);
+                return (
+                  <span
+                    key={i.id}
+                    className={`inline-flex items-center gap-1.5 rounded-md border ${meta.bg} px-2.5 py-1 text-[11px] font-medium text-foreground/60`}
+                  >
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={meta.text}>
+                      <path d={meta.icon} />
+                    </svg>
+                    {i.title}
+                    <span className="text-[9px] text-muted/40">{FREQUENCY_LABELS[i.frequency]}</span>
+                  </span>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* ── By Category ── */}
+        {sortedCategories.length > 0 ? (
+          sortedCategories.map(([cat, catItems]) => {
             const meta = categoryMeta(cat);
             const catRecurring = catItems.filter((i) => i.recurring);
             const catOther = catItems.filter((i) => !i.recurring);
 
             return (
               <section key={cat}>
-                <h2 className={`text-[10px] font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5 ${meta.text}`}>
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                    <path d={meta.icon} />
-                  </svg>
-                  {meta.label}
-                  <span className="text-muted/40 font-normal">{catItems.length} open</span>
-                </h2>
-
+                <SectionHeader
+                  icon={<path d={meta.icon} />}
+                  title={meta.label}
+                  count={catItems.length}
+                  color={meta.text}
+                  ruleColor="border-border/40"
+                  suffix={`${catItems.length} open`}
+                />
                 <div className="space-y-2">
                   {catRecurring.map((i) => (
                     <LifeItemCard key={i.id} item={i} onStatusChange={setStatus} onArchive={handleArchive} />
@@ -257,46 +241,126 @@ export default function LifePage() {
                 </div>
               </section>
             );
-          })}
+          })
+        ) : openItems.length === 0 && doneItems.length === 0 ? (
+          <EmptyState
+            message="No life items yet"
+            detail="Add items to track family, home, and personal reminders."
+          />
+        ) : null}
 
-          {/* Completed Section — collapsed by default */}
-          {doneCount > 0 && (
-            <section>
-              <button
-                type="button"
-                onClick={() => setShowDone(!showDone)}
-                className="text-[10px] font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5 text-emerald-400/60 hover:text-emerald-400/80 transition-colors"
-              >
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 8.5l3.5 3.5 6.5-7" />
-                </svg>
+        {/* ── Completed ── */}
+        {doneItems.length > 0 && (
+          <section>
+            <button
+              type="button"
+              onClick={() => setShowDone(!showDone)}
+              className="flex items-center gap-2 mb-4 group"
+            >
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400/60">
+                <path d="M3 8.5l3.5 3.5 6.5-7" />
+              </svg>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400/60 group-hover:text-emerald-400/80 transition-colors">
                 Completed
-                <span className="text-muted/40 font-normal">{doneCount}</span>
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  className={`ml-0.5 transition-transform ${showDone ? "rotate-180" : ""}`}
-                >
-                  <path d="M4 6l4 4 4-4" />
-                </svg>
-              </button>
+              </span>
+              <span className="text-[10px] tabular-nums text-muted/40">
+                {doneItems.length}
+              </span>
+              <div className="flex-1 border-t border-emerald-400/10" />
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                className={`text-muted/30 transition-transform ${showDone ? "rotate-180" : ""}`}
+              >
+                <path d="M4 6l4 4 4-4" />
+              </svg>
+            </button>
 
-              {showDone && (
-                <div className="space-y-2">
-                  {doneItems.map((i) => (
-                    <LifeItemCard key={i.id} item={i} onStatusChange={setStatus} onArchive={handleArchive} />
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
-        </div>
-      )}
+            {showDone && (
+              <div className="space-y-2">
+                {doneItems.map((i) => (
+                  <LifeItemCard key={i.id} item={i} onStatusChange={setStatus} onArchive={handleArchive} />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Shared UI ── */
+
+function Stat({ label, value, accent }: { label: string; value: number; accent?: string }) {
+  const colorMap: Record<string, string> = {
+    blue: "text-blue-400/70",
+    violet: "text-violet-400/70",
+    emerald: "text-emerald-400/70",
+  };
+  const color = accent ? colorMap[accent] ?? "text-muted/50" : "text-muted/50";
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className={`text-[13px] font-medium tabular-nums ${color}`}>{value}</span>
+      <span className="text-[10px] text-muted/40">{label}</span>
+    </div>
+  );
+}
+
+function SectionHeader({
+  icon,
+  title,
+  count,
+  color,
+  ruleColor,
+  suffix,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  count: number;
+  color: string;
+  ruleColor: string;
+  suffix?: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={color}
+      >
+        {icon}
+      </svg>
+      <h2 className={`text-[11px] font-semibold uppercase tracking-wider ${color}`}>
+        {title}
+      </h2>
+      <span className="text-[10px] tabular-nums text-muted/40">
+        {suffix ?? count}
+      </span>
+      <div className={`flex-1 border-t ${ruleColor}`} />
+    </div>
+  );
+}
+
+function EmptyState({ message, detail }: { message: string; detail: string }) {
+  return (
+    <div className="rounded-xl border border-border/40 bg-surface/40 p-10 text-center">
+      <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+        <path d="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z" />
+      </svg>
+      <p className="text-sm text-muted/60">{message}</p>
+      <p className="text-[12px] text-muted/35 mt-1">{detail}</p>
     </div>
   );
 }
@@ -319,7 +383,7 @@ function QuickAddForm({
   const canSubmit = title.trim().length > 0;
 
   return (
-    <div className="mb-6 rounded-xl border border-border/40 bg-surface p-5 space-y-4">
+    <div className="mb-8 rounded-xl border border-border/40 bg-surface p-5 space-y-4">
       <input
         type="text"
         value={title}
@@ -330,7 +394,6 @@ function QuickAddForm({
       />
 
       <div className="flex flex-wrap items-center gap-3">
-        {/* Category */}
         <div className="flex items-center gap-1.5">
           <span className="text-[9px] font-semibold uppercase tracking-wider text-muted/40">Category</span>
           <div className="flex gap-1">
@@ -355,7 +418,6 @@ function QuickAddForm({
           </div>
         </div>
 
-        {/* Recurring toggle */}
         <button
           type="button"
           onClick={() => setRecurring(!recurring)}
@@ -372,11 +434,11 @@ function QuickAddForm({
           Recurring
         </button>
 
-        {/* Frequency (only if recurring) */}
         {recurring && (
           <select
             value={frequency}
             onChange={(e) => setFrequency(e.target.value as LifeItemFrequency)}
+            aria-label="Frequency"
             className="bg-surface border border-border/30 rounded-md px-2 py-0.5 text-[10px] text-muted/60 outline-none"
           >
             <option value="daily">Daily</option>
@@ -441,9 +503,14 @@ function LifeItemCard({
         className="w-full flex items-start gap-3 px-5 py-4 text-left hover:bg-surface-raised/50 transition-colors"
       >
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2.5 mb-1 flex-wrap">
-            <span className={`text-[14px] font-medium ${i.status === "done" ? "text-foreground/45 line-through" : "text-foreground/85"}`}>
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className={`text-[13px] font-medium ${i.status === "done" ? "text-foreground/45 line-through" : "text-foreground/85"}`}>
               {i.title}
+            </span>
+            <span
+              className={`inline-flex items-center rounded-full border px-2 py-0 text-[9px] font-medium ${style.bg} ${style.text}`}
+            >
+              {style.label}
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border/30 bg-white/5 px-2 py-0 text-[9px] font-medium text-muted/60">
               <span className={`inline-block w-1.5 h-1.5 rounded-full ${status.dot}`} />

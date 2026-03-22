@@ -9,6 +9,10 @@ import {
   type TimelineItemType,
   type LifeContextItem,
 } from "@/lib/orchestration";
+import {
+  getActiveAdminItems,
+  type AdminItem,
+} from "@/lib/admin-templates";
 import { type Timestamp } from "firebase/firestore";
 import Link from "next/link";
 
@@ -49,9 +53,13 @@ function formatTime(ts: Timestamp): string {
 
 export function DailyCard() {
   const [plan, setPlan] = useState<DailyPlan | null>(null);
+  const [adminActive, setAdminActive] = useState<AdminItem[]>([]);
 
   useEffect(() => {
     generateDailyPlan().then(setPlan);
+    getActiveAdminItems().then((items) =>
+      setAdminActive(items.filter((i) => i.status === "in_progress").slice(0, 3))
+    );
   }, []);
 
   if (!plan) return null;
@@ -172,31 +180,69 @@ export function DailyCard() {
         )}
       </div>
 
-      {/* Life Context */}
-      {plan.lifeContext.length > 0 && (
+      {/* Life & Ops Context */}
+      {(plan.lifeContext.length > 0 || adminActive.length > 0) && (
         <>
           <div className="border-t border-border" />
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-rose-400/60">
-                  <path d="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z" />
-                </svg>
-                Life Context
-              </h3>
-              <Link
-                href="/life"
-                className="text-[11px] text-accent hover:text-accent/80 transition-colors font-medium"
-              >
-                View all &rarr;
-              </Link>
+
+          {/* Life Context */}
+          {plan.lifeContext.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-rose-400/60">
+                    <path d="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z" />
+                  </svg>
+                  Life
+                </h3>
+                <Link
+                  href="/life"
+                  className="text-[11px] text-accent hover:text-accent/80 transition-colors font-medium"
+                >
+                  View all &rarr;
+                </Link>
+              </div>
+              <ul className="space-y-1">
+                {plan.lifeContext.map((item) => (
+                  <LifeContextRow key={item.id} item={item} />
+                ))}
+              </ul>
             </div>
-            <ul className="space-y-1">
-              {plan.lifeContext.map((item) => (
-                <LifeContextRow key={item.id} item={item} />
-              ))}
-            </ul>
-          </div>
+          )}
+
+          {/* Admin Ops nudge */}
+          {adminActive.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400/60">
+                    <rect x="2" y="2" width="12" height="12" rx="2" />
+                    <path d="M5 6h6M5 9h4" />
+                  </svg>
+                  Ops
+                </h3>
+                <Link
+                  href="/admin"
+                  className="text-[11px] text-accent hover:text-accent/80 transition-colors font-medium"
+                >
+                  View all &rarr;
+                </Link>
+              </div>
+              <ul className="space-y-1">
+                {adminActive.map((item) => (
+                  <li key={item.id} className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised">
+                    <span className="size-1.5 shrink-0 rounded-full bg-blue-400" />
+                    <span className="flex-1 text-[13px] text-foreground/70 truncate">
+                      {item.title}
+                    </span>
+                    <span className="text-[9px] text-blue-400/50 shrink-0">
+                      in progress
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </>
       )}
     </div>
