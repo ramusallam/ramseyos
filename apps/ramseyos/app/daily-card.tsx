@@ -63,17 +63,22 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
 
   return (
     <div className="space-y-5">
-      {/* Day profile */}
+      {/* Card header — unified controller framing */}
       <div className="flex items-center gap-2">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={mode.color}>
-          <path d={mode.icon} />
-        </svg>
-        <span className={`text-[11px] font-medium ${mode.color}`}>
-          {mode.label}
-        </span>
-        <div className="flex-1 border-t border-border/30 mx-2" />
-        <span className="text-[10px] text-muted/35 tabular-nums">
-          {plan.timeline.length} items
+        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted/50">
+          Daily plan
+        </h2>
+        <div className="flex-1 border-t border-border/30" />
+        <div className="flex items-center gap-1.5">
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={mode.color}>
+            <path d={mode.icon} />
+          </svg>
+          <span className={`text-[10px] font-medium ${mode.color}`}>
+            {mode.label}
+          </span>
+        </div>
+        <span className="text-[9px] text-muted/30 tabular-nums ml-1">
+          · {plan.timeline.length}
         </span>
       </div>
 
@@ -121,11 +126,32 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
       {/* Context — life + ops merged */}
       {hasContext && (
         <div>
-          <SectionLabel
-            icon="M8 2a6 6 0 100 12A6 6 0 008 2z"
-            label="Context"
-            count={plan.lifeContext.length + adminActive.length}
-          />
+          <div className="flex items-center gap-2 mb-2">
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
+              <path d="M8 2a6 6 0 100 12A6 6 0 008 2z" />
+            </svg>
+            <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">
+              Context
+            </h3>
+            <span className="text-[9px] text-muted/30 tabular-nums">{plan.lifeContext.length + adminActive.length}</span>
+            <div className="flex-1" />
+            {plan.lifeContext.length > 0 && (
+              <Link
+                href="/life"
+                className="text-[10px] text-muted/35 hover:text-muted/60 transition-colors"
+              >
+                Life &rarr;
+              </Link>
+            )}
+            {adminActive.length > 0 && (
+              <Link
+                href="/admin"
+                className="text-[10px] text-muted/35 hover:text-muted/60 transition-colors"
+              >
+                Admin &rarr;
+              </Link>
+            )}
+          </div>
           <ul className="space-y-0.5">
             {plan.lifeContext.map((item) => (
               <LifeContextRow key={`life-${item.id}`} item={item} />
@@ -140,24 +166,6 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
               </li>
             ))}
           </ul>
-          <div className="flex items-center gap-3 mt-2 px-3">
-            {plan.lifeContext.length > 0 && (
-              <Link
-                href="/life"
-                className="text-[10px] text-muted/40 hover:text-muted/60 transition-colors"
-              >
-                Life &rarr;
-              </Link>
-            )}
-            {adminActive.length > 0 && (
-              <Link
-                href="/admin"
-                className="text-[10px] text-muted/40 hover:text-muted/60 transition-colors"
-              >
-                Admin &rarr;
-              </Link>
-            )}
-          </div>
         </div>
       )}
     </div>

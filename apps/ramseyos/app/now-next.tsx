@@ -146,8 +146,10 @@ export function NowNext({ plan }: NowNextProps) {
 
   if (!now && !hasInbox) return null;
 
+  const hasNext = next || (hasInbox && now);
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className={`grid grid-cols-1 gap-4 ${hasNext ? "sm:grid-cols-2" : ""}`}>
       {/* Now */}
       {now ? (
         <FocusCard item={now} label="Now" isPrimary />
@@ -155,7 +157,7 @@ export function NowNext({ plan }: NowNextProps) {
         <InboxCard count={plan.inboxItems.length} label="Now" isPrimary />
       ) : null}
 
-      {/* Next */}
+      {/* Next — only rendered when there's actually something */}
       {next ? (
         <FocusCard item={next} label="Next" isPrimary={false} />
       ) : hasInbox && now ? (
@@ -164,11 +166,7 @@ export function NowNext({ plan }: NowNextProps) {
           label="Next"
           isPrimary={false}
         />
-      ) : (
-        <div className="bg-surface/60 rounded-xl border border-border/60 p-5 flex items-center justify-center">
-          <p className="text-sm text-muted/40 italic">Nothing else lined up.</p>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 }
