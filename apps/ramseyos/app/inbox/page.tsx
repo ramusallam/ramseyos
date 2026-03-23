@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   collection,
   query,
@@ -13,6 +13,11 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { createTask } from "@/lib/tasks";
+import {
+  type CaptureSource,
+  type CaptureType,
+  SOURCE_META,
+} from "@/lib/captures";
 import Link from "next/link";
 
 interface Project {
@@ -20,10 +25,7 @@ interface Project {
   title: string;
 }
 
-type CaptureType = "capture" | "task" | "note" | "idea" | "resource";
 type Priority = "low" | "medium" | "high" | null;
-
-type CaptureSource = "manual" | "email" | "api" | "automation";
 
 interface Capture {
   id: string;
@@ -68,6 +70,7 @@ export default function InboxPage() {
   const [items, setItems] = useState<Capture[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showProcessed, setShowProcessed] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, "captures"), orderBy("createdAt", "desc"));
@@ -97,42 +100,177 @@ export default function InboxPage() {
     return unsub;
   }, []);
 
+  const unprocessed = useMemo(
+    () => items.filter((i) => !i.processed),
+    [items]
+  );
+  const processed = useMemo(
+    () => items.filter((i) => i.processed),
+    [items]
+  );
+  const taskCount = useMemo(
+    () => items.filter((i) => i.type === "task").length,
+    [items]
+  );
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-xl px-5 pt-12 pb-20">
+    <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
+      {/* Header */}
+      <header className="mb-10">
+        <Link
+          href="/"
+          className="text-[11px] tracking-wide text-muted hover:text-foreground/60 transition-colors"
+        >
+          &larr; Today
+        </Link>
+        <div className="flex items-baseline gap-4 mt-2">
+          <h1 className="text-xl font-normal text-foreground">Inbox</h1>
+          {!loading && items.length > 0 && (
+            <div className="flex items-center gap-3 text-[11px] text-muted/60">
+              <span className="tabular-nums">{unprocessed.length} to triage</span>
+              {taskCount > 0 && (
+                <>
+                  <span className="text-border">·</span>
+                  <span className="tabular-nums">{taskCount} → tasks</span>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        <p className="text-[13px] text-muted mt-1">
+          Universal capture inbox. Triage, assign, and convert to action.
+        </p>
+      </header>
 
-        {/* Header */}
-        <header className="mb-10">
-          <Link
-            href="/"
-            className="text-[11px] tracking-wide text-muted hover:text-zinc-400 transition-colors"
-          >
-            &larr; Today
-          </Link>
-          <h1 className="text-xl font-normal text-zinc-100 mt-2">
-            Inbox
-          </h1>
-          <Link
-            href="/tasks"
-            className="inline-block mt-2 text-[11px] text-muted/60 hover:text-zinc-400 transition-colors"
-          >
-            View tasks &rarr;
-          </Link>
-        </header>
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center gap-2 py-12">
+          <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+          <span className="text-sm text-muted/60">Loading inbox…</span>
+        </div>
+      )}
 
-        {/* List */}
-        {loading ? (
-          <p className="text-sm text-muted/60">Loading...</p>
-        ) : items.length === 0 ? (
-          <p className="text-sm text-muted/60">Nothing captured yet.</p>
-        ) : (
-          <ul className="space-y-1">
-            {items.map((item) => (
-              <InboxItem key={item.id} item={item} projects={projects} />
-            ))}
-          </ul>
-        )}
-      </div>
+      {/* Empty */}
+      {!loading && items.length === 0 && (
+        <div className="rounded-xl border border-border/40 bg-surface/40 p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+            <rect x="2" y="3" width="12" height="10" rx="2" />
+            <path d="M2 9h3.5a1 1 0 011 1v0a1 1 0 001 1h1a1 1 0 001-1v0a1 1 0 011-1H14" />
+          </svg>
+          <p className="text-sm text-muted/60">Inbox is empty</p>
+          <p className="text-[12px] text-muted/35 mt-1">
+            Capture thoughts from the sidebar or any future channel.
+          </p>
+        </div>
+      )}
+
+      {!loading && items.length > 0 && (
+        <div className="space-y-10">
+          {/* ── Needs Triage ── */}
+          {unprocessed.length > 0 && (
+            <section>
+              <SectionHeader
+                icon="M2 9h3.5a1 1 0 011 1v0a1 1 0 001 1h1a1 1 0 001-1v0a1 1 0 011-1H14"
+                title="Needs triage"
+                count={unprocessed.length}
+                color="text-amber-400/60"
+              />
+              <ul className="space-y-1">
+                {unprocessed.map((item) => (
+                  <InboxItem
+                    key={item.id}
+                    item={item}
+                    projects={projects}
+                  />
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {/* All triaged */}
+          {unprocessed.length === 0 && (
+            <div className="flex items-center gap-2 py-6">
+              <span className="size-1.5 shrink-0 rounded-full bg-emerald-400/50" />
+              <span className="text-[13px] text-muted/50 italic">
+                All items triaged — inbox clear.
+              </span>
+            </div>
+          )}
+
+          {/* ── Processed ── */}
+          {processed.length > 0 && (
+            <section>
+              <button
+                type="button"
+                onClick={() => setShowProcessed(!showProcessed)}
+                className="flex items-center gap-2 mb-4 group w-full"
+              >
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
+                  <path d="M5.5 8l2 2 3-4" />
+                </svg>
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/40">
+                  Processed
+                </h2>
+                <span className="text-[10px] text-muted/30 tabular-nums">{processed.length}</span>
+                <div className="flex-1 border-t border-border/30 ml-2" />
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`text-muted/30 transition-transform ${showProcessed ? "rotate-180" : ""}`}
+                >
+                  <path d="M4 6l4 4 4-4" />
+                </svg>
+              </button>
+              {showProcessed && (
+                <ul className="space-y-1">
+                  {processed.map((item) => (
+                    <InboxItem
+                      key={item.id}
+                      item={item}
+                      projects={projects}
+                    />
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Section Header ── */
+
+function SectionHeader({
+  icon,
+  title,
+  count,
+  color = "text-muted/40",
+}: {
+  icon: string;
+  title: string;
+  count?: number;
+  color?: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={color}>
+        <path d={icon} />
+      </svg>
+      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+        {title}
+      </h2>
+      {count !== undefined && (
+        <span className="text-[10px] text-muted/40 tabular-nums">{count}</span>
+      )}
+      <div className="flex-1 border-t border-border/40 ml-2" />
     </div>
   );
 }
@@ -143,6 +281,8 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
   const isProcessed = item.processed ?? false;
   const isTask = item.type === "task";
   const [converting, setConverting] = useState(false);
+
+  const sourceMeta = SOURCE_META[item.source ?? "manual"];
 
   async function handleConvert() {
     if (converting) return;
@@ -156,11 +296,11 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
 
   return (
     <li
-      className={`rounded px-2.5 py-2.5 -mx-2.5 transition-colors hover:bg-surface ${
-        isProcessed ? "opacity-50" : ""
+      className={`rounded-lg px-3 py-3 transition-colors hover:bg-surface-raised/50 ${
+        isProcessed ? "opacity-40" : ""
       }`}
     >
-      {/* Row 1: checkbox + text */}
+      {/* Row 1: checkbox + text + source */}
       <div className="flex items-start gap-3">
         <button
           type="button"
@@ -173,7 +313,7 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
           className={`mt-0.5 size-4 shrink-0 rounded border transition-colors ${
             isProcessed
               ? "border-accent/40 bg-accent/20"
-              : "border-zinc-600 hover:border-zinc-400"
+              : "border-border hover:border-foreground/30"
           }`}
           aria-label={isProcessed ? "Mark unprocessed" : "Mark processed"}
         >
@@ -191,112 +331,111 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
           )}
         </button>
         <div className="flex-1 min-w-0">
-          <p className={`text-[13px] ${isProcessed ? "text-zinc-500 line-through" : "text-zinc-300"}`}>
+          <p className={`text-[13px] leading-relaxed ${isProcessed ? "text-muted/60 line-through" : "text-foreground/80"}`}>
             {item.text}
           </p>
         </div>
+        {/* Source badge */}
+        <span className={`text-[9px] shrink-0 ${sourceMeta.color}`}>
+          {sourceMeta.label.toLowerCase()}
+        </span>
       </div>
 
       {/* Row 2: triage controls */}
-      <div className="flex items-center gap-3 mt-1.5 ml-7">
-        {/* Type selector */}
-        <select
-          aria-label="Capture type"
-          value={item.type ?? "capture"}
-          onChange={(e) =>
-            updateCapture(item.id, { type: e.target.value as CaptureType })
-          }
-          className="bg-transparent text-[10px] text-muted/70 outline-none cursor-pointer hover:text-zinc-400 transition-colors"
-        >
-          {TYPES.map((t) => (
-            <option key={t} value={t} className="bg-surface text-foreground">
-              {t}
+      {!isProcessed && (
+        <div className="flex items-center gap-2 mt-2 ml-7 flex-wrap">
+          {/* Type */}
+          <select
+            aria-label="Capture type"
+            value={item.type ?? "capture"}
+            onChange={(e) =>
+              updateCapture(item.id, { type: e.target.value as CaptureType })
+            }
+            className="bg-transparent text-[10px] text-muted/60 outline-none cursor-pointer hover:text-foreground/60 transition-colors"
+          >
+            {TYPES.map((t) => (
+              <option key={t} value={t} className="bg-surface text-foreground">
+                {t}
+              </option>
+            ))}
+          </select>
+
+          <span className="text-border/30">·</span>
+
+          {/* Priority */}
+          <div className="flex items-center gap-0.5">
+            {PRIORITIES.map(({ value, label }) => {
+              const isActive = (item.priority ?? null) === value;
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => updateCapture(item.id, { priority: value })}
+                  className={`text-[10px] px-1.5 py-0.5 rounded transition-colors ${
+                    isActive
+                      ? value === "high"
+                        ? "bg-rose-500/15 text-rose-400"
+                        : value === "medium"
+                          ? "bg-amber-500/15 text-amber-400"
+                          : value === "low"
+                            ? "bg-sky-500/15 text-sky-400"
+                            : "bg-surface-raised text-muted/60"
+                      : "text-muted/30 hover:text-muted/60"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
+          <span className="text-border/30">·</span>
+
+          {/* Project */}
+          <select
+            aria-label="Assign project"
+            value={item.projectId ?? ""}
+            onChange={(e) =>
+              updateCapture(item.id, { projectId: e.target.value || null })
+            }
+            className="bg-transparent text-[10px] text-muted/60 outline-none cursor-pointer hover:text-foreground/60 transition-colors max-w-[120px] truncate"
+          >
+            <option value="" className="bg-surface text-foreground">
+              No project
             </option>
-          ))}
-        </select>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id} className="bg-surface text-foreground">
+                {p.title}
+              </option>
+            ))}
+          </select>
 
-        <span className="text-muted/20">·</span>
-
-        {/* Priority selector */}
-        <div className="flex items-center gap-1">
-          {PRIORITIES.map(({ value, label }) => {
-            const isActive = (item.priority ?? null) === value;
-            return (
-              <button
-                key={label}
-                type="button"
-                onClick={() => updateCapture(item.id, { priority: value })}
-                className={`text-[10px] px-1.5 py-0.5 rounded transition-colors ${
-                  isActive
-                    ? value === "high"
-                      ? "bg-rose-500/15 text-rose-400"
-                      : value === "medium"
-                        ? "bg-amber-500/15 text-amber-400"
-                        : value === "low"
-                          ? "bg-blue-500/15 text-blue-400"
-                          : "bg-zinc-700/30 text-muted"
-                    : "text-muted/40 hover:text-muted/70"
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
+          {/* Spacer + Convert action */}
+          <div className="flex-1" />
+          <button
+            type="button"
+            onClick={handleConvert}
+            disabled={converting}
+            className="text-[10px] font-medium text-accent/70 hover:text-accent transition-colors disabled:opacity-40 px-2 py-0.5 rounded hover:bg-accent-dim"
+          >
+            {converting ? "Converting…" : "→ Task"}
+          </button>
         </div>
+      )}
 
-        <span className="text-muted/20">·</span>
-
-        {/* Project selector */}
-        <select
-          aria-label="Assign project"
-          value={item.projectId ?? ""}
-          onChange={(e) =>
-            updateCapture(item.id, { projectId: e.target.value || null })
-          }
-          className="bg-transparent text-[10px] text-muted/70 outline-none cursor-pointer hover:text-zinc-400 transition-colors max-w-[120px] truncate"
-        >
-          <option value="" className="bg-surface text-foreground">
-            No project
-          </option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id} className="bg-surface text-foreground">
-              {p.title}
-            </option>
-          ))}
-        </select>
-
-        <span className="text-muted/20">·</span>
-
-        {/* Source */}
-        <span className="text-[10px] text-muted/30">
-          via {item.source ?? "manual"}
-        </span>
-
-        <span className="text-muted/20">·</span>
-
-        {/* Timestamp */}
-        <span className="text-[10px] text-muted/40">
-          {item.createdAt ? formatTime(item.createdAt) : ""}
-        </span>
-
-        {/* Convert to Task */}
-        {!isTask && !isProcessed && (
-          <>
-            <span className="text-muted/20">·</span>
-            <button
-              type="button"
-              onClick={handleConvert}
-              disabled={converting}
-              className="text-[10px] text-accent/60 hover:text-accent transition-colors disabled:opacity-40"
-            >
-              {converting ? "Converting..." : "→ Task"}
-            </button>
-          </>
-        )}
-        {isTask && (
-          <span className="text-[10px] text-emerald-400/60">✓ task</span>
-        )}
-      </div>
+      {/* Processed meta row */}
+      {isProcessed && (
+        <div className="flex items-center gap-2 mt-1.5 ml-7">
+          {isTask && (
+            <span className="text-[10px] text-emerald-400/50">converted to task</span>
+          )}
+          {item.createdAt && (
+            <span className="text-[10px] text-muted/30">
+              {formatTime(item.createdAt)}
+            </span>
+          )}
+        </div>
+      )}
     </li>
   );
 }
