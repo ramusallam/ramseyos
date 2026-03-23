@@ -653,24 +653,31 @@ export function SuggestedTools() {
           All tools &rarr;
         </Link>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {suggestions.map((tool) => {
           const isExternal = tool.url !== "#";
+          const isSpark = tool.title === "Spark Learning Inquiry Studio";
           return (
             <a
               key={tool.id}
               href={tool.url}
               target={isExternal ? "_blank" : undefined}
               rel={isExternal ? "noopener noreferrer" : undefined}
-              className="group block bg-surface rounded-xl border border-border p-5 shadow-card transition-all hover:shadow-card-hover hover:border-border-strong"
+              className={`group block rounded-xl border p-4 transition-all hover:bg-surface-raised/30 ${
+                isSpark
+                  ? "border-amber-500/20 bg-amber-500/[0.03] hover:border-amber-500/30"
+                  : "border-border/60 bg-surface/40 hover:border-border-strong"
+              }`}
             >
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex items-start justify-between mb-2">
                 <span
                   className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
-                    CATEGORY_STYLE[tool.category] ?? "bg-white/5 text-muted"
+                    isSpark
+                      ? "bg-amber-500/10 text-amber-400"
+                      : CATEGORY_STYLE[tool.category] ?? "bg-white/5 text-muted"
                   }`}
                 >
-                  {tool.category}
+                  {isSpark ? "companion" : tool.category}
                 </span>
                 {isExternal && (
                   <svg
@@ -690,10 +697,10 @@ export function SuggestedTools() {
                   </svg>
                 )}
               </div>
-              <h3 className="text-[14px] font-medium text-foreground/90 mb-1 group-hover:text-foreground transition-colors">
+              <h3 className="text-[13px] font-medium text-foreground/90 mb-1 group-hover:text-foreground transition-colors leading-snug">
                 {tool.title}
               </h3>
-              <p className="text-[12px] text-muted leading-relaxed">
+              <p className="text-[12px] text-muted/60 leading-relaxed line-clamp-2">
                 {tool.description}
               </p>
             </a>
