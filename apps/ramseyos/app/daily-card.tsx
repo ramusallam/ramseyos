@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
-  generateDailyPlan,
   type DailyPlan,
   type DayMode,
   type TimelineItem,
   type TimelineItemType,
   type LifeContextItem,
 } from "@/lib/orchestration";
-import {
-  getActiveAdminItems,
-  type AdminItem,
-} from "@/lib/admin-templates";
+import { type AdminItem } from "@/lib/admin-templates";
 import { type Timestamp } from "firebase/firestore";
 import Link from "next/link";
 
@@ -32,9 +27,9 @@ const DAY_MODE_META: Record<DayMode, { label: string; icon: string; color: strin
 
 const TYPE_LABEL: Record<TimelineItemType, string> = {
   schedule: "event",
-  chosen: "today",
+  chosen: "selected",
   focus: "priority",
-  "daily-action": "daily",
+  "daily-action": "routine",
 };
 
 const TYPE_DOT: Record<TimelineItemType, string> = {
@@ -51,30 +46,24 @@ function formatTime(ts: Timestamp): string {
   });
 }
 
-export function DailyCard() {
-  const [plan, setPlan] = useState<DailyPlan | null>(null);
-  const [adminActive, setAdminActive] = useState<AdminItem[]>([]);
+interface DailyCardProps {
+  plan: DailyPlan;
+  adminActive: AdminItem[];
+}
 
-  useEffect(() => {
-    generateDailyPlan().then(setPlan);
-    getActiveAdminItems().then((items) =>
-      setAdminActive(items.filter((i) => i.status === "in_progress").slice(0, 3))
-    );
-  }, []);
-
-  if (!plan) return null;
-
+export function DailyCard({ plan, adminActive }: DailyCardProps) {
   const mode = DAY_MODE_META[plan.dayMode];
 
-  // Split timeline for cleaner presentation
   const scheduleItems = plan.timeline.filter((i) => i.type === "schedule");
   const taskItems = plan.timeline.filter(
     (i) => i.type === "chosen" || i.type === "focus" || i.type === "daily-action"
   );
 
+  const hasContext = plan.lifeContext.length > 0 || adminActive.length > 0;
+
   return (
-    <div className="space-y-6">
-      {/* Day mode */}
+    <div className="space-y-5">
+      {/* Day profile */}
       <div className="flex items-center gap-2">
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={mode.color}>
           <path d={mode.icon} />
@@ -82,18 +71,21 @@ export function DailyCard() {
         <span className={`text-[11px] font-medium ${mode.color}`}>
           {mode.label}
         </span>
-        <span className="text-[11px] text-muted/40 ml-auto tabular-nums">
+        <div className="flex-1 border-t border-border/30 mx-2" />
+        <span className="text-[10px] text-muted/35 tabular-nums">
           {plan.timeline.length} items
         </span>
       </div>
 
-      {/* Schedule section */}
+      {/* Schedule */}
       {scheduleItems.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-3">
-            Schedule
-          </h3>
-          <ul className="space-y-1">
+          <SectionLabel
+            icon="M2 7h12M5 1.5v3M11 1.5v3"
+            label="Schedule"
+            count={scheduleItems.length}
+          />
+          <ul className="space-y-0.5">
             {scheduleItems.map((item) => (
               <ScheduleRow key={`schedule-${item.id}`} item={item} />
             ))}
@@ -101,13 +93,15 @@ export function DailyCard() {
         </div>
       )}
 
-      {/* Tasks + Daily Actions */}
+      {/* Tasks */}
       {taskItems.length > 0 && (
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted mb-3">
-            Tasks
-          </h3>
-          <ul className="space-y-1">
+          <SectionLabel
+            icon="M5.5 8l2 2 3-4"
+            label="Tasks"
+            count={taskItems.length}
+          />
+          <ul className="space-y-0.5">
             {taskItems.map((item) => (
               <TaskRow key={`${item.type}-${item.id}`} item={item} />
             ))}
@@ -116,140 +110,115 @@ export function DailyCard() {
       )}
 
       {plan.timeline.length === 0 && (
-        <p className="text-sm text-muted italic py-4 text-center">
+        <p className="text-sm text-muted/40 italic py-4 text-center">
           Nothing planned for today.
         </p>
       )}
 
-      {/* Divider */}
-      <div className="border-t border-border" />
+      {/* Inbox nudge */}
+      <InboxNudge count={plan.inboxItems.length} />
 
-      {/* Inbox */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
-            Inbox
-            {plan.inboxItems.length > 0 && (
-              <span className="inline-flex items-center justify-center rounded-full bg-accent-dim text-accent text-[10px] font-semibold tabular-nums size-5">
-                {plan.inboxItems.length}
-              </span>
-            )}
-          </h3>
-          <Link
-            href="/inbox"
-            className="text-[11px] text-accent hover:text-accent/80 transition-colors font-medium"
-          >
-            Review &rarr;
-          </Link>
-        </div>
-        {plan.inboxItems.length === 0 ? (
-          <p className="text-sm text-muted italic">Inbox clear.</p>
-        ) : (
-          <ul className="space-y-1">
-            {plan.inboxItems.slice(0, 3).map((item) => (
-              <li
-                key={item.id}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
-              >
-                <span className="size-1.5 shrink-0 rounded-full bg-gray-300" />
-                <span className="flex-1 text-[13px] text-foreground/70 truncate">
-                  {item.text}
+      {/* Context — life + ops merged */}
+      {hasContext && (
+        <div>
+          <SectionLabel
+            icon="M8 2a6 6 0 100 12A6 6 0 008 2z"
+            label="Context"
+            count={plan.lifeContext.length + adminActive.length}
+          />
+          <ul className="space-y-0.5">
+            {plan.lifeContext.map((item) => (
+              <LifeContextRow key={`life-${item.id}`} item={item} />
+            ))}
+            {adminActive.map((item) => (
+              <li key={`ops-${item.id}`} className="flex items-center gap-3 rounded-lg px-3 py-1.5 transition-colors hover:bg-surface-raised">
+                <span className="size-1.5 shrink-0 rounded-full bg-blue-400" />
+                <span className="flex-1 text-[13px] text-foreground/60 truncate">
+                  {item.title}
                 </span>
-                {item.priority && (
-                  <span
-                    className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
-                      PRIORITY_STYLE[item.priority] ?? "text-muted"
-                    }`}
-                  >
-                    {item.priority}
-                  </span>
-                )}
+                <span className="text-[9px] text-blue-400/40 shrink-0">ops</span>
               </li>
             ))}
-            {plan.inboxItems.length > 3 && (
-              <li className="px-3 py-1">
-                <Link
-                  href="/inbox"
-                  className="text-[11px] text-muted hover:text-foreground transition-colors"
-                >
-                  +{plan.inboxItems.length - 3} more
-                </Link>
-              </li>
-            )}
           </ul>
-        )}
-      </div>
-
-      {/* Life & Ops Context */}
-      {(plan.lifeContext.length > 0 || adminActive.length > 0) && (
-        <>
-          <div className="border-t border-border" />
-
-          {/* Life Context */}
-          {plan.lifeContext.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-rose-400/60">
-                    <path d="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z" />
-                  </svg>
-                  Life
-                </h3>
-                <Link
-                  href="/life"
-                  className="text-[11px] text-accent hover:text-accent/80 transition-colors font-medium"
-                >
-                  View all &rarr;
-                </Link>
-              </div>
-              <ul className="space-y-1">
-                {plan.lifeContext.map((item) => (
-                  <LifeContextRow key={item.id} item={item} />
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Admin Ops nudge */}
-          {adminActive.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400/60">
-                    <rect x="2" y="2" width="12" height="12" rx="2" />
-                    <path d="M5 6h6M5 9h4" />
-                  </svg>
-                  Ops
-                </h3>
-                <Link
-                  href="/admin"
-                  className="text-[11px] text-accent hover:text-accent/80 transition-colors font-medium"
-                >
-                  View all &rarr;
-                </Link>
-              </div>
-              <ul className="space-y-1">
-                {adminActive.map((item) => (
-                  <li key={item.id} className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised">
-                    <span className="size-1.5 shrink-0 rounded-full bg-blue-400" />
-                    <span className="flex-1 text-[13px] text-foreground/70 truncate">
-                      {item.title}
-                    </span>
-                    <span className="text-[9px] text-blue-400/50 shrink-0">
-                      in progress
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </>
+          <div className="flex items-center gap-3 mt-2 px-3">
+            {plan.lifeContext.length > 0 && (
+              <Link
+                href="/life"
+                className="text-[10px] text-muted/40 hover:text-muted/60 transition-colors"
+              >
+                Life &rarr;
+              </Link>
+            )}
+            {adminActive.length > 0 && (
+              <Link
+                href="/admin"
+                className="text-[10px] text-muted/40 hover:text-muted/60 transition-colors"
+              >
+                Admin &rarr;
+              </Link>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
-/* ── Schedule row — with active/past awareness ── */
+/* ── Section label ── */
+
+function SectionLabel({
+  icon,
+  label,
+  count,
+}: {
+  icon: string;
+  label: string;
+  count?: number;
+}) {
+  return (
+    <div className="flex items-center gap-2 mb-2">
+      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
+        <path d={icon} />
+      </svg>
+      <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">
+        {label}
+      </h3>
+      {count !== undefined && (
+        <span className="text-[9px] text-muted/30 tabular-nums">{count}</span>
+      )}
+    </div>
+  );
+}
+
+/* ── Inbox nudge — compact inline ── */
+
+function InboxNudge({ count }: { count: number }) {
+  if (count === 0) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 rounded-lg">
+        <span className="size-1.5 shrink-0 rounded-full bg-emerald-400/40" />
+        <span className="text-[12px] text-muted/40 italic">Inbox clear</span>
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href="/inbox"
+      className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-surface-raised group"
+    >
+      <span className="size-1.5 shrink-0 rounded-full bg-amber-400" />
+      <span className="text-[12px] text-foreground/60 group-hover:text-foreground/80 transition-colors">
+        {count} inbox item{count !== 1 ? "s" : ""} to review
+      </span>
+      <span className="ml-auto text-[10px] text-accent/60 group-hover:text-accent transition-colors font-medium">
+        Review &rarr;
+      </span>
+    </Link>
+  );
+}
+
+/* ── Schedule row ── */
 
 function ScheduleRow({ item }: { item: TimelineItem }) {
   const now = new Date();
@@ -262,8 +231,8 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
 
   return (
     <li
-      className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised ${
-        isPast ? "opacity-35" : ""
+      className={`flex items-center gap-3 rounded-lg px-3 py-1.5 transition-colors hover:bg-surface-raised ${
+        isPast ? "opacity-30" : ""
       } ${isActive ? "bg-emerald-500/[0.04]" : ""}`}
     >
       {isActive ? (
@@ -274,18 +243,18 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
 
       {item.startTime && item.endTime ? (
         <span className={`text-[11px] tabular-nums shrink-0 w-28 ${
-          isActive ? "text-emerald-400/80 font-medium" : "text-muted"
+          isActive ? "text-emerald-400/80 font-medium" : "text-muted/60"
         }`}>
           {formatTime(item.startTime)} – {formatTime(item.endTime)}
         </span>
       ) : (
-        <span className="text-[10px] text-muted/50 uppercase tracking-wide shrink-0 w-28 font-medium">
+        <span className="text-[10px] text-muted/40 uppercase tracking-wide shrink-0 w-28 font-medium">
           {TYPE_LABEL[item.type]}
         </span>
       )}
 
       <span className={`flex-1 text-[13px] truncate ${
-        isActive ? "text-foreground font-medium" : "text-foreground/80"
+        isActive ? "text-foreground font-medium" : "text-foreground/70"
       }`}>
         {item.title}
       </span>
@@ -297,7 +266,7 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
       )}
 
       {item.source === "google" && !isActive && (
-        <span className="text-[9px] text-muted/30 shrink-0">
+        <span className="text-[9px] text-muted/25 shrink-0">
           gcal
         </span>
       )}
@@ -309,21 +278,21 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
 
 function TaskRow({ item }: { item: TimelineItem }) {
   return (
-    <li className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised">
+    <li className="flex items-center gap-3 rounded-lg px-3 py-1.5 transition-colors hover:bg-surface-raised">
       <span
         className={`size-2 shrink-0 rounded-full ${TYPE_DOT[item.type]}`}
       />
 
-      <span className="text-[10px] text-muted/50 uppercase tracking-wide shrink-0 w-28 font-medium">
+      <span className="text-[10px] text-muted/40 uppercase tracking-wide shrink-0 w-28 font-medium">
         {TYPE_LABEL[item.type]}
       </span>
 
-      <span className="flex-1 text-[13px] text-foreground/80 truncate">
+      <span className="flex-1 text-[13px] text-foreground/70 truncate">
         {item.title}
       </span>
 
       {item.projectName && (
-        <span className="text-[9px] text-muted/50 shrink-0 truncate max-w-[80px]">
+        <span className="text-[9px] text-muted/40 shrink-0 truncate max-w-[80px]">
           {item.projectName}
         </span>
       )}
@@ -352,19 +321,19 @@ const LIFE_CAT_DOT: Record<string, string> = {
 
 function LifeContextRow({ item }: { item: LifeContextItem }) {
   return (
-    <li className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised">
+    <li className="flex items-center gap-3 rounded-lg px-3 py-1.5 transition-colors hover:bg-surface-raised">
       <span
         className={`size-1.5 shrink-0 rounded-full ${LIFE_CAT_DOT[item.category] ?? "bg-gray-400"}`}
       />
-      <span className="flex-1 text-[13px] text-foreground/70 truncate">
+      <span className="flex-1 text-[13px] text-foreground/60 truncate">
         {item.title}
       </span>
       {item.recurring && (
-        <span className="text-[9px] text-violet-400/60 shrink-0">
+        <span className="text-[9px] text-violet-400/50 shrink-0">
           recurring
         </span>
       )}
-      <span className="text-[9px] text-muted/40 shrink-0">
+      <span className="text-[9px] text-muted/30 shrink-0">
         {item.category === "life-admin" ? "life admin" : item.category}
       </span>
     </li>

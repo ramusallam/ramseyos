@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
-  generateDailyPlan,
   type DailyPlan,
   type TimelineItem,
   type TimelineItemType,
@@ -12,9 +10,9 @@ import Link from "next/link";
 
 const TYPE_LABEL: Record<TimelineItemType, string> = {
   schedule: "Scheduled",
-  chosen: "Chosen for today",
-  focus: "High priority",
-  "daily-action": "Daily action",
+  chosen: "Selected task",
+  focus: "Priority task",
+  "daily-action": "Daily routine",
 };
 
 const TYPE_DOT: Record<TimelineItemType, string> = {
@@ -43,7 +41,7 @@ function resolveAction(item: TimelineItem): ActionTarget {
   if (item.projectId && (item.type === "chosen" || item.type === "focus")) {
     return {
       href: `/projects/${item.projectId}`,
-      label: "Go to project",
+      label: "Open project",
       icon: "M2 5V4a1 1 0 011-1h3l1.5 2H13a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V5z",
     };
   }
@@ -51,7 +49,7 @@ function resolveAction(item: TimelineItem): ActionTarget {
   if (item.type === "schedule") {
     return {
       href: "/calendar",
-      label: "View schedule",
+      label: "Open calendar",
       icon: "M2 7h12M5 1.5v3M11 1.5v3M2 3h12a1 1 0 011 1v9a1 1 0 01-1 1H2a1 1 0 01-1-1V4a1 1 0 011-1z",
     };
   }
@@ -59,7 +57,7 @@ function resolveAction(item: TimelineItem): ActionTarget {
   if (item.type === "chosen" || item.type === "focus") {
     return {
       href: "/tasks",
-      label: "View tasks",
+      label: "Open tasks",
       icon: "M2 2h12a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1zM5 6h6M5 9h4",
     };
   }
@@ -78,7 +76,6 @@ const NEAR_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
   const now = new Date();
 
-  // 1. Active (in-progress) schedule event — always wins
   const active = timeline.find(
     (item) =>
       item.type === "schedule" &&
@@ -89,7 +86,6 @@ function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
   );
   if (active) return active;
 
-  // 2. Schedule event starting within 30 min — takes priority
   const nearUpcoming = timeline.find(
     (item) =>
       item.type === "schedule" &&
@@ -99,13 +95,11 @@ function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
   );
   if (nearUpcoming) return nearUpcoming;
 
-  // 3. Highest-priority task (chosen > focus > daily-action)
   const task = timeline.find(
     (item) => item.type === "chosen" || item.type === "focus"
   );
   if (task) return task;
 
-  // 4. Next upcoming schedule event (even if far away)
   const upcoming = timeline.find(
     (item) =>
       item.type === "schedule" &&
@@ -114,7 +108,6 @@ function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
   );
   if (upcoming) return upcoming;
 
-  // 5. Daily action
   return timeline.find((item) => item.type === "daily-action") ?? null;
 }
 
@@ -128,10 +121,8 @@ function getNextItem(
   );
   if (idx === -1) return null;
 
-  // Find next non-past item after current
   for (let i = idx + 1; i < timeline.length; i++) {
     const item = timeline[i];
-    // Skip past schedule events
     if (item.type === "schedule" && item.endTime && item.endTime.toDate() <= now) {
       continue;
     }
@@ -142,15 +133,11 @@ function getNextItem(
 
 /* ── Component ── */
 
-export function NowNext() {
-  const [plan, setPlan] = useState<DailyPlan | null>(null);
+interface NowNextProps {
+  plan: DailyPlan;
+}
 
-  useEffect(() => {
-    generateDailyPlan().then(setPlan);
-  }, []);
-
-  if (!plan) return null;
-
+export function NowNext({ plan }: NowNextProps) {
   const now = getActiveItem(plan.timeline);
   const nowKey = now ? `${now.type}-${now.id}` : "";
   const next = now ? getNextItem(plan.timeline, nowKey) : null;
@@ -179,7 +166,7 @@ export function NowNext() {
         />
       ) : (
         <div className="bg-surface/60 rounded-xl border border-border/60 p-5 flex items-center justify-center">
-          <p className="text-sm text-muted/50 italic">Nothing else lined up.</p>
+          <p className="text-sm text-muted/40 italic">Nothing else lined up.</p>
         </div>
       )}
     </div>
@@ -203,7 +190,6 @@ function FocusCard({
     item.startTime.toDate() <= new Date() &&
     item.endTime.toDate() > new Date();
 
-  // Time context for upcoming schedule items
   const startsIn = item.type === "schedule" && item.startTime && !isInProgress
     ? getRelativeTime(item.startTime.toDate())
     : null;
@@ -217,7 +203,9 @@ function FocusCard({
       }`}
     >
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/70">
+        <span className={`text-[10px] font-semibold uppercase tracking-wider ${
+          isPrimary ? "text-accent/60" : "text-muted/50"
+        }`}>
           {label}
         </span>
         {isInProgress && (
@@ -226,7 +214,7 @@ function FocusCard({
           </span>
         )}
         {startsIn && (
-          <span className="text-[9px] font-medium text-muted/60">
+          <span className="text-[9px] font-medium text-muted/50">
             {startsIn}
           </span>
         )}
@@ -240,12 +228,12 @@ function FocusCard({
           <p className="text-[15px] font-medium text-foreground truncate">
             {item.title}
           </p>
-          <p className="text-[11px] text-muted mt-0.5">
+          <p className="text-[11px] text-muted/60 mt-0.5">
             {item.startTime && item.endTime
               ? `${formatTime(item.startTime)} – ${formatTime(item.endTime)}`
               : TYPE_LABEL[item.type]}
             {item.projectName && (
-              <span className="text-muted/50"> · {item.projectName}</span>
+              <span className="text-muted/40"> · {item.projectName}</span>
             )}
           </p>
         </div>
@@ -253,13 +241,13 @@ function FocusCard({
 
       <Link
         href={action.href}
-        className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-surface-raised/30 px-3 py-1.5 text-[11px] font-medium text-foreground/70 hover:bg-surface-raised hover:text-foreground/90 transition-colors"
+        className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-surface-raised/30 px-3 py-1.5 text-[11px] font-medium text-foreground/60 hover:bg-surface-raised hover:text-foreground/80 transition-colors"
       >
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent/70">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent/60">
           <path d={action.icon} />
         </svg>
         {action.label}
-        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
           <path d="M6 4l4 4-4 4" />
         </svg>
       </Link>
@@ -284,7 +272,9 @@ function InboxCard({
           : "bg-surface/60 border-border/60"
       }`}
     >
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted/70 mb-3">
+      <p className={`text-[10px] font-semibold uppercase tracking-wider mb-3 ${
+        isPrimary ? "text-accent/60" : "text-muted/50"
+      }`}>
         {label}
       </p>
 
@@ -294,7 +284,7 @@ function InboxCard({
           <p className="text-[15px] font-medium text-foreground">
             Review inbox
           </p>
-          <p className="text-[11px] text-muted mt-0.5">
+          <p className="text-[11px] text-muted/60 mt-0.5">
             {count} item{count !== 1 ? "s" : ""} need attention
           </p>
         </div>
@@ -302,14 +292,14 @@ function InboxCard({
 
       <Link
         href="/inbox"
-        className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-surface-raised/30 px-3 py-1.5 text-[11px] font-medium text-foreground/70 hover:bg-surface-raised hover:text-foreground/90 transition-colors"
+        className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-surface-raised/30 px-3 py-1.5 text-[11px] font-medium text-foreground/60 hover:bg-surface-raised hover:text-foreground/80 transition-colors"
       >
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent/70">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent/60">
           <rect x="2" y="3" width="12" height="10" rx="2" />
           <path d="M2 9h3.5a1 1 0 011 1v0a1 1 0 001 1h1a1 1 0 001-1v0a1 1 0 011-1H14" />
         </svg>
         Review inbox
-        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
           <path d="M6 4l4 4-4 4" />
         </svg>
       </Link>

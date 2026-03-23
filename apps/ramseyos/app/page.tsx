@@ -1,6 +1,5 @@
 import { ProjectFocus, SuggestedTools } from "./dashboard-live";
-import { DailyCard } from "./daily-card";
-import { NowNext } from "./now-next";
+import { DailyControllerSection } from "./daily-controller";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -20,30 +19,18 @@ function formatDate(): string {
 export default function TodayDashboard() {
   return (
     <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
-        {/* Header */}
-        <header className="mb-8">
-          <p className="text-[12px] text-muted/60 mb-1">{formatDate()}</p>
-          <h1 className="text-2xl font-semibold text-foreground tracking-tight">
-            {getGreeting()}, Ramsey
-          </h1>
-        </header>
+      {/* Header */}
+      <header className="mb-8">
+        <p className="text-[12px] text-muted/60 mb-1">{formatDate()}</p>
+        <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+          {getGreeting()}, Ramsey
+        </h1>
+      </header>
 
-        {/* Now / Next — primary controller */}
-        <div className="mb-8">
-          <NowNext />
-        </div>
-
-        {/* Main grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
-          {/* Daily Card — primary */}
-          <div className="lg:col-span-2">
-            <DashboardCard>
-              <DailyCard />
-            </DashboardCard>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-5">
+      {/* Daily Controller — NowNext (full) + DailyCard + Sidebar */}
+      <DailyControllerSection
+        sidebar={
+          <>
             <DashboardCard>
               <CardHeader
                 icon="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M8 4.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z"
@@ -74,32 +61,33 @@ export default function TodayDashboard() {
                 />
               </div>
             </DashboardCard>
-          </div>
-        </div>
+          </>
+        }
+      />
 
-        {/* Suggested Tools */}
-        <div className="mb-8">
-          <DashboardCard>
-            <SuggestedTools />
-          </DashboardCard>
-        </div>
-
-        {/* Project Focus */}
-        <div className="mb-8">
-          <DashboardCard>
-            <ProjectFocus />
-          </DashboardCard>
-        </div>
-
-        {/* Reflection */}
-        <DashboardCard className="opacity-40">
-          <CardHeader
-            icon="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z"
-            label="Evening reflection"
-          />
-          <p className="text-sm text-muted italic">Available later today</p>
+      {/* Suggested Tools */}
+      <div className="mb-8">
+        <DashboardCard>
+          <SuggestedTools />
         </DashboardCard>
       </div>
+
+      {/* Project Focus */}
+      <div className="mb-8">
+        <DashboardCard>
+          <ProjectFocus />
+        </DashboardCard>
+      </div>
+
+      {/* Reflection */}
+      <DashboardCard className="opacity-40">
+        <CardHeader
+          icon="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z"
+          label="Evening reflection"
+        />
+        <p className="text-sm text-muted italic">Available later today</p>
+      </DashboardCard>
+    </div>
   );
 }
 
