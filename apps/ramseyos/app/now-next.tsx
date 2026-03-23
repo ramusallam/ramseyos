@@ -178,8 +178,8 @@ export function NowNext() {
           isPrimary={false}
         />
       ) : (
-        <div className="bg-surface rounded-xl border border-border p-5 shadow-card flex items-center justify-center">
-          <p className="text-sm text-muted italic">Nothing else lined up.</p>
+        <div className="bg-surface/60 rounded-xl border border-border/60 p-5 flex items-center justify-center">
+          <p className="text-sm text-muted/50 italic">Nothing else lined up.</p>
         </div>
       )}
     </div>
@@ -210,14 +210,14 @@ function FocusCard({
 
   return (
     <div
-      className={`rounded-xl border p-5 shadow-card ${
+      className={`rounded-xl border p-5 ${
         isPrimary
-          ? "bg-surface border-accent/20"
-          : "bg-surface border-border"
+          ? "bg-surface/80 border-accent/20"
+          : "bg-surface/60 border-border/60"
       }`}
     >
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/70">
           {label}
         </span>
         {isInProgress && (
@@ -253,7 +253,7 @@ function FocusCard({
 
       <Link
         href={action.href}
-        className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-surface-raised/50 px-3 py-1.5 text-[11px] font-medium text-foreground/70 hover:bg-surface-raised hover:text-foreground/90 transition-colors"
+        className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-surface-raised/30 px-3 py-1.5 text-[11px] font-medium text-foreground/70 hover:bg-surface-raised hover:text-foreground/90 transition-colors"
       >
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent/70">
           <path d={action.icon} />
@@ -278,13 +278,13 @@ function InboxCard({
 }) {
   return (
     <div
-      className={`rounded-xl border p-5 shadow-card ${
+      className={`rounded-xl border p-5 ${
         isPrimary
-          ? "bg-surface border-accent/20"
-          : "bg-surface border-border"
+          ? "bg-surface/80 border-accent/20"
+          : "bg-surface/60 border-border/60"
       }`}
     >
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted/70 mb-3">
         {label}
       </p>
 
@@ -302,7 +302,7 @@ function InboxCard({
 
       <Link
         href="/inbox"
-        className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-surface-raised/50 px-3 py-1.5 text-[11px] font-medium text-foreground/70 hover:bg-surface-raised hover:text-foreground/90 transition-colors"
+        className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-surface-raised/30 px-3 py-1.5 text-[11px] font-medium text-foreground/70 hover:bg-surface-raised hover:text-foreground/90 transition-colors"
       >
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent/70">
           <rect x="2" y="3" width="12" height="10" rx="2" />

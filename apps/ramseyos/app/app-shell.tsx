@@ -31,7 +31,6 @@ function useShellCounts(): ShellCounts {
   useEffect(() => {
     const unsubs: (() => void)[] = [];
 
-    // Unprocessed inbox captures
     const inboxQ = query(
       collection(db, "captures"),
       where("processed", "==", false)
@@ -42,7 +41,6 @@ function useShellCounts(): ShellCounts {
       )
     );
 
-    // Open (incomplete) tasks
     const tasksQ = query(
       collection(db, "tasks"),
       where("completed", "==", false)
@@ -53,7 +51,6 @@ function useShellCounts(): ShellCounts {
       )
     );
 
-    // Chosen for today
     const chosenQ = query(
       collection(db, "tasks"),
       where("completed", "==", false),
@@ -65,7 +62,6 @@ function useShellCounts(): ShellCounts {
       )
     );
 
-    // Today's calendar events
     const now = new Date();
     const start = new Date(now);
     start.setHours(0, 0, 0, 0);
@@ -89,27 +85,69 @@ function useShellCounts(): ShellCounts {
   return counts;
 }
 
-type NavKey = "today" | "inbox" | "tasks" | "projects" | "calendar" | "tools" | "lessonPlans" | "materials" | "purchasing" | "vendors" | "communications" | "admin" | "life";
+/* ── Nav structure ── */
 
-const NAV_ITEMS: {
+type NavKey =
+  | "today"
+  | "inbox"
+  | "tasks"
+  | "projects"
+  | "calendar"
+  | "tools"
+  | "lessonPlans"
+  | "materials"
+  | "purchasing"
+  | "vendors"
+  | "communications"
+  | "admin"
+  | "life";
+
+interface NavItem {
   href: string;
   label: string;
   icon: React.FC<{ active: boolean }>;
   key: NavKey;
-}[] = [
-  { href: "/", label: "Today", icon: SunIcon, key: "today" },
-  { href: "/inbox", label: "Inbox", icon: InboxIcon, key: "inbox" },
-  { href: "/tasks", label: "Tasks", icon: CheckIcon, key: "tasks" },
-  { href: "/projects", label: "Projects", icon: FolderIcon, key: "projects" },
-  { href: "/calendar", label: "Calendar", icon: CalendarIcon, key: "calendar" },
-  { href: "/tools", label: "Tools", icon: ToolsIcon, key: "tools" },
-  { href: "/lesson-plans", label: "Lesson Plans", icon: LessonPlanIcon, key: "lessonPlans" },
-  { href: "/materials", label: "Materials", icon: MaterialsIcon, key: "materials" },
-  { href: "/purchasing", label: "Purchasing", icon: PurchasingIcon, key: "purchasing" },
-  { href: "/vendors", label: "Sources", icon: VendorIcon, key: "vendors" },
-  { href: "/communications", label: "Comms", icon: CommsIcon, key: "communications" },
-  { href: "/admin", label: "Admin", icon: AdminIcon, key: "admin" },
-  { href: "/life", label: "Life", icon: LifeIcon, key: "life" },
+}
+
+interface NavGroup {
+  label: string | null;
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: null,
+    items: [
+      { href: "/", label: "Today", icon: SunIcon, key: "today" },
+    ],
+  },
+  {
+    label: "Work",
+    items: [
+      { href: "/inbox", label: "Inbox", icon: InboxIcon, key: "inbox" },
+      { href: "/tasks", label: "Tasks", icon: CheckIcon, key: "tasks" },
+      { href: "/projects", label: "Projects", icon: FolderIcon, key: "projects" },
+      { href: "/calendar", label: "Calendar", icon: CalendarIcon, key: "calendar" },
+    ],
+  },
+  {
+    label: "Teach",
+    items: [
+      { href: "/lesson-plans", label: "Lesson Plans", icon: LessonPlanIcon, key: "lessonPlans" },
+      { href: "/materials", label: "Materials", icon: MaterialsIcon, key: "materials" },
+      { href: "/purchasing", label: "Purchasing", icon: PurchasingIcon, key: "purchasing" },
+      { href: "/vendors", label: "Sources", icon: VendorIcon, key: "vendors" },
+      { href: "/tools", label: "Tools", icon: ToolsIcon, key: "tools" },
+    ],
+  },
+  {
+    label: "Ops",
+    items: [
+      { href: "/communications", label: "Comms", icon: CommsIcon, key: "communications" },
+      { href: "/admin", label: "Admin", icon: AdminIcon, key: "admin" },
+      { href: "/life", label: "Life", icon: LifeIcon, key: "life" },
+    ],
+  },
 ];
 
 function getNavCount(
@@ -145,53 +183,62 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 border-r border-border-strong bg-surface flex flex-col">
+      <aside className="w-56 shrink-0 border-r border-border bg-surface/50 flex flex-col">
         {/* Logo */}
         <div className="h-14 flex items-center px-5">
-          <span className="text-[11px] font-semibold tracking-widest uppercase text-accent">
+          <Link href="/" className="text-[11px] font-semibold tracking-widest uppercase text-accent hover:text-accent/80 transition-colors">
             RamseyOS
-          </span>
+          </Link>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-2">
-          <ul className="space-y-0.5">
-            {NAV_ITEMS.map(({ href, label, icon: Icon, key }) => {
-              const isActive =
-                href === "/" ? pathname === "/" : pathname.startsWith(href);
-              const count = getNavCount(key, counts);
-              return (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors ${
-                      isActive
-                        ? "bg-accent-dim text-accent font-medium"
-                        : "text-foreground/60 hover:bg-surface-raised hover:text-foreground"
-                    }`}
-                  >
-                    <Icon active={isActive} />
-                    <span className="flex-1">{label}</span>
-                    {count !== null && (
-                      <span className="text-[10px] font-medium tabular-nums text-muted/70">
-                        {count}
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+        <nav className="flex-1 px-3 py-1 space-y-4">
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={gi}>
+              {group.label && (
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-muted/40 px-3 mb-1.5">
+                  {group.label}
+                </p>
+              )}
+              <ul className="space-y-0.5">
+                {group.items.map(({ href, label, icon: Icon, key }) => {
+                  const isActive =
+                    href === "/" ? pathname === "/" : pathname.startsWith(href);
+                  const count = getNavCount(key, counts);
+                  return (
+                    <li key={href}>
+                      <Link
+                        href={href}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors ${
+                          isActive
+                            ? "bg-accent-dim text-accent font-medium"
+                            : "text-foreground/60 hover:bg-surface-raised hover:text-foreground"
+                        }`}
+                      >
+                        <Icon active={isActive} />
+                        <span className="flex-1">{label}</span>
+                        {count !== null && (
+                          <span className="text-[10px] font-medium tabular-nums text-muted/60">
+                            {count}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
         </nav>
 
-        {/* Quick Capture */}
-        <div className="px-3 py-3 border-t border-border">
+        {/* Global Capture */}
+        <div className="px-3 py-3 border-t border-border/60">
           <SidebarCapture />
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-border">
-          <p className="text-[10px] text-muted/50 tracking-wide">
+        <div className="px-5 py-3 border-t border-border/40">
+          <p className="text-[10px] text-muted/40 tracking-wide">
             v0.1 · Foundation
           </p>
         </div>
@@ -235,10 +282,11 @@ function SidebarCapture() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-3 rounded-lg px-3 py-2 w-full text-[13px] text-foreground/60 hover:bg-surface-raised hover:text-foreground transition-colors"
+        className="flex items-center gap-3 rounded-lg px-3 py-2 w-full text-[13px] text-foreground/50 hover:bg-surface-raised hover:text-foreground/70 transition-colors"
       >
         <PlusIcon />
-        Parking lot
+        <span>Capture</span>
+        <span className="ml-auto text-[10px] text-muted/30 font-mono">⌘K</span>
       </button>
     );
   }
@@ -256,8 +304,8 @@ function SidebarCapture() {
             setOpen(false);
           }
         }}
-        placeholder="Capture a thought..."
-        className="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-[13px] text-foreground placeholder:text-muted/50 outline-none focus:border-accent/30 transition-colors"
+        placeholder="Capture a thought…"
+        className="w-full rounded-lg border border-border/60 bg-surface-raised px-3 py-2 text-[13px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
         disabled={saving}
       />
       <div className="flex items-center justify-between px-1">
@@ -267,7 +315,7 @@ function SidebarCapture() {
             setText("");
             setOpen(false);
           }}
-          className="text-[11px] text-muted hover:text-foreground transition-colors"
+          className="text-[11px] text-muted/50 hover:text-foreground transition-colors"
         >
           Cancel
         </button>
@@ -277,7 +325,7 @@ function SidebarCapture() {
             disabled={saving}
             className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
           >
-            {saving ? "Saving..." : "Save"}
+            {saving ? "Saving…" : "Save"}
           </button>
         )}
       </div>
@@ -292,7 +340,7 @@ function PlusIcon() {
       height="16"
       viewBox="0 0 16 16"
       fill="none"
-      className="text-muted"
+      className="text-muted/50"
     >
       <path
         d="M8 3.5v9M3.5 8h9"
