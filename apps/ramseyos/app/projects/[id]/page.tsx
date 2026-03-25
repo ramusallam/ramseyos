@@ -77,14 +77,22 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-8 pt-10">
+      <div className="max-w-3xl mx-auto px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         <Link
           href="/projects"
-          className="text-[12px] text-muted/50 hover:text-foreground/60 transition-colors"
+          className="text-[11px] tracking-wide text-muted/50 hover:text-foreground/60 transition-colors"
         >
           &larr; Projects
         </Link>
-        <p className="text-[15px] text-muted mt-6">Project not found.</p>
+        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center mt-8">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/25 mb-4">
+            <path d="M2 5V4a1 1 0 011-1h3l1.5 2H13a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" />
+          </svg>
+          <p className="text-sm text-muted/60">Project not found</p>
+          <p className="text-[12px] text-muted/35 mt-1">
+            It may have been archived or removed.
+          </p>
+        </div>
       </div>
     );
   }
@@ -106,7 +114,7 @@ export default function ProjectDetailPage() {
       {/* Breadcrumb */}
       <Link
         href="/projects"
-        className="text-[12px] text-muted/50 hover:text-foreground/60 transition-colors"
+        className="text-[11px] tracking-wide text-muted/50 hover:text-foreground/60 transition-colors"
       >
         &larr; Projects
       </Link>
@@ -126,7 +134,7 @@ export default function ProjectDetailPage() {
           </span>
         </div>
         {project.description && (
-          <p className="text-[14px] text-muted/60 leading-relaxed max-w-xl mt-1">
+          <p className="text-[13px] text-muted/50 leading-relaxed max-w-xl mt-1">
             {project.description}
           </p>
         )}
@@ -157,7 +165,7 @@ export default function ProjectDetailPage() {
       {/* Focus panel */}
       {hasFocusItems && (
         <div className="rounded-xl border border-accent/15 bg-accent-soft p-5 mb-6">
-          <h2 className="text-[12px] font-semibold uppercase tracking-wider text-accent/60 mb-4">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-accent/60 mb-4">
             Focus
           </h2>
           <div className="space-y-4">
@@ -190,7 +198,7 @@ export default function ProjectDetailPage() {
       )}
 
       {!hasFocusItems && incomplete.length > 0 && (
-        <div className="rounded-xl border border-border/40 bg-surface/30 px-5 py-4 mb-6 flex items-center gap-3">
+        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-5 py-4 mb-6 flex items-center gap-3">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30 shrink-0">
             <path d="M8 2a6 6 0 100 12A6 6 0 008 2zM8 5v3l2 1" />
           </svg>
@@ -207,9 +215,13 @@ export default function ProjectDetailPage() {
 
       {/* Tasks */}
       {tasks.length === 0 ? (
-        <div className="rounded-2xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
-          <p className="text-[15px] text-muted/50 font-medium">No tasks yet</p>
-          <p className="text-[13px] text-muted/30 mt-2">
+        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/25 mb-4">
+            <rect x="2" y="2" width="12" height="12" rx="3" />
+            <path d="M5.5 8l2 2 3-4" />
+          </svg>
+          <p className="text-sm text-muted/60">No tasks yet</p>
+          <p className="text-[12px] text-muted/35 mt-1">
             Add one above to get started.
           </p>
         </div>
@@ -219,10 +231,10 @@ export default function ProjectDetailPage() {
           {incomplete.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-3">
-                <h2 className="text-[12px] font-semibold uppercase tracking-wider text-muted">
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                   Open tasks
                 </h2>
-                <span className="text-[11px] text-muted/40 tabular-nums">{incomplete.length}</span>
+                <span className="text-[10px] text-muted/40 tabular-nums">{incomplete.length}</span>
                 <div className="flex-1 border-t border-border/40 ml-2" />
               </div>
               <ul className="space-y-1.5">
@@ -244,10 +256,10 @@ export default function ProjectDetailPage() {
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
                   <path d="M5.5 8l2 2 3-4" />
                 </svg>
-                <h2 className="text-[12px] font-semibold uppercase tracking-wider text-muted/40">
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/40">
                   Completed
                 </h2>
-                <span className="text-[11px] text-muted/30 tabular-nums">{completed.length}</span>
+                <span className="text-[10px] text-muted/30 tabular-nums">{completed.length}</span>
                 <div className="flex-1 border-t border-border/30 ml-2" />
                 <svg
                   width="10"
@@ -275,19 +287,25 @@ export default function ProjectDetailPage() {
         </div>
       )}
 
-      {/* Navigation */}
-      <div className="mt-10 pt-6 border-t border-border/30 flex items-center gap-4">
+      {/* Cross-links */}
+      <div className="flex items-center gap-3 mt-10 pt-6 border-t border-border/30">
         <Link
           href="/tasks"
-          className="text-[12px] text-muted/40 hover:text-muted/70 transition-colors"
+          className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors"
         >
           All tasks &rarr;
         </Link>
         <Link
-          href="/"
-          className="text-[12px] text-muted/40 hover:text-muted/70 transition-colors"
+          href="/projects"
+          className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors"
         >
-          Dashboard
+          Projects &rarr;
+        </Link>
+        <Link
+          href="/inbox"
+          className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors"
+        >
+          Inbox &rarr;
         </Link>
       </div>
     </div>

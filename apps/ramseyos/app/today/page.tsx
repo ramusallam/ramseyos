@@ -359,7 +359,7 @@ function MobileQuickCapture() {
   }
 
   return (
-    <section className="rounded-2xl border border-border/50 bg-surface/40 backdrop-blur-sm p-4">
+    <section className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-4">
       <form onSubmit={handleSubmit} className="flex items-center gap-3">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-muted/40 shrink-0">
           <path d="M8 3.5v9M3.5 8h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

@@ -61,6 +61,12 @@ export default function SettingsPage() {
           <Link href="/calendar" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
             Calendar &rarr;
           </Link>
+          <Link href="/tools" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Tools &rarr;
+          </Link>
+          <Link href="/admin" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Admin &rarr;
+          </Link>
         </div>
       </header>
 

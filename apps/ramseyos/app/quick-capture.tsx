@@ -28,7 +28,7 @@ export function QuickCapture() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[12px] font-semibold uppercase tracking-wider text-muted">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
           Parking lot
         </h2>
         {saved ? (

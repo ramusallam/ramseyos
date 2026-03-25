@@ -94,7 +94,7 @@ export function TodayFocus() {
         return (
           <li
             key={task.id}
-            className="flex items-center gap-3 rounded-xl bg-surface/40 border border-border/30 px-4 py-3 transition-colors hover:bg-surface-raised/30"
+            className="flex items-center gap-3 rounded-xl bg-surface/50 border border-border/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
           >
             <span className="size-2 shrink-0 rounded-full bg-rose-500" />
             <span className="flex-1 text-[14px] text-foreground/80 truncate">
@@ -169,7 +169,7 @@ export function ChosenForToday() {
         return (
           <li
             key={task.id}
-            className="flex items-center gap-3 rounded-xl bg-surface/40 border border-border/30 px-4 py-3 transition-colors hover:bg-surface-raised/30"
+            className="flex items-center gap-3 rounded-xl bg-surface/50 border border-border/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
           >
             <span className="size-2 shrink-0 rounded-full bg-accent" />
             <span className="flex-1 text-[14px] text-foreground/80 truncate">
@@ -227,7 +227,7 @@ export function InboxNeedsReview() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wider text-muted">
+        <h2 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
           Inbox
           {totalCount > 0 && (
             <span className="inline-flex items-center justify-center rounded-full bg-accent-dim text-accent text-[10px] font-semibold tabular-nums size-5">
@@ -249,7 +249,7 @@ export function InboxNeedsReview() {
           {unprocessed.map((item) => (
             <li
               key={item.id}
-              className="flex items-center gap-3 rounded-xl bg-surface/40 border border-border/30 px-4 py-3 transition-colors hover:bg-surface-raised/30"
+              className="flex items-center gap-3 rounded-xl bg-surface/50 border border-border/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
             >
               <span className="size-1.5 shrink-0 rounded-full bg-gray-400" />
               <span className="flex-1 text-[14px] text-foreground/70 truncate">
@@ -353,7 +353,7 @@ export function ProjectFocus() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[12px] font-semibold uppercase tracking-wider text-muted">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
           Project focus
         </h2>
         <Link
@@ -390,7 +390,7 @@ export function ProjectFocus() {
               {groupTasks.map((task) => (
                 <li
                   key={task.id}
-                  className="flex items-center gap-3 rounded-xl bg-surface/40 border border-border/30 px-4 py-3 transition-colors hover:bg-surface-raised/30"
+                  className="flex items-center gap-3 rounded-xl bg-surface/50 border border-border/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
                 >
                   <span
                     className={`size-2 shrink-0 rounded-full ${
@@ -484,7 +484,7 @@ export function TodaySchedule() {
       {events.map((event) => (
         <li
           key={event.id}
-          className="flex items-center gap-3 rounded-xl bg-surface/40 border border-border/30 px-4 py-3 transition-colors hover:bg-surface-raised/30"
+          className="flex items-center gap-3 rounded-xl bg-surface/50 border border-border/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
         >
           <span className="text-[12px] text-muted tabular-nums shrink-0 w-16">
             {formatTime(event.startTime)}
@@ -539,7 +539,7 @@ export function DailyActions() {
       {items.map((item) => (
         <li
           key={item.id}
-          className="flex items-center gap-3 rounded-xl bg-surface/40 border border-border/30 px-4 py-3 transition-colors hover:bg-surface-raised/30"
+          className="flex items-center gap-3 rounded-xl bg-surface/50 border border-border/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
         >
           <span className="size-1.5 shrink-0 rounded-full bg-accent/60" />
           <span className="text-[14px] text-foreground/80">{item.title}</span>
@@ -651,7 +651,7 @@ export function SuggestedTools() {
     return (
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[12px] font-semibold uppercase tracking-wider text-muted">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             Suggested tools
           </h2>
           <Link
@@ -671,7 +671,7 @@ export function SuggestedTools() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[12px] font-semibold uppercase tracking-wider text-muted">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
           Suggested tools
         </h2>
         <Link
@@ -694,7 +694,7 @@ export function SuggestedTools() {
               className={`group block rounded-xl border p-4 transition-all hover:bg-surface-raised/30 ${
                 isSpark
                   ? "border-amber-500/20 bg-amber-500/[0.03] hover:border-amber-500/30"
-                  : "border-border/60 bg-surface/40 hover:border-border-strong"
+                  : "border-border/50 bg-surface/50 hover:border-border-strong"
               }`}
             >
               <div className="flex items-start justify-between mb-2">

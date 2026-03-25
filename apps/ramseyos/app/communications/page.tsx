@@ -439,7 +439,7 @@ function SubsectionLabel({
 
 function EmptyState({ icon, message, detail }: { icon: string; message: string; detail: string }) {
   return (
-    <div className="rounded-xl border border-border/40 bg-surface/40 backdrop-blur-sm p-8 text-center">
+    <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-8 text-center">
       <svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/20 mb-3">
         <path d={icon} />
       </svg>
