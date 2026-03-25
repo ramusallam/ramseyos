@@ -11,10 +11,11 @@ import {
   type AdminItem,
   type AdminItemStatus,
 } from "@/lib/admin-templates";
+import Link from "next/link";
 
 /* ── Style maps ── */
 
-const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string; icon: string }> = {
+const CATEGORY_META: Record<string, { bg: string; text: string; label: string; icon: string }> = {
   "follow-up": { bg: "bg-blue-500/10 border-blue-400/20", text: "text-blue-400/80", label: "Follow-Up", icon: "M2 3l5 5-5 5M8 8h6" },
   tracking: { bg: "bg-violet-500/10 border-violet-400/20", text: "text-violet-400/80", label: "Tracking", icon: "M2 2h12v12H2zM5 6h6M5 9h4" },
   reminder: { bg: "bg-amber-500/10 border-amber-400/20", text: "text-amber-400/80", label: "Reminder", icon: "M8 2v1M8 13v1M3.5 8H2.5M13.5 8H12.5M8 4.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z" },
@@ -22,7 +23,7 @@ const CATEGORY_STYLES: Record<string, { bg: string; text: string; label: string;
 };
 
 function categoryMeta(cat: string) {
-  return CATEGORY_STYLES[cat] ?? { bg: "bg-white/5 border-white/10", text: "text-muted/70", label: cat || "Other", icon: "M8 2v12M2 8h12" };
+  return CATEGORY_META[cat] ?? { bg: "bg-white/5 border-white/10", text: "text-muted/70", label: cat || "Other", icon: "M8 2v12M2 8h12" };
 }
 
 const STATUS_META: Record<AdminItemStatus, { dot: string; label: string }> = {
@@ -33,12 +34,15 @@ const STATUS_META: Record<AdminItemStatus, { dot: string; label: string }> = {
 
 const STATUS_ORDER: AdminItemStatus[] = ["in_progress", "pending", "done"];
 
+const CATEGORY_ORDER = ["follow-up", "tracking", "reminder", "operations"];
+
 /* ── Page ── */
 
 export default function AdminPage() {
   const [templates, setTemplates] = useState<AdminTemplate[]>([]);
   const [items, setItems] = useState<AdminItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDone, setShowDone] = useState(false);
 
   useEffect(() => {
     Promise.all([seedAdminTemplates(), seedAdminItems()]).then(async () => {
@@ -68,9 +72,9 @@ export default function AdminPage() {
   const recurring = items.filter((i) => i.recurring && i.status !== "done");
   const doneItems = items.filter((i) => i.status === "done");
   const openCount = items.filter((i) => i.status !== "done").length;
+  const followUpCount = items.filter((i) => i.category === "follow-up" && i.status !== "done").length;
 
   /* Template grouping */
-  const categoryOrder = ["follow-up", "tracking", "reminder", "operations"];
   const templateGrouped = new Map<string, AdminTemplate[]>();
   for (const t of templates) {
     const key = t.category || "other";
@@ -80,38 +84,75 @@ export default function AdminPage() {
   }
   const sortedTemplateCategories = Array.from(templateGrouped.entries()).sort(
     ([a], [b]) =>
-      (categoryOrder.indexOf(a) === -1 ? 99 : categoryOrder.indexOf(a)) -
-      (categoryOrder.indexOf(b) === -1 ? 99 : categoryOrder.indexOf(b))
+      (CATEGORY_ORDER.indexOf(a) === -1 ? 99 : CATEGORY_ORDER.indexOf(a)) -
+      (CATEGORY_ORDER.indexOf(b) === -1 ? 99 : CATEGORY_ORDER.indexOf(b))
   );
 
   if (loading) {
     return (
-      <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
-        <div className="flex items-center gap-2 py-12">
+      <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
+        <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-sm text-muted/60">Loading admin…</span>
+          <span className="text-[13px] text-muted/40">Loading admin…</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
+    <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
       <header className="mb-10">
-        <h1 className="text-xl font-normal text-foreground tracking-tight">
+        <Link
+          href="/"
+          className="text-[11px] tracking-wide text-muted/50 hover:text-foreground/60 transition-colors"
+        >
+          &larr; Today
+        </Link>
+        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
           Admin
         </h1>
-        <p className="text-[13px] text-muted mt-1">
+        <p className="text-[13px] text-muted/50 mt-1">
           Follow-ups, operations, and recurring admin tasks.
         </p>
+
         {(openCount > 0 || templates.length > 0) && (
-          <div className="flex items-center gap-4 mt-3">
-            <Stat label="open" value={openCount} />
-            {inProgress.length > 0 && <Stat label="active" value={inProgress.length} accent="blue" />}
-            {recurring.length > 0 && <Stat label="recurring" value={recurring.length} accent="violet" />}
-            <Stat label="templates" value={templates.length} />
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+            <span className="tabular-nums">{openCount} open</span>
+            {inProgress.length > 0 && (
+              <span className="flex items-center gap-1.5 text-blue-400/60">
+                <span className="size-1.5 rounded-full bg-blue-400" />
+                {inProgress.length} active
+              </span>
+            )}
+            {followUpCount > 0 && (
+              <span className="flex items-center gap-1.5 text-blue-400/60">
+                {followUpCount} follow-up{followUpCount !== 1 ? "s" : ""}
+              </span>
+            )}
+            {recurring.length > 0 && (
+              <span className="flex items-center gap-1.5 text-violet-400/60">
+                <span className="size-1.5 rounded-full bg-violet-400" />
+                {recurring.length} recurring
+              </span>
+            )}
+            {templates.length > 0 && (
+              <span className="tabular-nums">{templates.length} template{templates.length !== 1 ? "s" : ""}</span>
+            )}
           </div>
         )}
+
+        {/* Cross-links */}
+        <div className="flex items-center gap-3 mt-3">
+          <Link href="/life" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Life &rarr;
+          </Link>
+          <Link href="/purchasing" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Purchasing &rarr;
+          </Link>
+          <Link href="/materials" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Materials &rarr;
+          </Link>
+        </div>
       </header>
 
       {/* ═══ Workflow zones ═══ */}
@@ -174,18 +215,42 @@ export default function AdminPage() {
         {/* ── Completed ── */}
         {doneItems.length > 0 && (
           <section>
-            <SectionHeader
-              icon={<path d="M3 8.5l3.5 3.5 6.5-7" />}
-              title="Completed"
-              count={doneItems.length}
-              color="text-emerald-400/60"
-              ruleColor="border-emerald-400/10"
-            />
-            <div className="space-y-2">
-              {doneItems.map((i) => (
-                <AdminItemCard key={i.id} item={i} onStatusChange={setStatus} />
-              ))}
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowDone(!showDone)}
+              className="flex items-center gap-2 mb-4 group"
+            >
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400/60">
+                <path d="M3 8.5l3.5 3.5 6.5-7" />
+              </svg>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400/60 group-hover:text-emerald-400/80 transition-colors">
+                Completed
+              </span>
+              <span className="text-[10px] tabular-nums text-muted/40">
+                {doneItems.length}
+              </span>
+              <div className="flex-1 border-t border-emerald-400/10" />
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                className={`text-muted/30 transition-transform ${showDone ? "rotate-180" : ""}`}
+              >
+                <path d="M4 6l4 4 4-4" />
+              </svg>
+            </button>
+
+            {showDone && (
+              <div className="space-y-2">
+                {doneItems.map((i) => (
+                  <AdminItemCard key={i.id} item={i} onStatusChange={setStatus} />
+                ))}
+              </div>
+            )}
           </section>
         )}
 
@@ -245,21 +310,6 @@ export default function AdminPage() {
 
 /* ── Shared UI ── */
 
-function Stat({ label, value, accent }: { label: string; value: number; accent?: string }) {
-  const colorMap: Record<string, string> = {
-    blue: "text-blue-400/70",
-    violet: "text-violet-400/70",
-    emerald: "text-emerald-400/70",
-  };
-  const color = accent ? colorMap[accent] ?? "text-muted/50" : "text-muted/50";
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className={`text-[13px] font-medium tabular-nums ${color}`}>{value}</span>
-      <span className="text-[10px] text-muted/40">{label}</span>
-    </div>
-  );
-}
-
 function SectionHeader({
   icon,
   title,
@@ -301,7 +351,7 @@ function SectionHeader({
 
 function EmptyState({ message, detail }: { message: string; detail: string }) {
   return (
-    <div className="rounded-xl border border-border/40 bg-surface/40 p-10 text-center">
+    <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
       <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
         <rect x="2" y="2" width="12" height="12" rx="2" />
         <path d="M5 5h6M5 8h4M5 11h5" />
@@ -328,7 +378,7 @@ function AdminItemCard({
     i.body.length > 120 ? i.body.slice(0, 120).trimEnd() + "..." : i.body;
 
   return (
-    <div className={`rounded-lg bg-surface border border-border/40 overflow-hidden ${i.recurring && i.status !== "done" ? "border-l-2 border-l-violet-400/30" : ""}`}>
+    <div className={`rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 overflow-hidden ${i.recurring && i.status !== "done" ? "border-l-2 border-l-violet-400/30" : ""}`}>
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
@@ -425,7 +475,7 @@ function AdminTemplateCard({ template: t }: { template: AdminTemplate }) {
     t.body.length > 120 ? t.body.slice(0, 120).trimEnd() + "..." : t.body;
 
   return (
-    <div className="rounded-lg bg-surface border border-border/40 overflow-hidden">
+    <div className="rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}

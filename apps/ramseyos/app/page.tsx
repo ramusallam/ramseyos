@@ -1,5 +1,8 @@
 import { ProjectFocus, SuggestedTools } from "./dashboard-live";
 import { DailyControllerSection } from "./daily-controller";
+import { PlaybookSidebar } from "./playbook-sidebar";
+import { getQuickLaunchWorkflows } from "@/lib/workflows";
+import Link from "next/link";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -19,32 +22,45 @@ function formatDate(): string {
 export default function TodayDashboard() {
   return (
     <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
-      {/* Header */}
-      <header className="mb-8">
-        <p className="text-[12px] text-muted/60 mb-1">{formatDate()}</p>
-        <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+      {/* ── OS Header — unified status line ── */}
+      <header className="mb-10">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-[11px] text-muted/50 tabular-nums tracking-wide">
+            {formatDate()}
+          </span>
+          <div className="flex-1 border-t border-border/30" />
+        </div>
+        <h1 className="text-[26px] sm:text-[30px] font-light text-foreground tracking-tight leading-tight">
           {getGreeting()}, Ramsey
         </h1>
+        <p className="text-[13px] text-muted/40 mt-1.5">
+          Here is your day.
+        </p>
       </header>
 
-      {/* Daily Controller — NowNext (full) + DailyCard + Sidebar */}
+      {/* ── Primary Controller — NowNext + DailyCard + Sidebar ── */}
       <DailyControllerSection
         sidebar={
           <>
-            <DashboardCard>
+            <DashboardCard variant="sidebar">
               <CardHeader
                 icon="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M8 4.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z"
                 label="Quick launch"
               />
               <div className="space-y-0.5">
-                <ActionButton label="New lesson plan" />
-                <ActionButton label="Grade with rubric" />
-                <ActionButton label="Draft recommendation" />
-                <ActionButton label="Discussion response" />
+                {getQuickLaunchWorkflows().map((w) => (
+                  <WorkflowLaunchButton
+                    key={w.id}
+                    label={w.shortName}
+                    href={w.entryRoute}
+                    icon={w.icon}
+                    stepCount={w.steps.length}
+                  />
+                ))}
               </div>
             </DashboardCard>
 
-            <DashboardCard>
+            <DashboardCard variant="sidebar">
               <CardHeader
                 icon="M5.5 8l2 2 3-4"
                 label="Approvals"
@@ -61,49 +77,69 @@ export default function TodayDashboard() {
                 />
               </div>
             </DashboardCard>
+
+            <DashboardCard variant="sidebar">
+              <CardHeader
+                icon="M3 2h10v12H3zM6 5h4M6 7.5h4M6 10h2"
+                label="Playbooks"
+              />
+              <PlaybookSidebar />
+            </DashboardCard>
           </>
         }
       />
 
-      {/* Suggested Tools */}
-      <div className="mb-8">
-        <DashboardCard>
+      {/* ── Secondary zone — lower visual weight ── */}
+      <div className="mt-4 space-y-4 opacity-80">
+        <DashboardCard variant="secondary">
           <SuggestedTools />
         </DashboardCard>
-      </div>
 
-      {/* Project Focus */}
-      <div className="mb-8">
-        <DashboardCard>
+        <DashboardCard variant="secondary">
           <ProjectFocus />
         </DashboardCard>
       </div>
 
-      {/* Reflection */}
-      <DashboardCard className="opacity-40">
-        <CardHeader
-          icon="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z"
-          label="Evening reflection"
-        />
-        <p className="text-sm text-muted italic">Available later today</p>
-      </DashboardCard>
+      {/* ── Ambient — lowest tier ── */}
+      <div className="mt-6">
+        <DashboardCard variant="ambient">
+          <CardHeader
+            icon="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z"
+            label="Evening reflection"
+          />
+          <p className="text-[12px] text-muted/35 italic">Available later today</p>
+        </DashboardCard>
+      </div>
     </div>
   );
 }
 
 /* ── Dashboard primitives ── */
 
+type CardVariant = "default" | "sidebar" | "secondary" | "ambient";
+
+const CARD_STYLES: Record<CardVariant, string> = {
+  default:
+    "bg-surface/60 rounded-xl border border-border/60 p-5",
+  sidebar:
+    "bg-surface/50 rounded-xl border border-border/50 p-4 backdrop-blur-sm",
+  secondary:
+    "bg-surface/40 rounded-xl border border-border/40 p-5",
+  ambient:
+    "bg-surface/30 rounded-xl border border-border/30 p-5 opacity-50",
+};
+
 function DashboardCard({
   children,
+  variant = "default",
   className = "",
 }: {
   children: React.ReactNode;
+  variant?: CardVariant;
   className?: string;
 }) {
   return (
-    <div
-      className={`bg-surface/60 rounded-xl border border-border/60 p-5 ${className}`}
-    >
+    <div className={`${CARD_STYLES[variant]} ${className}`}>
       {children}
     </div>
   );
@@ -123,7 +159,7 @@ function CardHeader({
       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
         <path d={icon} />
       </svg>
-      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/60">
         {label}
       </h2>
       {count !== undefined && count > 0 && (
@@ -135,14 +171,40 @@ function CardHeader({
   );
 }
 
-function ActionButton({ label }: { label: string }) {
+function WorkflowLaunchButton({
+  label,
+  href,
+  icon,
+  stepCount,
+}: {
+  label: string;
+  href: string;
+  icon: string;
+  stepCount: number;
+}) {
   return (
-    <button
-      type="button"
-      className="w-full text-left rounded-lg px-3 py-2 text-[13px] text-foreground/60 transition-colors hover:bg-surface-raised hover:text-foreground"
+    <Link
+      href={href}
+      className="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-[13px] text-foreground/60 transition-colors hover:bg-surface-raised hover:text-foreground group"
     >
-      {label}
-    </button>
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-muted/40 group-hover:text-accent/60 transition-colors shrink-0"
+      >
+        <path d={icon} />
+      </svg>
+      <span className="flex-1">{label}</span>
+      <span className="text-[9px] text-muted/30 tabular-nums shrink-0">
+        {stepCount} steps
+      </span>
+    </Link>
   );
 }
 

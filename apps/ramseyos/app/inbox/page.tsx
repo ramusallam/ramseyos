@@ -18,14 +18,15 @@ import {
   type CaptureType,
   SOURCE_META,
 } from "@/lib/captures";
+import { type Priority, formatTimestamp } from "@/lib/shared";
 import Link from "next/link";
+
+/* ── Types ── */
 
 interface Project {
   id: string;
   title: string;
 }
-
-type Priority = "low" | "medium" | "high" | null;
 
 interface Capture {
   id: string;
@@ -40,6 +41,16 @@ interface Capture {
   source?: CaptureSource;
 }
 
+/* ── Style maps ── */
+
+const TYPE_META: Record<CaptureType, { label: string; dot: string }> = {
+  capture: { label: "Capture", dot: "bg-muted/40" },
+  task: { label: "Task", dot: "bg-sky-400" },
+  note: { label: "Note", dot: "bg-violet-400" },
+  idea: { label: "Idea", dot: "bg-amber-400" },
+  resource: { label: "Resource", dot: "bg-emerald-400" },
+};
+
 const TYPES: CaptureType[] = ["capture", "task", "note", "idea", "resource"];
 const PRIORITIES: { value: Priority; label: string }[] = [
   { value: null, label: "–" },
@@ -47,6 +58,8 @@ const PRIORITIES: { value: Priority; label: string }[] = [
   { value: "medium", label: "Med" },
   { value: "high", label: "High" },
 ];
+
+/* ── Helpers ── */
 
 async function updateCapture(id: string, fields: Partial<Capture>) {
   await updateDoc(doc(db, "captures", id), fields);
@@ -65,6 +78,8 @@ async function convertToTask(capture: Capture) {
     status: "processed",
   });
 }
+
+/* ── Page ── */
 
 export default function InboxPage() {
   const [items, setItems] = useState<Capture[]>([]);
@@ -113,69 +128,113 @@ export default function InboxPage() {
     [items]
   );
 
-  return (
-    <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
-      {/* Header */}
-      <header className="mb-10">
-        <Link
-          href="/"
-          className="text-[11px] tracking-wide text-muted hover:text-foreground/60 transition-colors"
-        >
-          &larr; Today
-        </Link>
-        <div className="flex items-baseline gap-4 mt-2">
-          <h1 className="text-xl font-normal text-foreground">Inbox</h1>
-          {!loading && items.length > 0 && (
-            <div className="flex items-center gap-3 text-[11px] text-muted/60">
-              <span className="tabular-nums">{unprocessed.length} to triage</span>
-              {taskCount > 0 && (
-                <>
-                  <span className="text-border">·</span>
-                  <span className="tabular-nums">{taskCount} → tasks</span>
-                </>
-              )}
-            </div>
-          )}
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
+        <div className="flex items-center gap-3 py-16 justify-center">
+          <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+          <span className="text-[13px] text-muted/40">Loading inbox…</span>
         </div>
-        <p className="text-[13px] text-muted mt-1">
-          Universal capture inbox. Triage, assign, and convert to action.
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
+      {/* ── Header ── */}
+      <header className="mb-10">
+        <div className="flex items-center justify-between">
+          <Link
+            href="/"
+            className="text-[11px] tracking-wide text-muted/50 hover:text-foreground/60 transition-colors"
+          >
+            &larr; Today
+          </Link>
+          <Link
+            href="/capture"
+            className="flex items-center gap-2 text-[12px] text-accent/70 hover:text-accent transition-colors px-3 py-1.5 rounded-xl hover:bg-accent-dim"
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+              <path d="M8 3.5v9M3.5 8h9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+            Capture
+          </Link>
+        </div>
+
+        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
+          Inbox
+        </h1>
+        <p className="text-[13px] text-muted/50 mt-1">
+          Everything you capture lands here. Triage, assign, and convert to action.
         </p>
+
+        {/* Stat bar */}
+        {items.length > 0 && (
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+            {unprocessed.length > 0 && (
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-amber-400" />
+                <span className="tabular-nums">{unprocessed.length} to triage</span>
+              </span>
+            )}
+            {taskCount > 0 && (
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-emerald-400" />
+                <span className="tabular-nums">{taskCount} converted</span>
+              </span>
+            )}
+            <span className="tabular-nums">{items.length} total</span>
+          </div>
+        )}
+
+        {/* Cross-links */}
+        <div className="flex items-center gap-3 mt-3">
+          <Link href="/tasks" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Tasks &rarr;
+          </Link>
+          <Link href="/projects" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Projects &rarr;
+          </Link>
+        </div>
       </header>
 
-      {/* Loading */}
-      {loading && (
-        <div className="flex items-center gap-2 py-12">
-          <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-sm text-muted/60">Loading inbox…</span>
-        </div>
-      )}
-
-      {/* Empty */}
-      {!loading && items.length === 0 && (
-        <div className="rounded-xl border border-border/40 bg-surface/40 p-10 text-center">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+      {/* ── Empty ── */}
+      {items.length === 0 && (
+        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/25 mb-4">
             <rect x="2" y="3" width="12" height="10" rx="2" />
             <path d="M2 9h3.5a1 1 0 011 1v0a1 1 0 001 1h1a1 1 0 001-1v0a1 1 0 011-1H14" />
           </svg>
-          <p className="text-sm text-muted/60">Inbox is empty</p>
+          <p className="text-sm text-muted/60 font-medium">Inbox clear</p>
           <p className="text-[12px] text-muted/35 mt-1">
-            Capture thoughts from the sidebar or any future channel.
+            Capture from the sidebar, the{" "}
+            <Link href="/capture" className="text-accent/50 hover:text-accent transition-colors">
+              capture page
+            </Link>
+            , or any future channel.
           </p>
         </div>
       )}
 
-      {!loading && items.length > 0 && (
-        <div className="space-y-10">
+      {items.length > 0 && (
+        <div className="space-y-8">
           {/* ── Needs Triage ── */}
           {unprocessed.length > 0 && (
             <section>
-              <SectionHeader
-                icon="M2 9h3.5a1 1 0 011 1v0a1 1 0 001 1h1a1 1 0 001-1v0a1 1 0 011-1H14"
-                title="Needs triage"
-                count={unprocessed.length}
-                color="text-amber-400/60"
-              />
-              <ul className="space-y-1">
+              <div className="flex items-center gap-2 mb-4">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400/60">
+                  <rect x="2" y="3" width="12" height="10" rx="2" />
+                  <path d="M2 9h3.5a1 1 0 011 1v0a1 1 0 001 1h1a1 1 0 001-1v0a1 1 0 011-1H14" />
+                </svg>
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                  Needs Triage
+                </h2>
+                <span className="text-[10px] text-muted/40 tabular-nums">
+                  {unprocessed.length}
+                </span>
+                <div className="flex-1 border-t border-border/40" />
+              </div>
+              <ul className="space-y-2">
                 {unprocessed.map((item) => (
                   <InboxItem
                     key={item.id}
@@ -187,13 +246,20 @@ export default function InboxPage() {
             </section>
           )}
 
-          {/* All triaged */}
+          {/* All triaged banner */}
           {unprocessed.length === 0 && (
-            <div className="flex items-center gap-2 py-6">
-              <span className="size-1.5 shrink-0 rounded-full bg-emerald-400/50" />
-              <span className="text-[13px] text-muted/50 italic">
-                All items triaged — inbox clear.
-              </span>
+            <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.03] backdrop-blur-sm p-6 text-center">
+              <div className="flex items-center justify-center gap-2.5">
+                <span className="size-2 rounded-full bg-emerald-400/60" />
+                <span className="text-[13px] text-emerald-400/70">
+                  All triaged — inbox clear
+                </span>
+              </div>
+              <p className="text-[11px] text-muted/30 mt-2">
+                {taskCount > 0
+                  ? `${taskCount} item${taskCount !== 1 ? "s" : ""} converted to tasks.`
+                  : "Nothing to process right now."}
+              </p>
             </div>
           )}
 
@@ -212,7 +278,7 @@ export default function InboxPage() {
                   Processed
                 </h2>
                 <span className="text-[10px] text-muted/30 tabular-nums">{processed.length}</span>
-                <div className="flex-1 border-t border-border/30 ml-2" />
+                <div className="flex-1 border-t border-border/30" />
                 <svg
                   width="10"
                   height="10"
@@ -228,7 +294,7 @@ export default function InboxPage() {
                 </svg>
               </button>
               {showProcessed && (
-                <ul className="space-y-1">
+                <ul className="space-y-2">
                   {processed.map((item) => (
                     <InboxItem
                       key={item.id}
@@ -246,42 +312,13 @@ export default function InboxPage() {
   );
 }
 
-/* ── Section Header ── */
-
-function SectionHeader({
-  icon,
-  title,
-  count,
-  color = "text-muted/40",
-}: {
-  icon: string;
-  title: string;
-  count?: number;
-  color?: string;
-}) {
-  return (
-    <div className="flex items-center gap-2 mb-4">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={color}>
-        <path d={icon} />
-      </svg>
-      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-        {title}
-      </h2>
-      {count !== undefined && (
-        <span className="text-[10px] text-muted/40 tabular-nums">{count}</span>
-      )}
-      <div className="flex-1 border-t border-border/40 ml-2" />
-    </div>
-  );
-}
-
 /* ── Inbox Item ── */
 
 function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
   const isProcessed = item.processed ?? false;
   const isTask = item.type === "task";
   const [converting, setConverting] = useState(false);
-
+  const typeMeta = TYPE_META[item.type ?? "capture"];
   const sourceMeta = SOURCE_META[item.source ?? "manual"];
 
   async function handleConvert() {
@@ -296,11 +333,11 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
 
   return (
     <li
-      className={`rounded-lg px-3 py-3 transition-colors hover:bg-surface-raised/50 ${
-        isProcessed ? "opacity-40" : ""
+      className={`rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-4 py-4 transition-all hover:bg-surface-raised/30 ${
+        isProcessed ? "opacity-35" : ""
       }`}
     >
-      {/* Row 1: checkbox + text + source */}
+      {/* Row 1: checkbox + text + meta */}
       <div className="flex items-start gap-3">
         <button
           type="button"
@@ -310,40 +347,50 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
               status: !isProcessed ? "processed" : "unprocessed",
             })
           }
-          className={`mt-0.5 size-4 shrink-0 rounded border transition-colors ${
+          className={`mt-1 size-5 shrink-0 rounded-lg border-2 transition-colors flex items-center justify-center ${
             isProcessed
               ? "border-accent/40 bg-accent/20"
-              : "border-border hover:border-foreground/30"
+              : "border-border-strong hover:border-foreground/30"
           }`}
           aria-label={isProcessed ? "Mark unprocessed" : "Mark processed"}
         >
           {isProcessed && (
-            <svg viewBox="0 0 16 16" className="size-4 text-accent">
+            <svg viewBox="0 0 16 16" className="size-3.5 text-accent">
               <path
                 d="M4.5 8.5L7 11l4.5-5"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.5"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
           )}
         </button>
+
         <div className="flex-1 min-w-0">
-          <p className={`text-[13px] leading-relaxed ${isProcessed ? "text-muted/60 line-through" : "text-foreground/80"}`}>
+          <p className={`text-[14px] leading-relaxed ${isProcessed ? "text-muted/50 line-through" : "text-foreground/90"}`}>
             {item.text}
           </p>
         </div>
-        {/* Source badge */}
-        <span className={`text-[9px] shrink-0 ${sourceMeta.color}`}>
-          {sourceMeta.label.toLowerCase()}
-        </span>
+
+        {/* Right-side meta: type dot + source */}
+        <div className="flex items-center gap-2.5 shrink-0 mt-1.5">
+          {!isProcessed && item.type && item.type !== "capture" && (
+            <span className="flex items-center gap-1">
+              <span className={`size-1.5 rounded-full ${typeMeta.dot}`} />
+              <span className="text-[10px] text-muted/40">{typeMeta.label.toLowerCase()}</span>
+            </span>
+          )}
+          <span className={`text-[10px] ${sourceMeta.color}`}>
+            {sourceMeta.label.toLowerCase()}
+          </span>
+        </div>
       </div>
 
       {/* Row 2: triage controls */}
       {!isProcessed && (
-        <div className="flex items-center gap-2 mt-2 ml-7 flex-wrap">
+        <div className="flex items-center gap-2 mt-3 ml-8 flex-wrap">
           {/* Type */}
           <select
             aria-label="Capture type"
@@ -351,7 +398,7 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
             onChange={(e) =>
               updateCapture(item.id, { type: e.target.value as CaptureType })
             }
-            className="bg-transparent text-[10px] text-muted/60 outline-none cursor-pointer hover:text-foreground/60 transition-colors"
+            className="bg-surface-raised/50 rounded-lg text-[11px] text-muted/70 outline-none cursor-pointer hover:text-foreground/60 transition-colors px-2 py-1.5 border border-border/40"
           >
             {TYPES.map((t) => (
               <option key={t} value={t} className="bg-surface text-foreground">
@@ -360,10 +407,8 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
             ))}
           </select>
 
-          <span className="text-border/30">·</span>
-
           {/* Priority */}
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-0.5 bg-surface-raised/30 rounded-lg p-0.5">
             {PRIORITIES.map(({ value, label }) => {
               const isActive = (item.priority ?? null) === value;
               return (
@@ -371,7 +416,7 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
                   key={label}
                   type="button"
                   onClick={() => updateCapture(item.id, { priority: value })}
-                  className={`text-[10px] px-1.5 py-0.5 rounded transition-colors ${
+                  className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
                     isActive
                       ? value === "high"
                         ? "bg-rose-500/15 text-rose-400"
@@ -389,8 +434,6 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
             })}
           </div>
 
-          <span className="text-border/30">·</span>
-
           {/* Project */}
           <select
             aria-label="Assign project"
@@ -398,7 +441,7 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
             onChange={(e) =>
               updateCapture(item.id, { projectId: e.target.value || null })
             }
-            className="bg-transparent text-[10px] text-muted/60 outline-none cursor-pointer hover:text-foreground/60 transition-colors max-w-[120px] truncate"
+            className="bg-surface-raised/50 rounded-lg text-[11px] text-muted/70 outline-none cursor-pointer hover:text-foreground/60 transition-colors px-2 py-1.5 border border-border/40 max-w-[160px] truncate"
           >
             <option value="" className="bg-surface text-foreground">
               No project
@@ -410,44 +453,49 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
             ))}
           </select>
 
-          {/* Spacer + Convert action */}
+          {/* Convert action */}
           <div className="flex-1" />
           <button
             type="button"
             onClick={handleConvert}
             disabled={converting}
-            className="text-[10px] font-medium text-accent/70 hover:text-accent transition-colors disabled:opacity-40 px-2 py-0.5 rounded hover:bg-accent-dim"
+            className="flex items-center gap-1.5 text-[11px] font-medium text-accent/80 hover:text-accent transition-colors disabled:opacity-40 px-3 py-1.5 rounded-lg hover:bg-accent-dim"
           >
-            {converting ? "Converting…" : "→ Task"}
+            {converting ? (
+              "Converting…"
+            ) : (
+              <>
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 8h10M9 4l4 4-4 4" />
+                </svg>
+                Task
+              </>
+            )}
           </button>
         </div>
       )}
 
       {/* Processed meta row */}
       {isProcessed && (
-        <div className="flex items-center gap-2 mt-1.5 ml-7">
+        <div className="flex items-center gap-2.5 mt-2 ml-8">
           {isTask && (
-            <span className="text-[10px] text-emerald-400/50">converted to task</span>
+            <span className="text-[10px] text-emerald-400/50 flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-emerald-400/50" />
+              converted to task
+            </span>
+          )}
+          {item.projectId && (
+            <span className="text-[10px] text-muted/30">
+              → {projects.find((p) => p.id === item.projectId)?.title ?? "project"}
+            </span>
           )}
           {item.createdAt && (
-            <span className="text-[10px] text-muted/30">
-              {formatTime(item.createdAt)}
+            <span className="text-[10px] text-muted/25">
+              {formatTimestamp(item.createdAt)}
             </span>
           )}
         </div>
       )}
     </li>
   );
-}
-
-/* ── Helpers ── */
-
-function formatTime(ts: Timestamp): string {
-  const d = ts.toDate();
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
 }

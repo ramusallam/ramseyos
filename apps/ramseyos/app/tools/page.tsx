@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getActiveTools, seedTools, toggleToolPinned, type ToolItem } from "@/lib/tools";
+import { getActiveTools, seedTools, toggleToolPinned, type ToolItem, type ToolEnvironment } from "@/lib/tools";
+import { isDesktop } from "@/lib/platform";
 import Link from "next/link";
 
 const CATEGORY_STYLE: Record<string, string> = {
@@ -133,22 +134,32 @@ export default function ToolsPage() {
             </div>
           )}
         </div>
-        <p className="text-[13px] text-muted mt-1">
+        <p className="text-[13px] text-muted/50 mt-1">
           Launch external tools and resources from one place.
         </p>
+
+        {/* Cross-links */}
+        <div className="flex items-center gap-3 mt-3">
+          <Link href="/product-ops" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Product Ops &rarr;
+          </Link>
+          <Link href="/lesson-plans" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Lesson Plans &rarr;
+          </Link>
+        </div>
       </header>
 
       {/* Loading */}
       {loading && (
-        <div className="flex items-center gap-2 py-12">
+        <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-sm text-muted/60">Loading tools…</span>
+          <span className="text-[13px] text-muted/40">Loading tools…</span>
         </div>
       )}
 
       {/* Empty */}
       {!loading && tools.length === 0 && (
-        <div className="rounded-xl border border-border/40 bg-surface/40 p-10 text-center">
+        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
           <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
             <rect x="2" y="2" width="12" height="12" rx="2" />
             <path d="M5 6h6M5 9h4" />
@@ -202,6 +213,14 @@ export default function ToolsPage() {
                       className="text-accent hover:text-accent/80 transition-colors"
                     >
                       Lesson Plans &rarr;
+                    </Link>
+                    <span className="text-border">·</span>
+                    <Link
+                      href="/product-ops"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-muted/40 hover:text-muted/60 transition-colors"
+                    >
+                      Product Ops &rarr;
                     </Link>
                   </div>
                 </div>
@@ -342,24 +361,32 @@ function ToolCard({
   onTogglePin: (id: string, current: boolean) => void;
 }) {
   const isExternal = tool.url !== "#";
+  const desktopOnly = tool.environment === "desktop" && !isDesktop();
 
   return (
-    <div className="group relative flex flex-col rounded-xl border border-border/60 bg-surface/40 p-4 transition-all hover:border-border-strong hover:bg-surface-raised/30">
+    <div className={`group relative flex flex-col rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-4 transition-all hover:border-border-strong hover:bg-surface-raised/30 ${desktopOnly ? "opacity-50" : ""}`}>
       <a
-        href={tool.url}
-        target={isExternal ? "_blank" : undefined}
-        rel={isExternal ? "noopener noreferrer" : undefined}
-        className="block flex-1"
+        href={desktopOnly ? undefined : tool.url}
+        target={isExternal && !desktopOnly ? "_blank" : undefined}
+        rel={isExternal && !desktopOnly ? "noopener noreferrer" : undefined}
+        className={`block flex-1 ${desktopOnly ? "pointer-events-none" : ""}`}
       >
         <div className="flex items-start justify-between mb-2">
-          <span
-            className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
-              CATEGORY_STYLE[tool.category] ?? "bg-white/5 text-muted"
-            }`}
-          >
-            {tool.category}
-          </span>
-          {isExternal && (
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                CATEGORY_STYLE[tool.category] ?? "bg-white/5 text-muted"
+              }`}
+            >
+              {tool.category}
+            </span>
+            {desktopOnly && (
+              <span className="text-[8px] px-1.5 py-0.5 rounded font-medium bg-white/5 text-muted/50">
+                desktop
+              </span>
+            )}
+          </div>
+          {isExternal && !desktopOnly && (
             <svg
               width="12"
               height="12"

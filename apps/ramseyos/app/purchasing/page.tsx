@@ -123,28 +123,75 @@ export default function PurchasingPage() {
     );
   }, []);
 
+  const vendorCount = new Set(groups.filter((g) => g.vendor).map((g) => g.vendor!.id)).size;
+
   if (loading) {
     return (
-      <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
-        <div className="flex items-center gap-2 py-12">
+      <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
+        <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-sm text-muted/60">Loading purchasing…</span>
+          <span className="text-[13px] text-muted/40">Loading purchasing…</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
+    <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
       <header className="mb-10">
-        <h1 className="text-xl font-normal text-foreground tracking-tight">
+        <div className="flex items-center gap-1.5 text-[11px] tracking-wide text-muted/50">
+          <Link
+            href="/"
+            className="hover:text-foreground/60 transition-colors"
+          >
+            Today
+          </Link>
+          <span className="text-muted/30">/</span>
+          <Link
+            href="/materials"
+            className="hover:text-foreground/60 transition-colors"
+          >
+            Materials
+          </Link>
+          <span className="text-muted/30">/</span>
+          <span className="text-muted/70">Purchasing</span>
+        </div>
+        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
           Purchasing
         </h1>
-        <p className="text-[13px] text-muted mt-1">
+        <p className="text-[13px] text-muted/50 mt-1">
           {totalCount === 0
             ? "Nothing to buy right now."
             : `${totalCount} item${totalCount === 1 ? "" : "s"} marked for purchase across your lessons.`}
         </p>
+
+        {totalCount > 0 && (
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+            <span className="flex items-center gap-1.5 text-rose-400/60">
+              <span className="size-1.5 rounded-full bg-rose-400" />
+              {totalCount} to buy
+            </span>
+            {vendorCount > 0 && (
+              <span className="tabular-nums">{vendorCount} source{vendorCount !== 1 ? "s" : ""}</span>
+            )}
+            {summary.recurringToBuy.length > 0 && (
+              <span className="tabular-nums">{summary.recurringToBuy.length} recurring</span>
+            )}
+          </div>
+        )}
+
+        {/* Cross-links */}
+        <div className="flex items-center gap-3 mt-3">
+          <Link href="/materials" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Materials &rarr;
+          </Link>
+          <Link href="/vendors" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Sources{vendorCount > 0 && ` (${vendorCount})`} &rarr;
+          </Link>
+          <Link href="/lesson-plans" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Lesson Plans &rarr;
+          </Link>
+        </div>
       </header>
 
       {/* Summary cards */}
@@ -152,7 +199,7 @@ export default function PurchasingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
           {/* Top Sources */}
           {summary.vendorStats.length > 0 && (
-            <div className="rounded-xl border border-border/40 bg-surface/40 p-5">
+            <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-5">
               <div className="flex items-center gap-2 mb-3">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/50">
                   <rect x="2" y="3" width="12" height="10" rx="1.5" />
@@ -184,7 +231,7 @@ export default function PurchasingPage() {
 
           {/* Recurring to Buy */}
           {summary.recurringToBuy.length > 0 && (
-            <div className="rounded-xl border border-blue-400/15 bg-blue-500/4 p-5">
+            <div className="rounded-xl border border-blue-400/15 bg-blue-500/4 backdrop-blur-sm p-5">
               <div className="flex items-center gap-2 mb-3">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-blue-400/70">
                   <path d="M12.5 6.5A5 5 0 003.5 8M3.5 9.5A5 5 0 0012.5 8" />
@@ -213,7 +260,7 @@ export default function PurchasingPage() {
 
       {/* Vendor groups */}
       {totalCount === 0 ? (
-        <div className="rounded-xl border border-border/40 bg-surface/40 p-10 text-center">
+        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
           <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
             <circle cx="6" cy="13.5" r="1" fill="currentColor" />
             <circle cx="12.5" cy="13.5" r="1" fill="currentColor" />
@@ -257,7 +304,7 @@ export default function PurchasingPage() {
                   return (
                     <div
                       key={i}
-                      className="flex items-start gap-3 rounded-lg bg-surface border border-border/40 px-4 py-3"
+                      className="flex items-start gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">

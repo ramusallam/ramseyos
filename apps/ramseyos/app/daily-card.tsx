@@ -1,50 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import {
   type DailyPlan,
-  type DayMode,
   type TimelineItem,
-  type TimelineItemType,
   type LifeContextItem,
 } from "@/lib/orchestration";
 import { type AdminItem } from "@/lib/admin-templates";
-import { type Timestamp } from "firebase/firestore";
+import { formatDailyCardText } from "@/lib/daily-card-format";
+import { PRIORITY_STYLE } from "@/lib/shared";
+import { shareOrCopy, copyToClipboard } from "@/lib/platform";
+import { toggleTaskCompleted } from "@/lib/tasks";
+import {
+  TYPE_DOT,
+  TYPE_LABEL,
+  LIFE_CAT_DOT,
+  fmtCardTime,
+  fmtCardDate,
+} from "@/lib/daily-card-constants";
 import Link from "next/link";
-
-const PRIORITY_STYLE: Record<string, string> = {
-  high: "bg-rose-500/10 text-rose-400",
-  medium: "bg-amber-500/10 text-amber-400",
-  low: "bg-sky-500/10 text-sky-400",
-};
-
-const DAY_MODE_META: Record<DayMode, { label: string; icon: string; color: string }> = {
-  scheduled: { label: "Scheduled day", icon: "M2 7h12M5 1.5v3M11 1.5v3", color: "text-sky-400/70" },
-  "deep-work": { label: "Deep work day", icon: "M8 2v12M4 6l4-4 4 4", color: "text-violet-400/70" },
-  "life-focus": { label: "Life focus day", icon: "M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z", color: "text-rose-400/70" },
-  balanced: { label: "Balanced day", icon: "M2 8h12M8 2v12", color: "text-emerald-400/70" },
-  light: { label: "Light day", icon: "M8 2a6 6 0 100 12A6 6 0 008 2z", color: "text-amber-400/70" },
-};
-
-const TYPE_LABEL: Record<TimelineItemType, string> = {
-  schedule: "event",
-  chosen: "selected",
-  focus: "priority",
-  "daily-action": "routine",
-};
-
-const TYPE_DOT: Record<TimelineItemType, string> = {
-  schedule: "bg-sky-500",
-  chosen: "bg-accent",
-  focus: "bg-rose-500",
-  "daily-action": "bg-gray-400",
-};
-
-function formatTime(ts: Timestamp): string {
-  return ts.toDate().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
 
 interface DailyCardProps {
   plan: DailyPlan;
@@ -52,34 +26,91 @@ interface DailyCardProps {
 }
 
 export function DailyCard({ plan, adminActive }: DailyCardProps) {
-  const mode = DAY_MODE_META[plan.dayMode];
+  const [copied, setCopied] = useState(false);
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+
+  function handleTaskComplete(id: string) {
+    setCompletedIds((prev) => new Set(prev).add(id));
+  }
 
   const scheduleItems = plan.timeline.filter((i) => i.type === "schedule");
   const taskItems = plan.timeline.filter(
-    (i) => i.type === "chosen" || i.type === "focus" || i.type === "daily-action"
+    (i) => i.type === "chosen" || i.type === "focus"
   );
+  const dailyActions = plan.timeline.filter((i) => i.type === "daily-action");
 
   const hasContext = plan.lifeContext.length > 0 || adminActive.length > 0;
 
+  async function handleCopy() {
+    const text = formatDailyCardText(plan);
+    const ok = await copyToClipboard(text);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
+  async function handleShare() {
+    const text = formatDailyCardText(plan);
+    const result = await shareOrCopy({ title: `RamseyOS — ${fmtCardDate()}`, text });
+    if (result === "copied") {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
   return (
     <div className="space-y-5">
-      {/* Card header — unified controller framing */}
+      {/* Card header */}
       <div className="flex items-center gap-2">
         <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted/50">
           Daily plan
         </h2>
-        <div className="flex-1 border-t border-border/30" />
-        <div className="flex items-center gap-1.5">
-          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={mode.color}>
-            <path d={mode.icon} />
-          </svg>
-          <span className={`text-[10px] font-medium ${mode.color}`}>
-            {mode.label}
-          </span>
-        </div>
-        <span className="text-[9px] text-muted/30 tabular-nums ml-1">
-          · {plan.timeline.length}
+        <span className="text-[9px] text-muted/25 tabular-nums">
+          {plan.timeline.length} item{plan.timeline.length !== 1 ? "s" : ""}
         </span>
+        <div className="flex-1 border-t border-border/30" />
+        {/* Delivery actions */}
+        <div className="flex items-center gap-0.5">
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="p-1.5 rounded-md text-muted/30 hover:text-muted/60 hover:bg-surface-raised transition-colors"
+            aria-label="Copy daily card"
+          >
+            {copied ? (
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
+                <path d="M3.5 8.5l3 3 6-7" />
+              </svg>
+            ) : (
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="5" y="5" width="8" height="8" rx="1.5" />
+                <path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" />
+              </svg>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={handleShare}
+            className="p-1.5 rounded-md text-muted/30 hover:text-muted/60 hover:bg-surface-raised transition-colors"
+            aria-label="Share daily card"
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 8v5a1 1 0 001 1h6a1 1 0 001-1V8" />
+              <path d="M8 2v8M5 5l3-3 3 3" />
+            </svg>
+          </button>
+          <Link
+            href="/today"
+            className="p-1.5 rounded-md text-muted/30 hover:text-muted/60 hover:bg-surface-raised transition-colors"
+            aria-label="Open mobile daily card"
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="4" y="1" width="8" height="14" rx="2" />
+              <path d="M7 12h2" />
+            </svg>
+          </Link>
+        </div>
       </div>
 
       {/* Schedule */}
@@ -105,25 +136,53 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
             icon="M5.5 8l2 2 3-4"
             label="Tasks"
             count={taskItems.length}
+            completedCount={completedIds.size}
           />
           <ul className="space-y-0.5">
             {taskItems.map((item) => (
-              <TaskRow key={`${item.type}-${item.id}`} item={item} />
+              <TaskRow key={`${item.type}-${item.id}`} item={item} onComplete={handleTaskComplete} />
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Daily Actions */}
+      {dailyActions.length > 0 && (
+        <div>
+          <SectionLabel
+            icon="M8 2a6 6 0 100 12A6 6 0 008 2zM8 5v3l2 1"
+            label="Daily"
+            count={dailyActions.length}
+          />
+          <ul className="space-y-0.5">
+            {dailyActions.map((item) => (
+              <li key={`daily-${item.id}`} className="flex items-center gap-3 rounded-lg px-3 py-1.5 transition-colors hover:bg-surface-raised">
+                <span className="size-2 shrink-0 rounded-full bg-gray-400" />
+                <span className="flex-1 text-[13px] text-foreground/60 truncate">
+                  {item.title}
+                </span>
+                <span className="text-[9px] text-muted/30 shrink-0">routine</span>
+              </li>
             ))}
           </ul>
         </div>
       )}
 
       {plan.timeline.length === 0 && (
-        <p className="text-sm text-muted/40 italic py-4 text-center">
-          Nothing planned for today.
-        </p>
+        <div className="flex flex-col items-center gap-2 py-6">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="text-muted/20">
+            <path d="M8 2a6 6 0 100 12A6 6 0 008 2z" />
+            <path d="M8 5v3l2 1" />
+          </svg>
+          <p className="text-[13px] text-muted/35">Nothing planned for today</p>
+          <p className="text-[11px] text-muted/25">Add tasks or schedule events to build your day.</p>
+        </div>
       )}
 
       {/* Inbox nudge */}
       <InboxNudge count={plan.inboxItems.length} />
 
-      {/* Context — life + ops merged */}
+      {/* Context — life + ops */}
       {hasContext && (
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -152,20 +211,33 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
               </Link>
             )}
           </div>
-          <ul className="space-y-0.5">
-            {plan.lifeContext.map((item) => (
-              <LifeContextRow key={`life-${item.id}`} item={item} />
-            ))}
-            {adminActive.map((item) => (
-              <li key={`ops-${item.id}`} className="flex items-center gap-3 rounded-lg px-3 py-1.5 transition-colors hover:bg-surface-raised">
-                <span className="size-1.5 shrink-0 rounded-full bg-blue-400" />
-                <span className="flex-1 text-[13px] text-foreground/60 truncate">
-                  {item.title}
-                </span>
-                <span className="text-[9px] text-blue-400/40 shrink-0">ops</span>
-              </li>
-            ))}
-          </ul>
+
+          {/* Life items */}
+          {plan.lifeContext.length > 0 && (
+            <ul className="space-y-0.5">
+              {plan.lifeContext.map((item) => (
+                <LifeContextRow key={`life-${item.id}`} item={item} />
+              ))}
+            </ul>
+          )}
+
+          {/* Admin items — visually separated when both present */}
+          {adminActive.length > 0 && (
+            <>
+              {plan.lifeContext.length > 0 && (
+                <div className="flex items-center gap-2 mt-2 mb-1 px-3">
+                  <div className="flex-1 border-t border-border/20" />
+                  <span className="text-[8px] uppercase tracking-widest text-muted/25">ops</span>
+                  <div className="flex-1 border-t border-border/20" />
+                </div>
+              )}
+              <ul className="space-y-0.5">
+                {adminActive.map((item) => (
+                  <AdminContextRow key={`ops-${item.id}`} item={item} />
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -178,10 +250,12 @@ function SectionLabel({
   icon,
   label,
   count,
+  completedCount,
 }: {
   icon: string;
   label: string;
   count?: number;
+  completedCount?: number;
 }) {
   return (
     <div className="flex items-center gap-2 mb-2">
@@ -193,6 +267,11 @@ function SectionLabel({
       </h3>
       {count !== undefined && (
         <span className="text-[9px] text-muted/30 tabular-nums">{count}</span>
+      )}
+      {completedCount !== undefined && completedCount > 0 && (
+        <span className="text-[9px] text-emerald-400/60 tabular-nums font-medium">
+          {completedCount} done
+        </span>
       )}
     </div>
   );
@@ -253,7 +332,7 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
         <span className={`text-[11px] tabular-nums shrink-0 w-28 ${
           isActive ? "text-emerald-400/80 font-medium" : "text-muted/60"
         }`}>
-          {formatTime(item.startTime)} – {formatTime(item.endTime)}
+          {fmtCardTime(item.startTime)} – {fmtCardTime(item.endTime)}
         </span>
       ) : (
         <span className="text-[10px] text-muted/40 uppercase tracking-wide shrink-0 w-28 font-medium">
@@ -282,20 +361,47 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
   );
 }
 
-/* ── Task row ── */
+/* ── Task row — completable inline ── */
 
-function TaskRow({ item }: { item: TimelineItem }) {
+function TaskRow({ item, onComplete }: { item: TimelineItem; onComplete?: (id: string) => void }) {
+  const [done, setDone] = useState(false);
+  const canComplete = item.type === "chosen" || item.type === "focus";
+
+  async function handleComplete() {
+    if (!canComplete || done) return;
+    setDone(true);
+    await toggleTaskCompleted(item.id, false);
+    onComplete?.(item.id);
+  }
+
   return (
-    <li className="flex items-center gap-3 rounded-lg px-3 py-1.5 transition-colors hover:bg-surface-raised">
-      <span
-        className={`size-2 shrink-0 rounded-full ${TYPE_DOT[item.type]}`}
-      />
+    <li className={`flex items-center gap-3 rounded-lg px-3 py-1.5 transition-all hover:bg-surface-raised ${done ? "opacity-30" : ""}`}>
+      {canComplete ? (
+        <button
+          type="button"
+          onClick={handleComplete}
+          className={`size-4 shrink-0 rounded border-[1.5px] transition-colors flex items-center justify-center ${
+            done
+              ? "border-accent/40 bg-accent/20"
+              : "border-muted/25 hover:border-accent/40"
+          }`}
+          aria-label="Mark complete"
+        >
+          {done && (
+            <svg viewBox="0 0 16 16" className="size-2.5 text-accent">
+              <path d="M4.5 8.5L7 11l4.5-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </button>
+      ) : (
+        <span className={`size-2 shrink-0 rounded-full ${TYPE_DOT[item.type]}`} />
+      )}
 
       <span className="text-[10px] text-muted/40 uppercase tracking-wide shrink-0 w-28 font-medium">
         {TYPE_LABEL[item.type]}
       </span>
 
-      <span className="flex-1 text-[13px] text-foreground/70 truncate">
+      <span className={`flex-1 text-[13px] truncate ${done ? "text-muted/40 line-through" : "text-foreground/70"}`}>
         {item.title}
       </span>
 
@@ -305,7 +411,7 @@ function TaskRow({ item }: { item: TimelineItem }) {
         </span>
       )}
 
-      {item.priority && (
+      {item.priority && !done && (
         <span
           className={`text-[9px] px-1.5 py-0.5 rounded font-medium shrink-0 ${
             PRIORITY_STYLE[item.priority] ?? "text-muted"
@@ -319,13 +425,6 @@ function TaskRow({ item }: { item: TimelineItem }) {
 }
 
 /* ── Life Context row ── */
-
-const LIFE_CAT_DOT: Record<string, string> = {
-  family: "bg-rose-400",
-  home: "bg-amber-400",
-  reminder: "bg-blue-400",
-  "life-admin": "bg-slate-400",
-};
 
 function LifeContextRow({ item }: { item: LifeContextItem }) {
   return (
@@ -343,6 +442,41 @@ function LifeContextRow({ item }: { item: LifeContextItem }) {
       )}
       <span className="text-[9px] text-muted/30 shrink-0">
         {item.category === "life-admin" ? "life admin" : item.category}
+      </span>
+    </li>
+  );
+}
+
+/* ── Admin Context row ── */
+
+const ADMIN_CAT_DOT: Record<string, string> = {
+  "follow-up": "bg-blue-400",
+  tracking: "bg-violet-400",
+  reminder: "bg-amber-400",
+  operations: "bg-emerald-400",
+};
+
+const ADMIN_CAT_LABEL: Record<string, string> = {
+  "follow-up": "follow-up",
+  tracking: "tracking",
+  reminder: "reminder",
+  operations: "ops",
+};
+
+function AdminContextRow({ item }: { item: AdminItem }) {
+  return (
+    <li className="flex items-center gap-3 rounded-lg px-3 py-1.5 transition-colors hover:bg-surface-raised">
+      <span className={`size-1.5 shrink-0 rounded-full ${ADMIN_CAT_DOT[item.category] ?? "bg-blue-400"}`} />
+      <span className="flex-1 text-[13px] text-foreground/60 truncate">
+        {item.title}
+      </span>
+      {item.recurring && (
+        <span className="text-[9px] text-violet-400/50 shrink-0">
+          recurring
+        </span>
+      )}
+      <span className="text-[9px] text-muted/30 shrink-0">
+        {ADMIN_CAT_LABEL[item.category] ?? "ops"}
       </span>
     </li>
   );

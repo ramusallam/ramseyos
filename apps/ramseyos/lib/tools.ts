@@ -11,6 +11,9 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 
+/** Where a tool can run. "web" = browser only, "desktop" = requires wrapper, "any" = both. */
+export type ToolEnvironment = "web" | "desktop" | "any";
+
 export interface ToolItem {
   id: string;
   title: string;
@@ -19,6 +22,7 @@ export interface ToolItem {
   url: string;
   active: boolean;
   pinned: boolean;
+  environment: ToolEnvironment;
 }
 
 export async function getActiveTools(): Promise<ToolItem[]> {
@@ -36,6 +40,7 @@ export async function getActiveTools(): Promise<ToolItem[]> {
     url: d.data().url,
     active: d.data().active,
     pinned: d.data().pinned ?? false,
+    environment: (d.data().environment as ToolEnvironment) ?? "web",
   }));
 }
 
@@ -53,30 +58,35 @@ export async function seedTools(): Promise<number> {
       description: "AI-powered inquiry lesson builder for science educators.",
       category: "teaching",
       url: "https://sparklearningstudio.ai",
+      environment: "web",
     },
     {
       title: "Cycles of Learning Blog",
       description: "Research-backed writing on teaching, learning, and inquiry.",
       category: "publishing",
       url: "https://cyclesoflearning.com",
+      environment: "web",
     },
     {
       title: "Xbox Adaptive Controller Emulator",
       description: "Accessibility controller emulator for inclusive classroom use.",
       category: "accessibility",
       url: "#",
+      environment: "desktop",
     },
     {
       title: "Chemistry Simulation",
       description: "Interactive molecular and reaction simulations for students.",
       category: "simulation",
       url: "#",
+      environment: "desktop",
     },
     {
       title: "Classroom Timer",
       description: "Minimal timer and pacing tool for class activities.",
       category: "classroom",
       url: "#",
+      environment: "any",
     },
   ];
 

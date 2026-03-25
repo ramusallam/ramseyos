@@ -10,9 +10,11 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { type OperationalStatus, toDate } from "./shared";
 
 export type LifeItemCategory = "family" | "home" | "reminder" | "life-admin";
-export type LifeItemStatus = "pending" | "in_progress" | "done";
+// LifeItemStatus is an alias for the shared OperationalStatus pattern.
+export type LifeItemStatus = OperationalStatus;
 export type LifeItemFrequency = "daily" | "weekly" | "monthly" | "as-needed";
 
 export interface LifeItem {
@@ -43,7 +45,7 @@ export async function getActiveLifeItems(): Promise<LifeItem[]> {
     recurring: d.data().recurring ?? false,
     frequency: d.data().frequency ?? "as-needed",
     active: d.data().active,
-    createdAt: d.data().createdAt?.toDate() ?? null,
+    createdAt: toDate(d.data().createdAt),
   }));
 }
 

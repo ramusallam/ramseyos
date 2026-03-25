@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { createCapture } from "@/lib/captures";
+import { useAuth, type AuthStatus } from "@/lib/auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -99,8 +100,10 @@ type NavKey =
   | "purchasing"
   | "vendors"
   | "communications"
+  | "productOps"
   | "admin"
-  | "life";
+  | "life"
+  | "settings";
 
 interface NavItem {
   href: string;
@@ -144,8 +147,15 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Ops",
     items: [
       { href: "/communications", label: "Comms", icon: CommsIcon, key: "communications" },
+      { href: "/product-ops", label: "Product Ops", icon: ProductOpsIcon, key: "productOps" },
       { href: "/admin", label: "Admin", icon: AdminIcon, key: "admin" },
       { href: "/life", label: "Life", icon: LifeIcon, key: "life" },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { href: "/settings", label: "Settings", icon: SettingsIcon, key: "settings" },
     ],
   },
 ];
@@ -168,11 +178,17 @@ function getNavCount(
   }
 }
 
-const SHELL_HIDDEN_ROUTES = ["/today"];
+const SHELL_HIDDEN_ROUTES = ["/today", "/capture"];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const { status, user, signIn, signOut } = useAuth();
   const pathname = usePathname();
   const counts = useShellCounts();
+
+  // Auth gate — show login/loading before anything else
+  if (status !== "ready") {
+    return <AuthGate status={status} signIn={signIn} />;
+  }
 
   const hideShell = SHELL_HIDDEN_ROUTES.some((r) => pathname.startsWith(r));
 
@@ -236,16 +252,136 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarCapture />
         </div>
 
-        {/* Footer */}
-        <div className="px-5 py-3 border-t border-border/40">
-          <p className="text-[10px] text-muted/40 tracking-wide">
-            v0.1 · Foundation
-          </p>
+        {/* Footer — user + sign out */}
+        <div className="px-4 py-3 border-t border-border/40 flex items-center gap-2.5">
+          {user?.photoURL && (
+            <img
+              src={user.photoURL}
+              alt=""
+              className="size-6 rounded-full shrink-0"
+              referrerPolicy="no-referrer"
+            />
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] text-muted/40 tracking-wide truncate">
+              v0.1 · Foundation
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={signOut}
+            className="text-[10px] text-muted/30 hover:text-muted/60 transition-colors shrink-0"
+            aria-label="Sign out"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2H4a2 2 0 00-2 2v8a2 2 0 002 2h2M10.5 12l4-4-4-4M14 8H6" />
+            </svg>
+          </button>
         </div>
       </aside>
 
       {/* Main content */}
       <main className="flex-1 min-w-0 overflow-y-auto">{children}</main>
+    </div>
+  );
+}
+
+/* ── Auth Gate ── */
+
+function AuthGate({
+  status,
+  signIn,
+}: {
+  status: AuthStatus;
+  signIn: () => Promise<void>;
+}) {
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="size-5 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+          <p className="text-[11px] tracking-widest uppercase text-muted/30">
+            RamseyOS
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "unauthorized") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <div className="max-w-sm w-full text-center">
+          <p className="text-[11px] tracking-widest uppercase text-accent/60 mb-6">
+            RamseyOS
+          </p>
+          <div className="rounded-2xl border border-border/50 bg-surface/50 p-8">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mx-auto text-muted/25 mb-5"
+            >
+              <rect x="3" y="7" width="10" height="7" rx="1.5" />
+              <path d="M5 7V5a3 3 0 016 0v2" />
+            </svg>
+            <p className="text-[16px] text-foreground/80 font-medium mb-2">
+              Access restricted
+            </p>
+            <p className="text-[13px] text-muted/50 leading-relaxed mb-6">
+              This system is private. The account you signed in with does not
+              have access.
+            </p>
+            <button
+              type="button"
+              onClick={signIn}
+              className="text-[13px] text-accent/70 hover:text-accent transition-colors"
+            >
+              Try a different account
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // status === "signed-out"
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center px-6">
+      <div className="max-w-sm w-full text-center">
+        <p className="text-[11px] tracking-widest uppercase text-accent/60 mb-6">
+          RamseyOS
+        </p>
+        <div className="rounded-2xl border border-border/50 bg-surface/50 p-8">
+          <p className="text-[20px] text-foreground font-semibold mb-1">
+            Welcome back
+          </p>
+          <p className="text-[13px] text-muted/50 leading-relaxed mb-8">
+            Sign in to access your personal operating system.
+          </p>
+          <button
+            type="button"
+            onClick={signIn}
+            className="w-full flex items-center justify-center gap-3 rounded-xl bg-accent/10 hover:bg-accent/15 border border-accent/20 px-5 py-3 text-[14px] font-medium text-accent transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 48 48">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+            </svg>
+            Sign in with Google
+          </button>
+        </div>
+        <p className="text-[11px] text-muted/25 mt-6">
+          Private system · Single-user access
+        </p>
+      </div>
     </div>
   );
 }
@@ -256,6 +392,7 @@ function SidebarCapture() {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -271,7 +408,11 @@ function SidebarCapture() {
     try {
       await createCapture({ text: trimmed, source: "manual" });
       setText("");
-      setOpen(false);
+      setSaved(true);
+      setTimeout(() => {
+        setSaved(false);
+        setOpen(false);
+      }, 1200);
     } finally {
       setSaving(false);
     }
@@ -282,7 +423,7 @@ function SidebarCapture() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-3 rounded-lg px-3 py-2 w-full text-[13px] text-foreground/50 hover:bg-surface-raised hover:text-foreground/70 transition-colors"
+        className="flex items-center gap-3 rounded-xl px-3 py-2.5 w-full text-[13px] text-foreground/50 hover:bg-surface-raised hover:text-foreground/70 transition-colors"
       >
         <PlusIcon />
         <span>Capture</span>
@@ -291,8 +432,17 @@ function SidebarCapture() {
     );
   }
 
+  if (saved) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2.5">
+        <span className="size-2 rounded-full bg-emerald-400" />
+        <span className="text-[13px] text-emerald-400/80">Captured → inbox</span>
+      </div>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
+    <form onSubmit={handleSubmit} className="space-y-2.5">
       <input
         ref={inputRef}
         type="text"
@@ -305,7 +455,7 @@ function SidebarCapture() {
           }
         }}
         placeholder="Capture a thought…"
-        className="w-full rounded-lg border border-border/60 bg-surface-raised px-3 py-2 text-[13px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+        className="w-full rounded-xl border border-border/60 bg-surface-raised px-3.5 py-2.5 text-[14px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
         disabled={saving}
       />
       <div className="flex items-center justify-between px-1">
@@ -315,7 +465,7 @@ function SidebarCapture() {
             setText("");
             setOpen(false);
           }}
-          className="text-[11px] text-muted/50 hover:text-foreground transition-colors"
+          className="text-[12px] text-muted/50 hover:text-foreground transition-colors"
         >
           Cancel
         </button>
@@ -323,7 +473,7 @@ function SidebarCapture() {
           <button
             type="submit"
             disabled={saving}
-            className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+            className="text-[12px] font-medium text-accent hover:text-accent/80 transition-colors px-2 py-1 rounded-lg hover:bg-accent-dim"
           >
             {saving ? "Saving…" : "Save"}
           </button>
@@ -683,6 +833,34 @@ function AdminIcon({ active }: { active: boolean }) {
   );
 }
 
+function ProductOpsIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <rect
+        x="2"
+        y="3"
+        width="12"
+        height="10"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M5 7h6M5 10h3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function LifeIcon({ active }: { active: boolean }) {
   return (
     <svg
@@ -698,6 +876,26 @@ function LifeIcon({ active }: { active: boolean }) {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function SettingsIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
       />
     </svg>
   );

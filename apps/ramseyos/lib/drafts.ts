@@ -10,6 +10,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { toDate } from "./shared";
 
 export type DraftStatus = "draft" | "ready" | "sent" | "failed";
 export type GmailHandoffStatus = "not_prepared" | "ready_for_gmail" | "handed_off";
@@ -22,7 +23,7 @@ export interface DraftItem {
   body: string;
   status: DraftStatus;
   gmailStatus: GmailHandoffStatus;
-  createdAt: string;
+  createdAt: Date | null;
 }
 
 export async function getDrafts(): Promise<DraftItem[]> {
@@ -39,7 +40,7 @@ export async function getDrafts(): Promise<DraftItem[]> {
     body: d.data().body ?? "",
     status: d.data().status ?? "draft",
     gmailStatus: d.data().gmailStatus ?? "not_prepared",
-    createdAt: d.data().createdAt?.toDate?.()?.toISOString?.() ?? "",
+    createdAt: toDate(d.data().createdAt),
   }));
 }
 

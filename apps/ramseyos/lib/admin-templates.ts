@@ -10,6 +10,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { type OperationalStatus, toDate } from "./shared";
 
 /* ── Admin Templates (reference patterns) ── */
 
@@ -41,7 +42,7 @@ export async function getActiveAdminTemplates(): Promise<AdminTemplate[]> {
     category: d.data().category,
     body: d.data().body,
     active: d.data().active,
-    createdAt: d.data().createdAt?.toDate() ?? null,
+    createdAt: toDate(d.data().createdAt),
   }));
 }
 
@@ -85,7 +86,8 @@ export async function seedAdminTemplates(): Promise<number> {
 
 /* ── Admin Items (operational instances with status) ── */
 
-export type AdminItemStatus = "pending" | "in_progress" | "done";
+// AdminItemStatus is an alias for the shared OperationalStatus pattern.
+export type AdminItemStatus = OperationalStatus;
 
 export interface AdminItem {
   id: string;
@@ -113,7 +115,7 @@ export async function getActiveAdminItems(): Promise<AdminItem[]> {
     status: d.data().status ?? "pending",
     recurring: d.data().recurring ?? false,
     active: d.data().active,
-    createdAt: d.data().createdAt?.toDate() ?? null,
+    createdAt: toDate(d.data().createdAt),
   }));
 }
 

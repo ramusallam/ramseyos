@@ -6,16 +6,13 @@ import {
   query,
   orderBy,
   onSnapshot,
-  doc,
-  updateDoc,
   where,
   type Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { updateTaskProject, toggleChosenForToday } from "@/lib/tasks";
+import { updateTaskProject, toggleChosenForToday, toggleTaskCompleted } from "@/lib/tasks";
+import { type Priority, PRIORITY_STYLE } from "@/lib/shared";
 import Link from "next/link";
-
-type Priority = "low" | "medium" | "high" | null;
 
 interface Task {
   id: string;
@@ -35,20 +32,11 @@ interface Project {
   color: string | null;
 }
 
-const PRIORITY_STYLE: Record<string, string> = {
-  high: "bg-rose-500/15 text-rose-400",
-  medium: "bg-amber-500/15 text-amber-400",
-  low: "bg-blue-500/15 text-blue-400",
-};
-
-async function toggleCompleted(id: string, current: boolean) {
-  await updateDoc(doc(db, "tasks", id), { completed: !current });
-}
-
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
@@ -81,8 +69,9 @@ export default function TasksPage() {
 
   const incomplete = tasks.filter((t) => !t.completed);
   const completed = tasks.filter((t) => t.completed);
+  const chosenCount = incomplete.filter((t) => t.chosenForToday).length;
+  const fromInboxCount = tasks.filter((t) => t.sourceCaptureId).length;
 
-  // Group incomplete tasks by project
   const projectMap = new Map<string, Project>();
   for (const p of projects) projectMap.set(p.id, p);
 
@@ -95,7 +84,6 @@ export default function TasksPage() {
     byProjectId.get(key)!.push(task);
   }
 
-  // Projects with tasks first (in project order), then unassigned last
   for (const p of projects) {
     const projectTasks = byProjectId.get(p.id);
     if (projectTasks) grouped.push({ project: p, tasks: projectTasks });
@@ -103,93 +91,213 @@ export default function TasksPage() {
   const unassigned = byProjectId.get(null);
   if (unassigned) grouped.push({ project: null, tasks: unassigned });
 
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
+        <div className="flex items-center gap-3 py-16 justify-center">
+          <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+          <span className="text-[13px] text-muted/40">Loading tasks…</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-xl px-5 pt-12 pb-20">
+    <div className="max-w-3xl mx-auto px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
+      {/* ── Header ── */}
+      <header className="mb-10">
+        <Link
+          href="/"
+          className="text-[11px] tracking-wide text-muted/50 hover:text-foreground/60 transition-colors"
+        >
+          &larr; Today
+        </Link>
+        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
+          Tasks
+        </h1>
+        <p className="text-[13px] text-muted/50 mt-1">
+          All tasks across every project. Grouped by context.
+        </p>
 
-        {/* Header */}
-        <header className="mb-10">
-          <Link
-            href="/"
-            className="text-[11px] tracking-wide text-muted hover:text-zinc-400 transition-colors"
-          >
-            &larr; Today
+        {/* Stat bar */}
+        {tasks.length > 0 && (
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+            <span className="flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-sky-400" />
+              <span className="tabular-nums">{incomplete.length} open</span>
+            </span>
+            {chosenCount > 0 && (
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-accent" />
+                <span className="tabular-nums">{chosenCount} today</span>
+              </span>
+            )}
+            {completed.length > 0 && (
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-emerald-400" />
+                <span className="tabular-nums">{completed.length} done</span>
+              </span>
+            )}
+            {fromInboxCount > 0 && (
+              <span className="tabular-nums">{fromInboxCount} from inbox</span>
+            )}
+          </div>
+        )}
+
+        {/* Cross-links */}
+        <div className="flex items-center gap-3 mt-3">
+          <Link href="/inbox" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Inbox &rarr;
           </Link>
-          <h1 className="text-xl font-normal text-zinc-100 mt-2">Tasks</h1>
-        </header>
+          <Link href="/projects" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Projects &rarr;
+          </Link>
+        </div>
+      </header>
 
-        {/* Content */}
-        {loading ? (
-          <p className="text-sm text-muted/60">Loading...</p>
-        ) : tasks.length === 0 ? (
-          <p className="text-sm text-muted/60">
-            No tasks yet. Convert captures from the{" "}
-            <Link href="/inbox" className="text-accent/70 hover:text-accent transition-colors">
+      {/* ── Empty ── */}
+      {tasks.length === 0 ? (
+        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/25 mb-4">
+            <rect x="2" y="2" width="12" height="12" rx="3" />
+            <path d="M5.5 8l2 2 3-4" />
+          </svg>
+          <p className="text-sm text-muted/60 font-medium">No tasks yet</p>
+          <p className="text-[12px] text-muted/35 mt-1">
+            Convert captures from the{" "}
+            <Link href="/inbox" className="text-accent/50 hover:text-accent transition-colors">
               Inbox
+            </Link>{" "}
+            or add tasks from a{" "}
+            <Link href="/projects" className="text-accent/50 hover:text-accent transition-colors">
+              project
             </Link>
             .
           </p>
-        ) : (
-          <>
-            {grouped.map(({ project, tasks: groupTasks }) => (
-              <div key={project?.id ?? "unassigned"} className="mb-8">
-                <h2 className="text-[10px] font-medium uppercase tracking-widest text-muted/70 mb-3">
-                  {project?.title ?? "Unassigned"}
-                </h2>
-                <ul className="space-y-1">
-                  {groupTasks.map((task) => (
-                    <TaskItem key={task.id} task={task} projects={projects} />
-                  ))}
-                </ul>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {grouped.map(({ project, tasks: groupTasks }) => (
+            <section key={project?.id ?? "unassigned"}>
+              {/* Group header */}
+              <div className="flex items-center gap-2 mb-3">
+                {project?.color && (
+                  <span
+                    className="size-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: project.color }}
+                  />
+                )}
+                {project ? (
+                  <Link
+                    href={`/projects/${project.id}`}
+                    className="text-[11px] font-semibold uppercase tracking-wider text-muted hover:text-accent transition-colors"
+                  >
+                    {project.title}
+                  </Link>
+                ) : (
+                  <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/50">
+                    Unassigned
+                  </h2>
+                )}
+                <span className="text-[10px] text-muted/40 tabular-nums">{groupTasks.length}</span>
+                <div className="flex-1 border-t border-border/40" />
+                {project && (
+                  <Link
+                    href={`/projects/${project.id}`}
+                    className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors"
+                  >
+                    Open &rarr;
+                  </Link>
+                )}
               </div>
-            ))}
 
-            {completed.length > 0 && (
-              <div>
-                <h2 className="text-[10px] font-medium uppercase tracking-widest text-muted/50 mb-3">
+              {/* Tasks */}
+              <ul className="space-y-1.5">
+                {groupTasks.map((task) => (
+                  <TaskItem key={task.id} task={task} projects={projects} />
+                ))}
+              </ul>
+            </section>
+          ))}
+
+          {/* Completed */}
+          {completed.length > 0 && (
+            <section>
+              <button
+                type="button"
+                onClick={() => setShowCompleted(!showCompleted)}
+                className="flex items-center gap-2 mb-3 group w-full"
+              >
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
+                  <path d="M5.5 8l2 2 3-4" />
+                </svg>
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/40">
                   Completed
                 </h2>
-                <ul className="space-y-1">
+                <span className="text-[10px] text-muted/30 tabular-nums">{completed.length}</span>
+                <div className="flex-1 border-t border-border/30" />
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`text-muted/30 transition-transform ${showCompleted ? "rotate-180" : ""}`}
+                >
+                  <path d="M4 6l4 4 4-4" />
+                </svg>
+              </button>
+              {showCompleted && (
+                <ul className="space-y-1.5">
                   {completed.map((task) => (
                     <TaskItem key={task.id} task={task} projects={projects} />
                   ))}
                 </ul>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+              )}
+            </section>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
 /* ── Task Item ── */
 
-function TaskItem({ task, projects }: { task: Task; projects: Project[] }) {
+function TaskItem({
+  task,
+  projects,
+}: {
+  task: Task;
+  projects: Project[];
+}) {
   return (
     <li
-      className={`rounded px-2.5 py-2.5 -mx-2.5 transition-colors hover:bg-surface ${
-        task.completed ? "opacity-45" : ""
+      className={`rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-4 py-3 transition-all hover:bg-surface-raised/30 ${
+        task.completed ? "opacity-35" : ""
       }`}
     >
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={() => toggleCompleted(task.id, task.completed)}
-          className={`size-4 shrink-0 rounded border transition-colors ${
+          onClick={() => toggleTaskCompleted(task.id, task.completed)}
+          className={`size-5 shrink-0 rounded-lg border-2 transition-colors flex items-center justify-center ${
             task.completed
               ? "border-accent/40 bg-accent/20"
-              : "border-zinc-600 hover:border-zinc-400"
+              : "border-border-strong hover:border-accent/40"
           }`}
           aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
         >
           {task.completed && (
-            <svg viewBox="0 0 16 16" className="size-4 text-accent">
+            <svg viewBox="0 0 16 16" className="size-3.5 text-accent">
               <path
                 d="M4.5 8.5L7 11l4.5-5"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.5"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
@@ -198,16 +306,21 @@ function TaskItem({ task, projects }: { task: Task; projects: Project[] }) {
         </button>
 
         <span
-          className={`flex-1 text-[13px] truncate ${
-            task.completed ? "text-zinc-500 line-through" : "text-zinc-300"
+          className={`flex-1 text-[14px] truncate ${
+            task.completed ? "text-muted/50 line-through" : "text-foreground/85"
           }`}
         >
           {task.title}
         </span>
 
-        {task.priority && (
+        {/* Inbox origin indicator */}
+        {task.sourceCaptureId && !task.completed && (
+          <span className="text-[9px] text-muted/25 shrink-0">inbox</span>
+        )}
+
+        {task.priority && !task.completed && (
           <span
-            className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${
+            className={`text-[10px] px-2 py-0.5 rounded-md font-medium shrink-0 ${
               PRIORITY_STYLE[task.priority] ?? "text-muted/50"
             }`}
           >
@@ -221,10 +334,10 @@ function TaskItem({ task, projects }: { task: Task; projects: Project[] }) {
             onClick={() =>
               toggleChosenForToday(task.id, !!task.chosenForToday)
             }
-            className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 transition-colors ${
+            className={`text-[10px] px-2 py-1 rounded-lg shrink-0 transition-colors ${
               task.chosenForToday
-                ? "bg-accent/15 text-accent"
-                : "text-muted/40 hover:text-muted/70"
+                ? "bg-accent-dim text-accent font-medium"
+                : "text-muted/30 hover:text-muted/60 hover:bg-surface-raised"
             }`}
             aria-label={
               task.chosenForToday ? "Remove from today" : "Choose for today"
@@ -235,26 +348,28 @@ function TaskItem({ task, projects }: { task: Task; projects: Project[] }) {
         )}
       </div>
 
-      {/* Project selector */}
-      <div className="mt-1.5 ml-7">
-        <select
-          aria-label="Assign project"
-          value={task.projectId ?? ""}
-          onChange={(e) =>
-            updateTaskProject(task.id, e.target.value || null)
-          }
-          className="bg-transparent text-[10px] text-muted/70 outline-none cursor-pointer hover:text-zinc-400 transition-colors"
-        >
-          <option value="" className="bg-surface text-foreground">
-            No project
-          </option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id} className="bg-surface text-foreground">
-              {p.title}
+      {/* Project selector — only show for incomplete tasks */}
+      {!task.completed && (
+        <div className="mt-2 ml-8">
+          <select
+            aria-label="Assign project"
+            value={task.projectId ?? ""}
+            onChange={(e) =>
+              updateTaskProject(task.id, e.target.value || null)
+            }
+            className="bg-surface-raised/50 rounded-lg text-[11px] text-muted/60 outline-none cursor-pointer hover:text-foreground/60 transition-colors px-2 py-1.5 border border-border/40"
+          >
+            <option value="" className="bg-surface text-foreground">
+              No project
             </option>
-          ))}
-        </select>
-      </div>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id} className="bg-surface text-foreground">
+                {p.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
     </li>
   );
 }

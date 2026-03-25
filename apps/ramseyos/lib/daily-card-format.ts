@@ -41,17 +41,18 @@ function fmtDate(): string {
 export function formatDailyCardText(plan: DailyPlan): string {
   const lines: string[] = [];
 
+  // Header
   lines.push(`RamseyOS — ${fmtDate()}`);
-  lines.push(DAY_MODE_LABEL[plan.dayMode]);
+  lines.push(`${DAY_MODE_LABEL[plan.dayMode]} · ${plan.timeline.length} items`);
   lines.push("");
 
   // Now / Next
   const nowItem = resolveNow(plan.timeline);
   if (nowItem) {
-    lines.push(`▸ NOW: ${itemLine(nowItem)}`);
+    lines.push(`▸ NOW  ${itemLine(nowItem)}`);
     const nextItem = resolveNext(plan.timeline, nowItem);
     if (nextItem) {
-      lines.push(`▹ NEXT: ${itemLine(nextItem)}`);
+      lines.push(`▹ NEXT ${itemLine(nextItem)}`);
     }
     lines.push("");
   }
@@ -59,13 +60,13 @@ export function formatDailyCardText(plan: DailyPlan): string {
   // Schedule
   const schedule = plan.timeline.filter((i) => i.type === "schedule");
   if (schedule.length > 0) {
-    lines.push("SCHEDULE");
+    lines.push(`── Schedule (${schedule.length}) ──`);
     for (const item of schedule) {
       const time =
         item.startTime && item.endTime
           ? `${fmtTime(item.startTime)}–${fmtTime(item.endTime)}`
           : "";
-      lines.push(`  ${time}  ${item.title}`);
+      lines.push(`  ${time.padEnd(20)}${item.title}`);
     }
     lines.push("");
   }
@@ -75,7 +76,7 @@ export function formatDailyCardText(plan: DailyPlan): string {
     (i) => i.type === "chosen" || i.type === "focus"
   );
   if (tasks.length > 0) {
-    lines.push("TASKS");
+    lines.push(`── Tasks (${tasks.length}) ──`);
     for (const item of tasks) {
       const prefix = TYPE_PREFIX[item.type] ?? "";
       const priority = item.priority ? ` (${item.priority})` : "";
@@ -88,7 +89,7 @@ export function formatDailyCardText(plan: DailyPlan): string {
   // Daily actions
   const actions = plan.timeline.filter((i) => i.type === "daily-action");
   if (actions.length > 0) {
-    lines.push("DAILY ACTIONS");
+    lines.push(`── Daily (${actions.length}) ──`);
     for (const item of actions) {
       lines.push(`  ○ ${item.title}`);
     }
@@ -97,7 +98,7 @@ export function formatDailyCardText(plan: DailyPlan): string {
 
   // Life context
   if (plan.lifeContext.length > 0) {
-    lines.push("LIFE");
+    lines.push(`── Life (${plan.lifeContext.length}) ──`);
     for (const item of plan.lifeContext) {
       const tag = item.recurring ? " (recurring)" : "";
       lines.push(`  · ${item.title}${tag}`);
@@ -108,10 +109,17 @@ export function formatDailyCardText(plan: DailyPlan): string {
   // Inbox
   if (plan.inboxItems.length > 0) {
     lines.push(
-      `${plan.inboxItems.length} inbox item${plan.inboxItems.length !== 1 ? "s" : ""} need attention`
+      `📥 ${plan.inboxItems.length} inbox item${plan.inboxItems.length !== 1 ? "s" : ""} need attention`
     );
     lines.push("");
   }
+
+  // Timestamp
+  const time = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  lines.push(`Generated ${time}`);
 
   return lines.join("\n").trimEnd();
 }
@@ -187,8 +195,11 @@ function itemDetail(item: TimelineItem): string {
   return TYPE_PREFIX[item.type] ?? item.type;
 }
 
+const NEAR_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
+
 function resolveNow(timeline: TimelineItem[]): TimelineItem | null {
   const now = new Date();
+
   const active = timeline.find(
     (i) =>
       i.type === "schedule" &&
@@ -199,20 +210,43 @@ function resolveNow(timeline: TimelineItem[]): TimelineItem | null {
   );
   if (active) return active;
 
+  const nearUpcoming = timeline.find(
+    (i) =>
+      i.type === "schedule" &&
+      i.startTime &&
+      i.startTime.toDate() > now &&
+      i.startTime.toDate().getTime() - now.getTime() <= NEAR_THRESHOLD_MS
+  );
+  if (nearUpcoming) return nearUpcoming;
+
+  const task = timeline.find(
+    (i) => i.type === "chosen" || i.type === "focus"
+  );
+  if (task) return task;
+
   const upcoming = timeline.find(
     (i) => i.type === "schedule" && i.startTime && i.startTime.toDate() > now
   );
   if (upcoming) return upcoming;
 
-  return timeline.find((i) => i.type !== "schedule") ?? null;
+  return timeline.find((i) => i.type === "daily-action") ?? null;
 }
 
 function resolveNext(
   timeline: TimelineItem[],
   current: TimelineItem
 ): TimelineItem | null {
+  const now = new Date();
   const key = `${current.type}-${current.id}`;
   const idx = timeline.findIndex((i) => `${i.type}-${i.id}` === key);
-  if (idx === -1 || idx + 1 >= timeline.length) return null;
-  return timeline[idx + 1];
+  if (idx === -1) return null;
+
+  for (let i = idx + 1; i < timeline.length; i++) {
+    const item = timeline[i];
+    if (item.type === "schedule" && item.endTime && item.endTime.toDate() <= now) {
+      continue;
+    }
+    return item;
+  }
+  return null;
 }

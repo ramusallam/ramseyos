@@ -1,73 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   generateDailyPlan,
   type DailyPlan,
-  type DayMode,
   type TimelineItem,
-  type TimelineItemType,
   type LifeContextItem,
 } from "@/lib/orchestration";
 import { formatDailyCardText } from "@/lib/daily-card-format";
-import { type Timestamp } from "firebase/firestore";
+import { createCapture } from "@/lib/captures";
+import { PRIORITY_STYLE } from "@/lib/shared";
+import { shareOrCopy, copyToClipboard } from "@/lib/platform";
+import { toggleTaskCompleted } from "@/lib/tasks";
+import {
+  DAY_MODE_META,
+  TYPE_DOT,
+  TYPE_LABEL,
+  LIFE_CAT_DOT,
+  fmtCardTime,
+  fmtCardDate,
+} from "@/lib/daily-card-constants";
+import Link from "next/link";
 
-/* ── Constants ── */
+/* ── Now/Next selection — matches desktop logic ── */
 
-const DAY_MODE_META: Record<DayMode, { label: string; icon: string; color: string }> = {
-  scheduled: { label: "Scheduled day", icon: "M2 7h12M5 1.5v3M11 1.5v3", color: "text-sky-400" },
-  "deep-work": { label: "Deep work day", icon: "M8 2v12M4 6l4-4 4 4", color: "text-violet-400" },
-  "life-focus": { label: "Life focus day", icon: "M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z", color: "text-rose-400" },
-  balanced: { label: "Balanced day", icon: "M2 8h12M8 2v12", color: "text-emerald-400" },
-  light: { label: "Light day", icon: "M8 2a6 6 0 100 12A6 6 0 008 2z", color: "text-amber-400" },
-};
-
-const TYPE_DOT: Record<TimelineItemType, string> = {
-  schedule: "bg-sky-500",
-  chosen: "bg-indigo-500",
-  focus: "bg-rose-500",
-  "daily-action": "bg-gray-400",
-};
-
-const TYPE_LABEL: Record<TimelineItemType, string> = {
-  schedule: "event",
-  chosen: "today",
-  focus: "priority",
-  "daily-action": "daily",
-};
-
-const PRIORITY_STYLE: Record<string, string> = {
-  high: "bg-rose-500/10 text-rose-400",
-  medium: "bg-amber-500/10 text-amber-400",
-  low: "bg-sky-500/10 text-sky-400",
-};
-
-const LIFE_CAT_DOT: Record<string, string> = {
-  family: "bg-rose-400",
-  home: "bg-amber-400",
-  reminder: "bg-blue-400",
-  "life-admin": "bg-slate-400",
-};
-
-function formatTime(ts: Timestamp): string {
-  return ts.toDate().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
-function formatDate(): string {
-  return new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
-}
-
-/* ── Now/Next selection ── */
+const NEAR_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 
 function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
   const now = new Date();
+
   const active = timeline.find(
     (i) =>
       i.type === "schedule" &&
@@ -78,18 +39,53 @@ function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
   );
   if (active) return active;
 
+  const nearUpcoming = timeline.find(
+    (i) =>
+      i.type === "schedule" &&
+      i.startTime &&
+      i.startTime.toDate() > now &&
+      i.startTime.toDate().getTime() - now.getTime() <= NEAR_THRESHOLD_MS
+  );
+  if (nearUpcoming) return nearUpcoming;
+
+  const task = timeline.find(
+    (i) => i.type === "chosen" || i.type === "focus"
+  );
+  if (task) return task;
+
   const upcoming = timeline.find(
     (i) => i.type === "schedule" && i.startTime && i.startTime.toDate() > now
   );
   if (upcoming) return upcoming;
 
-  return timeline.find((i) => i.type !== "schedule") ?? null;
+  return timeline.find((i) => i.type === "daily-action") ?? null;
 }
 
 function getNextItem(timeline: TimelineItem[], currentId: string): TimelineItem | null {
+  const now = new Date();
   const idx = timeline.findIndex((i) => `${i.type}-${i.id}` === currentId);
-  if (idx === -1 || idx + 1 >= timeline.length) return null;
-  return timeline[idx + 1];
+  if (idx === -1) return null;
+
+  for (let i = idx + 1; i < timeline.length; i++) {
+    const item = timeline[i];
+    if (item.type === "schedule" && item.endTime && item.endTime.toDate() <= now) {
+      continue;
+    }
+    return item;
+  }
+  return null;
+}
+
+function getRelativeTime(date: Date): string {
+  const diffMs = date.getTime() - Date.now();
+  if (diffMs < 0) return "";
+  const mins = Math.round(diffMs / 60000);
+  if (mins < 1) return "starting now";
+  if (mins < 60) return `in ${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  const remaining = mins % 60;
+  if (remaining === 0) return `in ${hrs}h`;
+  return `in ${hrs}h ${remaining}m`;
 }
 
 /* ── Page ── */
@@ -106,24 +102,21 @@ export default function MobileDailyCard() {
   async function handleCopy() {
     if (!plan) return;
     const text = formatDailyCardText(plan);
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const ok = await copyToClipboard(text);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   }
 
   async function handleShare() {
     if (!plan) return;
     const text = formatDailyCardText(plan);
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: `RamseyOS — ${formatDate()}`, text });
-        setShared(true);
-        setTimeout(() => setShared(false), 2000);
-      } catch {
-        // User cancelled — no action needed
-      }
-    } else {
-      await navigator.clipboard.writeText(text);
+    const result = await shareOrCopy({ title: `RamseyOS — ${fmtCardDate()}`, text });
+    if (result === "shared") {
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    } else if (result === "copied") {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -132,7 +125,10 @@ export default function MobileDailyCard() {
   if (!plan) {
     return (
       <div className="min-h-dvh flex items-center justify-center">
-        <div className="size-5 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+        <div className="flex items-center gap-3">
+          <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+          <span className="text-[13px] text-muted/40">Loading your day…</span>
+        </div>
       </div>
     );
   }
@@ -154,15 +150,15 @@ export default function MobileDailyCard() {
         {/* Header */}
         <header className="px-1">
           <div className="flex items-center justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-accent">
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-accent/70">
               RamseyOS
             </p>
             {/* Delivery actions */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               <button
                 type="button"
                 onClick={handleCopy}
-                className="p-2 rounded-lg text-muted/50 hover:text-foreground/70 hover:bg-surface-raised transition-colors active:scale-95"
+                className="p-2 rounded-lg text-muted/40 hover:text-foreground/70 hover:bg-surface-raised/50 transition-colors active:scale-95"
                 aria-label="Copy daily card"
               >
                 {copied ? (
@@ -179,7 +175,7 @@ export default function MobileDailyCard() {
               <button
                 type="button"
                 onClick={handleShare}
-                className="p-2 rounded-lg text-muted/50 hover:text-foreground/70 hover:bg-surface-raised transition-colors active:scale-95"
+                className="p-2 rounded-lg text-muted/40 hover:text-foreground/70 hover:bg-surface-raised/50 transition-colors active:scale-95"
                 aria-label="Share daily card"
               >
                 {shared ? (
@@ -195,13 +191,16 @@ export default function MobileDailyCard() {
               </button>
             </div>
           </div>
-          <h1 className="text-lg font-semibold text-foreground mt-1">{formatDate()}</h1>
+          <h1 className="text-lg font-semibold text-foreground mt-1">{fmtCardDate()}</h1>
           <div className="flex items-center gap-2 mt-1.5">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={mode.color}>
               <path d={mode.icon} />
             </svg>
             <span className={`text-[12px] font-medium ${mode.color}`}>
               {mode.label}
+            </span>
+            <span className="text-[10px] text-muted/25 tabular-nums">
+              · {plan.timeline.length} item{plan.timeline.length !== 1 ? "s" : ""}
             </span>
           </div>
         </header>
@@ -241,17 +240,18 @@ export default function MobileDailyCard() {
         {/* Daily Actions */}
         {dailyActions.length > 0 && (
           <section>
-            <SectionHeader label="Daily Actions" count={dailyActions.length} />
+            <SectionHeader label="Daily" count={dailyActions.length} />
             <ul className="space-y-1.5">
               {dailyActions.map((item) => (
                 <li
                   key={item.id}
-                  className="flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3.5"
+                  className="flex items-center gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3.5"
                 >
                   <span className="size-2 shrink-0 rounded-full bg-gray-400" />
                   <span className="flex-1 text-[14px] text-foreground/70">
                     {item.title}
                   </span>
+                  <span className="text-[9px] text-muted/30 shrink-0">routine</span>
                 </li>
               ))}
             </ul>
@@ -272,17 +272,60 @@ export default function MobileDailyCard() {
 
         {/* Inbox nudge */}
         {plan.inboxItems.length > 0 && (
-          <section className="rounded-xl bg-amber-500/5 border border-amber-500/10 px-4 py-3.5 flex items-center gap-3">
+          <Link
+            href="/inbox"
+            className="flex items-center gap-3 rounded-xl bg-amber-500/[0.06] backdrop-blur-sm border border-amber-500/15 px-4 py-3.5 transition-colors active:bg-amber-500/10"
+          >
             <span className="size-2 shrink-0 rounded-full bg-amber-500" />
             <span className="flex-1 text-[14px] text-foreground/70">
-              {plan.inboxItems.length} inbox item{plan.inboxItems.length !== 1 ? "s" : ""} need attention
+              {plan.inboxItems.length} inbox item{plan.inboxItems.length !== 1 ? "s" : ""} to review
             </span>
-          </section>
+            <span className="text-[10px] text-accent/60 font-medium shrink-0">
+              Review
+            </span>
+          </Link>
         )}
 
-        {/* Footer */}
-        <footer className="text-center pt-2 pb-4">
-          <p className="text-[10px] text-muted/30 tracking-wide">
+        {/* Empty state */}
+        {plan.timeline.length === 0 && plan.inboxItems.length === 0 && (
+          <div className="flex flex-col items-center gap-2 py-8">
+            <svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="text-muted/20">
+              <path d="M8 2a6 6 0 100 12A6 6 0 008 2z" />
+              <path d="M8 5v3l2 1" />
+            </svg>
+            <p className="text-[14px] text-muted/40">Nothing planned for today</p>
+            <p className="text-[12px] text-muted/25">Capture something to get started.</p>
+          </div>
+        )}
+
+        {/* Quick capture */}
+        <MobileQuickCapture />
+
+        {/* Footer navigation */}
+        <footer className="pt-2 pb-4 space-y-3">
+          <div className="flex items-center justify-center gap-4">
+            <Link
+              href="/capture"
+              className="text-[12px] text-accent/60 hover:text-accent transition-colors font-medium"
+            >
+              Full Capture
+            </Link>
+            <span className="text-muted/20">·</span>
+            <Link
+              href="/"
+              className="text-[12px] text-muted/40 hover:text-muted/70 transition-colors"
+            >
+              Dashboard
+            </Link>
+            <span className="text-muted/20">·</span>
+            <Link
+              href="/inbox"
+              className="text-[12px] text-muted/40 hover:text-muted/70 transition-colors"
+            >
+              Inbox
+            </Link>
+          </div>
+          <p className="text-[10px] text-muted/25 tracking-wide text-center">
             RamseyOS · {new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
           </p>
         </footer>
@@ -291,15 +334,73 @@ export default function MobileDailyCard() {
   );
 }
 
+/* ── Mobile Quick Capture ── */
+
+function MobileQuickCapture() {
+  const [text, setText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = text.trim();
+    if (!trimmed || saving) return;
+
+    setSaving(true);
+    try {
+      await createCapture({ text: trimmed, source: "mobile" });
+      setText("");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1800);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="rounded-2xl border border-border/50 bg-surface/40 backdrop-blur-sm p-4">
+      <form onSubmit={handleSubmit} className="flex items-center gap-3">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-muted/40 shrink-0">
+          <path d="M8 3.5v9M3.5 8h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+        <input
+          ref={inputRef}
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Quick capture…"
+          className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted/40 outline-none"
+          disabled={saving}
+        />
+        {saved ? (
+          <span className="text-[12px] text-emerald-400/70 flex items-center gap-1.5 shrink-0">
+            <span className="size-1.5 rounded-full bg-emerald-400" />
+            Sent → inbox
+          </span>
+        ) : text.trim() ? (
+          <button
+            type="submit"
+            disabled={saving}
+            className="text-[13px] font-medium text-accent hover:text-accent/80 transition-colors px-2 py-1 rounded-lg active:scale-95 shrink-0"
+          >
+            {saving ? "…" : "Add"}
+          </button>
+        ) : null}
+      </form>
+    </section>
+  );
+}
+
 /* ── Section header ── */
 
 function SectionHeader({ label, count }: { label: string; count: number }) {
   return (
     <div className="flex items-center justify-between mb-2 px-1">
-      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/60">
         {label}
       </h2>
-      <span className="text-[11px] text-muted/40 tabular-nums">{count}</span>
+      <span className="text-[10px] text-muted/35 tabular-nums">{count}</span>
     </div>
   );
 }
@@ -307,22 +408,33 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 /* ── Now card ── */
 
 function MobileNowCard({ item }: { item: TimelineItem }) {
-  const isLive =
+  const now = new Date();
+  const isInProgress =
     item.type === "schedule" &&
     item.startTime &&
     item.endTime &&
-    item.startTime.toDate() <= new Date() &&
-    item.endTime.toDate() > new Date();
+    item.startTime.toDate() <= now &&
+    item.endTime.toDate() > now;
+
+  const startsIn =
+    item.type === "schedule" && item.startTime && !isInProgress
+      ? getRelativeTime(item.startTime.toDate())
+      : null;
 
   return (
-    <div className="rounded-2xl border border-accent/20 bg-surface p-5">
+    <div className="rounded-2xl border border-accent/20 bg-surface/70 backdrop-blur-sm p-5 shadow-[var(--glow-accent)]">
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-accent">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-accent/70">
           Now
         </span>
-        {isLive && (
+        {isInProgress && (
           <span className="text-[9px] font-semibold uppercase tracking-wide text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-            Live
+            In progress
+          </span>
+        )}
+        {startsIn && (
+          <span className="text-[9px] font-medium text-muted/40">
+            {startsIn}
           </span>
         )}
       </div>
@@ -332,12 +444,12 @@ function MobileNowCard({ item }: { item: TimelineItem }) {
           <p className="text-[16px] font-medium text-foreground leading-snug">
             {item.title}
           </p>
-          <p className="text-[12px] text-muted mt-1">
+          <p className="text-[12px] text-muted/50 mt-1">
             {item.startTime && item.endTime
-              ? `${formatTime(item.startTime)} – ${formatTime(item.endTime)}`
+              ? `${fmtCardTime(item.startTime)} – ${fmtCardTime(item.endTime)}`
               : TYPE_LABEL[item.type]}
             {item.projectName && (
-              <span className="text-muted/50"> · {item.projectName}</span>
+              <span className="text-muted/35"> · {item.projectName}</span>
             )}
           </p>
         </div>
@@ -349,21 +461,30 @@ function MobileNowCard({ item }: { item: TimelineItem }) {
 /* ── Next card ── */
 
 function MobileNextCard({ item }: { item: TimelineItem }) {
+  const startsIn =
+    item.type === "schedule" && item.startTime
+      ? getRelativeTime(item.startTime.toDate())
+      : null;
+
   return (
-    <div className="rounded-2xl border border-border bg-surface px-5 py-3.5">
+    <div className="rounded-2xl border border-border/50 bg-surface/50 backdrop-blur-sm px-5 py-3.5">
       <div className="flex items-center gap-3">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted shrink-0">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted/40 shrink-0">
           Next
         </span>
         <span className={`size-2 shrink-0 rounded-full ${TYPE_DOT[item.type]}`} />
         <p className="flex-1 text-[14px] text-foreground/80 truncate">
           {item.title}
         </p>
-        {item.startTime && item.endTime && (
-          <span className="text-[11px] text-muted tabular-nums shrink-0">
-            {formatTime(item.startTime)}
+        {startsIn ? (
+          <span className="text-[10px] text-muted/40 tabular-nums shrink-0">
+            {startsIn}
           </span>
-        )}
+        ) : item.startTime && item.endTime ? (
+          <span className="text-[11px] text-muted/40 tabular-nums shrink-0">
+            {fmtCardTime(item.startTime)}
+          </span>
+        ) : null}
       </div>
     </div>
   );
@@ -381,42 +502,74 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
 
   return (
     <li
-      className={`flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3.5 ${
-        isPast ? "opacity-35" : ""
-      }`}
+      className={`flex items-center gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3.5 ${
+        isPast ? "opacity-30" : ""
+      } ${isActive ? "border-emerald-500/20 bg-emerald-500/[0.04]" : ""}`}
     >
       {isActive ? (
         <span className="size-2 shrink-0 rounded-full bg-emerald-400 animate-pulse" />
       ) : (
         <span className="size-2 shrink-0 rounded-full bg-sky-500" />
       )}
-      <span className="text-[12px] text-muted tabular-nums shrink-0 min-w-[6rem]">
+      <span className={`text-[12px] tabular-nums shrink-0 min-w-[6rem] ${
+        isActive ? "text-emerald-400/80 font-medium" : "text-muted/60"
+      }`}>
         {item.startTime && item.endTime
-          ? `${formatTime(item.startTime)} – ${formatTime(item.endTime)}`
+          ? `${fmtCardTime(item.startTime)} – ${fmtCardTime(item.endTime)}`
           : ""}
       </span>
-      <span className="flex-1 text-[14px] text-foreground/80 truncate">
+      <span className={`flex-1 text-[14px] truncate ${
+        isActive ? "text-foreground font-medium" : "text-foreground/80"
+      }`}>
         {item.title}
       </span>
+      {isActive && (
+        <span className="text-[9px] font-semibold uppercase tracking-wide text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded shrink-0">
+          now
+        </span>
+      )}
     </li>
   );
 }
 
-/* ── Task row ── */
+/* ── Task row — completable inline ── */
 
 function TaskRow({ item }: { item: TimelineItem }) {
+  const [done, setDone] = useState(false);
+
+  async function handleComplete() {
+    if (done) return;
+    setDone(true);
+    await toggleTaskCompleted(item.id, false);
+  }
+
   return (
-    <li className="flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3.5">
-      <span className={`size-2 shrink-0 rounded-full ${TYPE_DOT[item.type]}`} />
-      <span className="flex-1 text-[14px] text-foreground/80 truncate">
+    <li className={`flex items-center gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3.5 transition-all ${done ? "opacity-30" : ""}`}>
+      <button
+        type="button"
+        onClick={handleComplete}
+        className={`size-5 shrink-0 rounded-lg border-2 transition-colors flex items-center justify-center active:scale-95 ${
+          done
+            ? "border-accent/40 bg-accent/20"
+            : "border-muted/25 active:border-accent/40"
+        }`}
+        aria-label="Mark complete"
+      >
+        {done && (
+          <svg viewBox="0 0 16 16" className="size-3 text-accent">
+            <path d="M4.5 8.5L7 11l4.5-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </button>
+      <span className={`flex-1 text-[14px] truncate ${done ? "text-muted/40 line-through" : "text-foreground/80"}`}>
         {item.title}
       </span>
-      {item.projectName && (
-        <span className="text-[10px] text-muted/50 shrink-0 truncate max-w-[80px]">
+      {item.projectName && !done && (
+        <span className="text-[10px] text-muted/40 shrink-0 truncate max-w-[80px]">
           {item.projectName}
         </span>
       )}
-      {item.priority && (
+      {item.priority && !done && (
         <span
           className={`text-[9px] px-1.5 py-0.5 rounded font-medium shrink-0 ${
             PRIORITY_STYLE[item.priority] ?? "text-muted"
@@ -433,7 +586,7 @@ function TaskRow({ item }: { item: TimelineItem }) {
 
 function LifeRow({ item }: { item: LifeContextItem }) {
   return (
-    <li className="flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3.5">
+    <li className="flex items-center gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3.5">
       <span
         className={`size-2 shrink-0 rounded-full ${LIFE_CAT_DOT[item.category] ?? "bg-gray-400"}`}
       />

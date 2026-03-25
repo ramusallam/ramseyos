@@ -51,34 +51,67 @@ export default function MaterialsPage() {
     return null;
   }
 
+  // Count unique vendors referenced
+  const vendorCount = new Set(allMaterials.filter((m) => m.vendorId).map((m) => m.vendorId)).size;
+
   if (loading) {
     return (
-      <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
-        <div className="flex items-center gap-2 py-12">
+      <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
+        <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-sm text-muted/60">Loading materials…</span>
+          <span className="text-[13px] text-muted/40">Loading materials…</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
+    <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
       <header className="mb-10">
-        <h1 className="text-xl font-normal text-foreground tracking-tight">
+        <Link
+          href="/"
+          className="text-[11px] tracking-wide text-muted/50 hover:text-foreground/60 transition-colors"
+        >
+          &larr; Today
+        </Link>
+        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
           Materials
         </h1>
-        <p className="text-[13px] text-muted mt-1">
+        <p className="text-[13px] text-muted/50 mt-1">
           Supplies and materials across all lesson plans.
         </p>
         {allMaterials.length > 0 && (
-          <div className="flex items-center gap-4 mt-3">
-            <Stat label="total" value={allMaterials.length} />
-            {needToBuy.length > 0 && <Stat label="to buy" value={needToBuy.length} accent="rose" />}
-            {favorites.length > 0 && <Stat label="favorites" value={favorites.length} accent="amber" />}
-            {recurring.length > 0 && <Stat label="recurring" value={recurring.length} accent="blue" />}
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+            <span className="tabular-nums">{allMaterials.length} total</span>
+            {needToBuy.length > 0 && (
+              <span className="flex items-center gap-1.5 text-rose-400/60">
+                <span className="size-1.5 rounded-full bg-rose-400" />
+                {needToBuy.length} to buy
+              </span>
+            )}
+            {favorites.length > 0 && (
+              <span className="tabular-nums">{favorites.length} favorite{favorites.length !== 1 ? "s" : ""}</span>
+            )}
+            {recurring.length > 0 && (
+              <span className="tabular-nums">{recurring.length} recurring</span>
+            )}
           </div>
         )}
+
+        {/* Cross-links */}
+        <div className="flex items-center gap-3 mt-3">
+          {needToBuy.length > 0 && (
+            <Link href="/purchasing" className="text-[11px] text-rose-400/50 hover:text-rose-400/80 transition-colors">
+              Purchasing &rarr;
+            </Link>
+          )}
+          <Link href="/vendors" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Sources{vendorCount > 0 && ` (${vendorCount})`} &rarr;
+          </Link>
+          <Link href="/lesson-plans" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Lesson Plans &rarr;
+          </Link>
+        </div>
       </header>
 
       {allMaterials.length === 0 ? (
@@ -182,7 +215,7 @@ function Stat({ label, value, accent }: { label: string; value: number; accent?:
 
 function EmptyState({ message, detail }: { message: string; detail: string }) {
   return (
-    <div className="rounded-xl border border-border/40 bg-surface/40 p-10 text-center">
+    <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
       <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
         <rect x="2" y="2" width="12" height="12" rx="2" />
         <path d="M5 6h6M5 9h4" />
@@ -251,7 +284,7 @@ function MaterialCard({
   source: { name: string; url: string; isVendor: boolean } | null;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg bg-surface border border-border/40 px-4 py-3">
+    <div className="flex items-start gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[13px] font-medium text-foreground/85">

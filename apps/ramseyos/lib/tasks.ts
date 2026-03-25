@@ -7,7 +7,9 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 
-export type Priority = "low" | "medium" | "high" | null;
+// Re-export Priority from shared so all consumers get the same type.
+export { type Priority } from "./shared";
+import { type Priority } from "./shared";
 
 export interface Task {
   id: string;
@@ -47,6 +49,15 @@ export async function updateTaskProject(
   projectId: string | null
 ): Promise<void> {
   await updateDoc(doc(db, COLLECTION, taskId), { projectId });
+}
+
+export async function toggleTaskCompleted(
+  taskId: string,
+  current: boolean
+): Promise<void> {
+  await updateDoc(doc(db, COLLECTION, taskId), {
+    completed: !current,
+  });
 }
 
 export async function toggleChosenForToday(

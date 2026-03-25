@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { getCalendarEvents, type CalendarEvent } from "@/lib/calendar";
 import { type Timestamp } from "firebase/firestore";
+import Link from "next/link";
 
 interface ConnectionStatus {
   connected: boolean;
@@ -86,7 +87,6 @@ function CalendarContent() {
       if (data.success) {
         const evts = await getCalendarEvents(new Date());
         setEvents(evts);
-        // Refresh status for lastSyncedAt
         const statusRes = await fetch("/api/calendar/status").then((r) => r.json());
         setStatus(statusRes);
       }
@@ -121,7 +121,16 @@ function CalendarContent() {
     }
   }
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="max-w-3xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
+        <div className="flex items-center gap-3 py-16 justify-center">
+          <span className="size-1.5 rounded-full bg-accent animate-pulse" />
+          <span className="text-[13px] text-muted/40">Loading calendar…</span>
+        </div>
+      </div>
+    );
+  }
 
   const now = new Date();
   const isPast = (evt: CalendarEvent) => evt.endTime.toDate() < now;
@@ -129,238 +138,277 @@ function CalendarContent() {
     evt.startTime.toDate() <= now && evt.endTime.toDate() > now;
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10 space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold text-foreground">Calendar</h1>
-        <p className="text-sm text-muted mt-1">
-          Google Calendar sync and today&apos;s schedule
+    <div className="max-w-3xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
+      <header className="mb-10">
+        <Link
+          href="/"
+          className="text-[11px] tracking-wide text-muted/50 hover:text-foreground/60 transition-colors"
+        >
+          &larr; Today
+        </Link>
+        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
+          Calendar
+        </h1>
+        <p className="text-[13px] text-muted/50 mt-1">
+          Schedule sync and today&apos;s events.
         </p>
-      </div>
+
+        {events.length > 0 && (
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+            <span className="tabular-nums">{events.length} event{events.length !== 1 ? "s" : ""} today</span>
+            {status?.connected && (
+              <span className="flex items-center gap-1.5 text-emerald-400/60">
+                <span className="size-1.5 rounded-full bg-emerald-400" />
+                Google connected
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Cross-links */}
+        <div className="flex items-center gap-3 mt-3">
+          <Link href="/settings" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Settings &rarr;
+          </Link>
+        </div>
+      </header>
 
       {/* Auth error */}
       {authError && (
-        <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-4">
-          <p className="text-sm text-rose-400">
+        <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 backdrop-blur-sm p-4 mb-8">
+          <p className="text-[13px] text-rose-400">
             Connection failed: {authError}
           </p>
         </div>
       )}
 
-      {/* Connection card */}
-      <div className="rounded-xl border border-border bg-surface p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-            Google Calendar
-          </h2>
-          {status?.connected && (
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-emerald-400">
-              <span className="size-1.5 rounded-full bg-emerald-400" />
-              Connected
-            </span>
-          )}
-        </div>
-
-        {status?.connected ? (
-          <div className="space-y-3">
-            {status.email && (
-              <p className="text-sm text-foreground/70">{status.email}</p>
+      <div className="space-y-8">
+        {/* ── Google Calendar connection ── */}
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+              <rect x="2" y="3" width="12" height="11" rx="2" />
+              <path d="M2 7h12M5 1.5v3M11 1.5v3" />
+            </svg>
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+              Google Calendar
+            </h2>
+            {status?.connected && (
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-emerald-400/70">
+                <span className="size-1.5 rounded-full bg-emerald-400" />
+                Connected
+              </span>
             )}
-            {status.lastSyncedAt && (
-              <p className="text-[11px] text-muted">
-                Last synced: {formatSyncTime(status.lastSyncedAt)}
-              </p>
-            )}
+            <div className="flex-1 border-t border-border/40" />
+          </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleSync}
-                disabled={syncing}
-                className="inline-flex items-center gap-2 rounded-lg border border-accent/20 bg-accent-dim px-3 py-1.5 text-[11px] font-medium text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={syncing ? "animate-spin" : ""}
+          <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-5">
+            {status?.connected ? (
+              <div className="space-y-3">
+                {status.email && (
+                  <p className="text-[13px] text-foreground/70">{status.email}</p>
+                )}
+                {status.lastSyncedAt && (
+                  <p className="text-[11px] text-muted/50">
+                    Last synced: {formatSyncTime(status.lastSyncedAt)}
+                  </p>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleSync}
+                    disabled={syncing}
+                    className="inline-flex items-center gap-2 rounded-lg border border-accent/20 bg-accent-dim px-3 py-1.5 text-[11px] font-medium text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={syncing ? "animate-spin" : ""}
+                    >
+                      <path d="M2 8a6 6 0 0110.5-4M14 8a6 6 0 01-10.5 4" />
+                      <path d="M14 2v4h-4M2 14v-4h4" />
+                    </svg>
+                    {syncing ? "Syncing…" : "Sync now"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleDisconnect}
+                    className="text-[11px] text-muted/40 hover:text-rose-400/70 transition-colors"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+
+                {syncResult && (
+                  <div
+                    className={`rounded-lg px-3 py-2 text-[11px] ${
+                      syncResult.success
+                        ? "bg-emerald-500/5 text-emerald-400/80 border border-emerald-500/10"
+                        : "bg-rose-500/5 text-rose-400/80 border border-rose-500/10"
+                    }`}
+                  >
+                    {syncResult.success
+                      ? `Synced ${syncResult.total} event${syncResult.total !== 1 ? "s" : ""} (${syncResult.created} new, ${syncResult.updated} updated)`
+                      : `Sync failed: ${syncResult.error}`}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-[13px] text-muted/50">
+                  Connect Google Calendar to sync today&apos;s events into your daily plan.
+                </p>
+                <a
+                  href="/api/calendar/auth"
+                  className="inline-flex items-center gap-2 rounded-lg border border-accent/20 bg-accent-dim px-4 py-2 text-[12px] font-medium text-accent hover:bg-accent/20 transition-colors"
                 >
-                  <path d="M2 8a6 6 0 0110.5-4M14 8a6 6 0 01-10.5 4" />
-                  <path d="M14 2v4h-4M2 14v-4h4" />
-                </svg>
-                {syncing ? "Syncing..." : "Sync now"}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDisconnect}
-                className="text-[11px] text-muted hover:text-rose-400 transition-colors"
-              >
-                Disconnect
-              </button>
-            </div>
-
-            {/* Sync result */}
-            {syncResult && (
-              <div
-                className={`rounded-lg px-3 py-2 text-[11px] ${
-                  syncResult.success
-                    ? "bg-emerald-500/5 text-emerald-400 border border-emerald-500/10"
-                    : "bg-rose-500/5 text-rose-400 border border-rose-500/10"
-                }`}
-              >
-                {syncResult.success
-                  ? `Synced ${syncResult.total} events (${syncResult.created} new, ${syncResult.updated} updated)`
-                  : `Sync failed: ${syncResult.error}`}
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="3" width="12" height="11" rx="2" />
+                    <path d="M2 7h12M5 1.5v3M11 1.5v3" />
+                  </svg>
+                  Connect Google Calendar
+                </a>
               </div>
             )}
           </div>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-sm text-muted">
-              Connect your Google Calendar to sync today&apos;s events into
-              RamseyOS.
-            </p>
-            <a
-              href="/api/calendar/auth"
-              className="inline-flex items-center gap-2 rounded-lg border border-accent/20 bg-accent-dim px-4 py-2 text-[12px] font-medium text-accent hover:bg-accent/20 transition-colors"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+        </section>
+
+        {/* ── Today's schedule ── */}
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+              <circle cx="8" cy="8" r="6" />
+              <path d="M8 4.5v3.5l2.5 1.5" />
+            </svg>
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+              Today&apos;s Schedule
+            </h2>
+            <span className="text-[10px] text-muted/40 tabular-nums">
+              {events.length}
+            </span>
+            <div className="flex-1 border-t border-border/40" />
+          </div>
+
+          {events.length === 0 ? (
+            <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
+              <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
                 <rect x="2" y="3" width="12" height="11" rx="2" />
                 <path d="M2 7h12M5 1.5v3M11 1.5v3" />
               </svg>
-              Connect Google Calendar
-            </a>
-          </div>
-        )}
-      </div>
+              <p className="text-sm text-muted/60">
+                {status?.connected
+                  ? "No events today. Try syncing to pull the latest."
+                  : "Connect Google Calendar to see today\u2019s events."}
+              </p>
+              <p className="text-[12px] text-muted/35 mt-1">
+                Events appear in your Daily Card automatically.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              {events.map((evt) => (
+                <div
+                  key={evt.id}
+                  className={`flex items-center gap-3 rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30 ${
+                    isPast(evt) ? "opacity-30" : ""
+                  } ${isActive(evt) ? "border-emerald-500/20 bg-emerald-500/[0.03]" : ""}`}
+                >
+                  {isActive(evt) ? (
+                    <span className="size-2 shrink-0 rounded-full bg-emerald-400 animate-pulse" />
+                  ) : (
+                    <span className="size-2 shrink-0 rounded-full bg-sky-500" />
+                  )}
 
-      {/* Today's events */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-            Today&apos;s Schedule
-          </h2>
-          <span className="text-[11px] text-muted/60 tabular-nums">
-            {events.length} event{events.length !== 1 ? "s" : ""}
-          </span>
-        </div>
-
-        {events.length === 0 ? (
-          <div className="rounded-xl border border-border bg-surface p-8 text-center">
-            <p className="text-sm text-muted italic">
-              {status?.connected
-                ? "No events today. Try syncing to pull the latest."
-                : "Connect Google Calendar to see today\u2019s events."}
-            </p>
-          </div>
-        ) : (
-          <ul className="space-y-1">
-            {events.map((evt) => (
-              <li
-                key={evt.id}
-                className={`flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 transition-colors hover:bg-surface-raised ${
-                  isPast(evt) ? "opacity-40" : ""
-                }`}
-              >
-                {isActive(evt) ? (
-                  <span className="size-2 shrink-0 rounded-full bg-emerald-400 animate-pulse" />
-                ) : (
-                  <span className="size-2 shrink-0 rounded-full bg-sky-500" />
-                )}
-
-                <span className="text-[11px] text-muted tabular-nums shrink-0 w-32">
-                  {formatTime(evt.startTime)} – {formatTime(evt.endTime)}
-                </span>
-
-                <span className="flex-1 text-[13px] text-foreground/80 truncate">
-                  {evt.title}
-                </span>
-
-                {isActive(evt) && (
-                  <span className="text-[9px] font-semibold uppercase tracking-wide text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded shrink-0">
-                    Now
+                  <span className={`text-[11px] tabular-nums shrink-0 w-32 ${
+                    isActive(evt) ? "text-emerald-400/80 font-medium" : "text-muted/60"
+                  }`}>
+                    {formatTime(evt.startTime)} – {formatTime(evt.endTime)}
                   </span>
-                )}
 
-                {(evt.source === "google" || evt.source === "seed") && (
-                  <span className="text-[9px] text-muted/40 shrink-0">
-                    {evt.source}
+                  <span className={`flex-1 text-[13px] truncate ${
+                    isActive(evt) ? "text-foreground font-medium" : "text-foreground/80"
+                  }`}>
+                    {evt.title}
                   </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
 
-      {/* Setup instructions (shown when not connected) */}
-      {!status?.connected && (
-        <div className="rounded-xl border border-border bg-surface p-5 space-y-3">
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-            Setup
-          </h3>
-          <div className="text-[12px] text-muted space-y-2">
-            <p>To enable Google Calendar sync, you need:</p>
-            <ol className="list-decimal list-inside space-y-1 text-foreground/60">
-              <li>
-                A Google Cloud project with the Calendar API enabled
-              </li>
-              <li>
-                OAuth 2.0 credentials (Web application type)
-              </li>
-              <li>
-                Set <code className="text-accent/70 bg-accent-dim px-1 py-0.5 rounded text-[11px]">GOOGLE_CLIENT_ID</code>,{" "}
-                <code className="text-accent/70 bg-accent-dim px-1 py-0.5 rounded text-[11px]">GOOGLE_CLIENT_SECRET</code>, and{" "}
-                <code className="text-accent/70 bg-accent-dim px-1 py-0.5 rounded text-[11px]">GOOGLE_REDIRECT_URI</code> in{" "}
-                <code className="text-accent/70 bg-accent-dim px-1 py-0.5 rounded text-[11px]">.env.local</code>
-              </li>
-              <li>
-                Redirect URI should be{" "}
-                <code className="text-accent/70 bg-accent-dim px-1 py-0.5 rounded text-[11px]">
-                  https://your-domain/api/calendar/auth
-                </code>
-              </li>
-            </ol>
-          </div>
-        </div>
-      )}
+                  {isActive(evt) && (
+                    <span className="text-[9px] font-semibold uppercase tracking-wide text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded shrink-0">
+                      now
+                    </span>
+                  )}
 
-      {/* Test seed */}
-      <div className="rounded-xl border border-border bg-surface p-5 space-y-3">
-        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-          Test Data
-        </h3>
-        <p className="text-[12px] text-muted">
-          Seed realistic schedule events for today to test the full Daily Card pipeline.
-        </p>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSeed}
-            disabled={seeding}
-            className="inline-flex items-center gap-2 rounded-lg border border-border/40 bg-surface-raised/50 px-3 py-1.5 text-[11px] font-medium text-foreground/70 hover:bg-surface-raised hover:text-foreground/90 transition-colors disabled:opacity-50"
-          >
-            {seeding ? "Seeding..." : "Seed test events"}
-          </button>
-          {seedMsg && (
-            <span className="text-[11px] text-muted">{seedMsg}</span>
+                  {evt.source === "google" && !isActive(evt) && (
+                    <span className="text-[9px] text-muted/30 shrink-0">
+                      gcal
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
-        </div>
+        </section>
+
+        {/* ── Setup guidance (only when not connected) ── */}
+        {!status?.connected && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+                <circle cx="8" cy="8" r="6" />
+                <path d="M8 5v3M8 10.5v.5" />
+              </svg>
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                Setup
+              </h2>
+              <div className="flex-1 border-t border-border/40" />
+            </div>
+            <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-5">
+              <p className="text-[12px] text-muted/50 leading-relaxed">
+                Google Calendar integration requires OAuth credentials configured in your environment.
+                See the project documentation for setup details.
+              </p>
+            </div>
+          </section>
+        )}
+
+        {/* ── Test data (development) ── */}
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+              <rect x="2" y="2" width="12" height="12" rx="2" />
+              <path d="M5 6h6M5 9h4" />
+            </svg>
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+              Development
+            </h2>
+            <div className="flex-1 border-t border-border/40" />
+          </div>
+          <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-5">
+            <p className="text-[12px] text-muted/50 mb-3">
+              Seed sample schedule events to test the Daily Card pipeline.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleSeed}
+                disabled={seeding}
+                className="inline-flex items-center gap-2 rounded-lg border border-border/50 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-foreground/60 hover:text-foreground/80 hover:bg-surface-raised transition-colors disabled:opacity-50"
+              >
+                {seeding ? "Seeding…" : "Seed test events"}
+              </button>
+              {seedMsg && (
+                <span className="text-[11px] text-muted/50">{seedMsg}</span>
+              )}
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

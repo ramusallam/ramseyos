@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getActiveTools, type ToolItem } from "@/lib/tools";
+import { PRIORITY_STYLE } from "@/lib/shared";
 import Link from "next/link";
 
 interface Capture {
@@ -29,18 +30,14 @@ interface Task {
   priority: string | null;
   projectId: string | null;
   completed: boolean;
+  chosenForToday?: boolean;
 }
 
 interface Project {
   id: string;
   title: string;
+  color: string | null;
 }
-
-const PRIORITY_STYLE: Record<string, string> = {
-  high: "bg-rose-500/10 text-rose-400",
-  medium: "bg-amber-500/10 text-amber-400",
-  low: "bg-sky-500/10 text-sky-400",
-};
 
 export function TodayFocus() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -71,7 +68,7 @@ export function TodayFocus() {
     );
     const unsub = onSnapshot(q, (snap) => {
       setProjects(
-        snap.docs.map((d) => ({ id: d.id, title: d.data().title }))
+        snap.docs.map((d) => ({ id: d.id, title: d.data().title, color: d.data().color }))
       );
     });
     return unsub;
@@ -81,33 +78,39 @@ export function TodayFocus() {
 
   if (tasks.length === 0) {
     return (
-      <p className="text-sm text-muted italic">
+      <p className="text-[13px] text-muted/50 italic">
         No high-priority tasks right now.
       </p>
     );
   }
 
-  const projectMap = new Map<string, string>();
-  for (const p of projects) projectMap.set(p.id, p.title);
+  const projectMap = new Map<string, Project>();
+  for (const p of projects) projectMap.set(p.id, p);
 
   return (
-    <ul className="space-y-1">
-      {tasks.map((task) => (
-        <li
-          key={task.id}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
-        >
-          <span className="size-2 shrink-0 rounded-full bg-rose-500" />
-          <span className="flex-1 text-[13px] text-foreground/80 truncate">
-            {task.title}
-          </span>
-          {task.projectId && projectMap.get(task.projectId) && (
-            <span className="text-[10px] tracking-wider uppercase text-muted/60 shrink-0">
-              {projectMap.get(task.projectId)}
+    <ul className="space-y-1.5">
+      {tasks.map((task) => {
+        const proj = task.projectId ? projectMap.get(task.projectId) : null;
+        return (
+          <li
+            key={task.id}
+            className="flex items-center gap-3 rounded-xl bg-surface/40 border border-border/30 px-4 py-3 transition-colors hover:bg-surface-raised/30"
+          >
+            <span className="size-2 shrink-0 rounded-full bg-rose-500" />
+            <span className="flex-1 text-[14px] text-foreground/80 truncate">
+              {task.title}
             </span>
-          )}
-        </li>
-      ))}
+            {proj && (
+              <Link
+                href={`/projects/${proj.id}`}
+                className="text-[10px] tracking-wider uppercase text-muted/50 hover:text-accent transition-colors shrink-0"
+              >
+                {proj.title}
+              </Link>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -140,7 +143,7 @@ export function ChosenForToday() {
     );
     const unsub = onSnapshot(q, (snap) => {
       setProjects(
-        snap.docs.map((d) => ({ id: d.id, title: d.data().title }))
+        snap.docs.map((d) => ({ id: d.id, title: d.data().title, color: d.data().color }))
       );
     });
     return unsub;
@@ -150,33 +153,39 @@ export function ChosenForToday() {
 
   if (tasks.length === 0) {
     return (
-      <p className="text-sm text-muted italic">
+      <p className="text-[13px] text-muted/50 italic">
         No tasks chosen for today.
       </p>
     );
   }
 
-  const projectMap = new Map<string, string>();
-  for (const p of projects) projectMap.set(p.id, p.title);
+  const projectMap = new Map<string, Project>();
+  for (const p of projects) projectMap.set(p.id, p);
 
   return (
-    <ul className="space-y-1">
-      {tasks.map((task) => (
-        <li
-          key={task.id}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
-        >
-          <span className="size-2 shrink-0 rounded-full bg-accent" />
-          <span className="flex-1 text-[13px] text-foreground/80 truncate">
-            {task.title}
-          </span>
-          {task.projectId && projectMap.get(task.projectId) && (
-            <span className="text-[10px] tracking-wider uppercase text-muted/60 shrink-0">
-              {projectMap.get(task.projectId)}
+    <ul className="space-y-1.5">
+      {tasks.map((task) => {
+        const proj = task.projectId ? projectMap.get(task.projectId) : null;
+        return (
+          <li
+            key={task.id}
+            className="flex items-center gap-3 rounded-xl bg-surface/40 border border-border/30 px-4 py-3 transition-colors hover:bg-surface-raised/30"
+          >
+            <span className="size-2 shrink-0 rounded-full bg-accent" />
+            <span className="flex-1 text-[14px] text-foreground/80 truncate">
+              {task.title}
             </span>
-          )}
-        </li>
-      ))}
+            {proj && (
+              <Link
+                href={`/projects/${proj.id}`}
+                className="text-[10px] tracking-wider uppercase text-muted/50 hover:text-accent transition-colors shrink-0"
+              >
+                {proj.title}
+              </Link>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -218,7 +227,7 @@ export function InboxNeedsReview() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
+        <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wider text-muted">
           Inbox
           {totalCount > 0 && (
             <span className="inline-flex items-center justify-center rounded-full bg-accent-dim text-accent text-[10px] font-semibold tabular-nums size-5">
@@ -234,21 +243,21 @@ export function InboxNeedsReview() {
         </Link>
       </div>
       {totalCount === 0 ? (
-        <p className="text-sm text-muted italic">Inbox clear.</p>
+        <p className="text-[13px] text-muted/50 italic">Inbox clear.</p>
       ) : (
-        <ul className="space-y-1">
+        <ul className="space-y-1.5">
           {unprocessed.map((item) => (
             <li
               key={item.id}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
+              className="flex items-center gap-3 rounded-xl bg-surface/40 border border-border/30 px-4 py-3 transition-colors hover:bg-surface-raised/30"
             >
-              <span className="size-1.5 shrink-0 rounded-full bg-gray-300" />
-              <span className="flex-1 text-[13px] text-foreground/70 truncate">
+              <span className="size-1.5 shrink-0 rounded-full bg-gray-400" />
+              <span className="flex-1 text-[14px] text-foreground/70 truncate">
                 {item.text}
               </span>
               {item.priority && (
                 <span
-                  className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                  className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${
                     PRIORITY_STYLE[item.priority] ?? "text-muted"
                   }`}
                 >
@@ -258,10 +267,10 @@ export function InboxNeedsReview() {
             </li>
           ))}
           {totalCount > 3 && (
-            <li className="px-3 py-1">
+            <li className="px-4 py-1">
               <Link
                 href="/inbox"
-                className="text-[11px] text-muted hover:text-foreground transition-colors"
+                className="text-[11px] text-muted/50 hover:text-foreground transition-colors"
               >
                 +{totalCount - 3} more
               </Link>
@@ -302,7 +311,7 @@ export function ProjectFocus() {
     );
     const unsub = onSnapshot(q, (snap) => {
       setProjects(
-        snap.docs.map((d) => ({ id: d.id, title: d.data().title }))
+        snap.docs.map((d) => ({ id: d.id, title: d.data().title, color: d.data().color }))
       );
     });
     return unsub;
@@ -312,7 +321,7 @@ export function ProjectFocus() {
 
   if (tasks.length === 0) {
     return (
-      <p className="text-sm text-muted italic">No active tasks.</p>
+      <p className="text-[13px] text-muted/50 italic">No active tasks.</p>
     );
   }
 
@@ -323,8 +332,8 @@ export function ProjectFocus() {
     return pa - pb;
   });
 
-  const projectMap = new Map<string, string>();
-  for (const p of projects) projectMap.set(p.id, p.title);
+  const projectMap = new Map<string, Project>();
+  for (const p of projects) projectMap.set(p.id, p);
 
   const byProject = new Map<string, Task[]>();
   for (const task of sorted) {
@@ -333,18 +342,18 @@ export function ProjectFocus() {
     byProject.get(key)!.push(task);
   }
 
-  const groups: { label: string; tasks: Task[] }[] = [];
+  const groups: { project: Project | null; tasks: Task[] }[] = [];
   for (const p of projects) {
     const g = byProject.get(p.id);
-    if (g) groups.push({ label: p.title, tasks: g });
+    if (g) groups.push({ project: p, tasks: g });
   }
   const unassigned = byProject.get("__unassigned__");
-  if (unassigned) groups.push({ label: "Unassigned", tasks: unassigned });
+  if (unassigned) groups.push({ project: null, tasks: unassigned });
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+        <h2 className="text-[12px] font-semibold uppercase tracking-wider text-muted">
           Project focus
         </h2>
         <Link
@@ -355,19 +364,36 @@ export function ProjectFocus() {
         </Link>
       </div>
       <div className="space-y-5">
-        {groups.map(({ label, tasks: groupTasks }) => (
-          <div key={label}>
-            <p className="text-[10px] uppercase tracking-wider text-muted/60 font-medium mb-2">
-              {label}
-            </p>
-            <ul className="space-y-1">
+        {groups.map(({ project, tasks: groupTasks }) => (
+          <div key={project?.id ?? "unassigned"}>
+            <div className="flex items-center gap-2 mb-2">
+              {project?.color && (
+                <span
+                  className="size-1.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: project.color }}
+                />
+              )}
+              {project ? (
+                <Link
+                  href={`/projects/${project.id}`}
+                  className="text-[10px] uppercase tracking-wider text-muted/60 font-medium hover:text-accent transition-colors"
+                >
+                  {project.title}
+                </Link>
+              ) : (
+                <p className="text-[10px] uppercase tracking-wider text-muted/40 font-medium">
+                  Unassigned
+                </p>
+              )}
+            </div>
+            <ul className="space-y-1.5">
               {groupTasks.map((task) => (
                 <li
                   key={task.id}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
+                  className="flex items-center gap-3 rounded-xl bg-surface/40 border border-border/30 px-4 py-3 transition-colors hover:bg-surface-raised/30"
                 >
                   <span
-                    className={`size-1.5 shrink-0 rounded-full ${
+                    className={`size-2 shrink-0 rounded-full ${
                       task.priority === "high"
                         ? "bg-rose-500"
                         : task.priority === "medium"
@@ -375,12 +401,17 @@ export function ProjectFocus() {
                           : "bg-gray-400"
                     }`}
                   />
-                  <span className="flex-1 text-[13px] text-foreground/80 truncate">
+                  <span className="flex-1 text-[14px] text-foreground/80 truncate">
                     {task.title}
                   </span>
+                  {task.chosenForToday && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-accent-dim text-accent font-medium shrink-0">
+                      today
+                    </span>
+                  )}
                   {task.priority && (
                     <span
-                      className={`text-[9px] px-1.5 py-0.5 rounded font-medium shrink-0 ${
+                      className={`text-[10px] px-2 py-0.5 rounded-md font-medium shrink-0 ${
                         PRIORITY_STYLE[task.priority] ?? "text-muted"
                       }`}
                     >
@@ -444,21 +475,21 @@ export function TodaySchedule() {
 
   if (events.length === 0) {
     return (
-      <p className="text-sm text-muted italic">No schedule items yet.</p>
+      <p className="text-[13px] text-muted/50 italic">No schedule items yet.</p>
     );
   }
 
   return (
-    <ul className="space-y-1">
+    <ul className="space-y-1.5">
       {events.map((event) => (
         <li
           key={event.id}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
+          className="flex items-center gap-3 rounded-xl bg-surface/40 border border-border/30 px-4 py-3 transition-colors hover:bg-surface-raised/30"
         >
-          <span className="text-[11px] text-muted tabular-nums shrink-0 w-16">
+          <span className="text-[12px] text-muted tabular-nums shrink-0 w-16">
             {formatTime(event.startTime)}
           </span>
-          <span className="flex-1 text-[13px] text-foreground/80 truncate">
+          <span className="flex-1 text-[14px] text-foreground/80 truncate">
             {event.title}
           </span>
         </li>
@@ -499,19 +530,19 @@ export function DailyActions() {
 
   if (items.length === 0) {
     return (
-      <p className="text-sm text-muted italic">No daily actions set.</p>
+      <p className="text-[13px] text-muted/50 italic">No daily actions set.</p>
     );
   }
 
   return (
-    <ul className="space-y-1">
+    <ul className="space-y-1.5">
       {items.map((item) => (
         <li
           key={item.id}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-surface-raised"
+          className="flex items-center gap-3 rounded-xl bg-surface/40 border border-border/30 px-4 py-3 transition-colors hover:bg-surface-raised/30"
         >
           <span className="size-1.5 shrink-0 rounded-full bg-accent/60" />
-          <span className="text-[13px] text-foreground/80">{item.title}</span>
+          <span className="text-[14px] text-foreground/80">{item.title}</span>
         </li>
       ))}
     </ul>
@@ -530,7 +561,6 @@ const CATEGORY_STYLE: Record<string, string> = {
 
 const MAX_SUGGESTIONS = 5;
 
-// Stop words to skip when matching project names to tools
 const STOP_WORDS = new Set([
   "a", "an", "the", "and", "or", "of", "for", "to", "in", "on", "at", "is",
   "it", "my", "v1", "v2", "app", "project",
@@ -585,7 +615,7 @@ export function SuggestedTools() {
     );
     return onSnapshot(q, (snap) => {
       setProjects(
-        snap.docs.map((d) => ({ id: d.id, title: d.data().title }))
+        snap.docs.map((d) => ({ id: d.id, title: d.data().title, color: d.data().color }))
       );
     });
   }, []);
@@ -593,7 +623,6 @@ export function SuggestedTools() {
   if (loading) return null;
   if (tools.length === 0) return null;
 
-  // Build project name tokens from today's tasks
   const projectMap = new Map<string, string>();
   for (const p of projects) projectMap.set(p.id, p.title);
 
@@ -607,7 +636,6 @@ export function SuggestedTools() {
 
   const projectTokens = [...todayProjectNames].flatMap(tokenize);
 
-  // Score and rank: pinned always included, then by keyword match
   const scored = tools.map((tool) => ({
     tool,
     score: (tool.pinned ? 100 : 0) + scoreToolForProjects(tool, projectTokens),
@@ -623,7 +651,7 @@ export function SuggestedTools() {
     return (
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+          <h2 className="text-[12px] font-semibold uppercase tracking-wider text-muted">
             Suggested tools
           </h2>
           <Link
@@ -633,7 +661,7 @@ export function SuggestedTools() {
             All tools &rarr;
           </Link>
         </div>
-        <p className="text-sm text-muted italic">
+        <p className="text-[13px] text-muted/50 italic">
           Choose tasks for today to surface relevant tools.
         </p>
       </div>
@@ -643,7 +671,7 @@ export function SuggestedTools() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+        <h2 className="text-[12px] font-semibold uppercase tracking-wider text-muted">
           Suggested tools
         </h2>
         <Link

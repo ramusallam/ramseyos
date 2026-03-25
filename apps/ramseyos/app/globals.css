@@ -14,8 +14,10 @@
   --success: #22c55e;
   --warning: #eab308;
   --danger: #ef4444;
-  --shadow-card: none;
-  --shadow-card-hover: none;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --glow-accent: 0 0 20px rgba(99, 102, 241, 0.08);
+  --glow-accent-active: 0 0 24px rgba(99, 102, 241, 0.15);
 }
 
 @theme inline {
