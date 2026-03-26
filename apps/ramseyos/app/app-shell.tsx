@@ -141,12 +141,12 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/purchasing", label: "Purchasing", icon: PurchasingIcon, key: "purchasing" },
       { href: "/vendors", label: "Sources", icon: VendorIcon, key: "vendors" },
       { href: "/tools", label: "Tools", icon: ToolsIcon, key: "tools" },
+      { href: "/communications", label: "Comms", icon: CommsIcon, key: "communications" },
     ],
   },
   {
     label: "Ops",
     items: [
-      { href: "/communications", label: "Comms", icon: CommsIcon, key: "communications" },
       { href: "/product-ops", label: "Product Ops", icon: ProductOpsIcon, key: "productOps" },
       { href: "/admin", label: "Admin", icon: AdminIcon, key: "admin" },
       { href: "/life", label: "Life", icon: LifeIcon, key: "life" },

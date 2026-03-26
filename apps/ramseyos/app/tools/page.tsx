@@ -216,6 +216,14 @@ export default function ToolsPage() {
                     </Link>
                     <span className="text-border">·</span>
                     <Link
+                      href="/materials"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-muted/40 hover:text-muted/60 transition-colors"
+                    >
+                      Materials &rarr;
+                    </Link>
+                    <span className="text-border">·</span>
+                    <Link
                       href="/product-ops"
                       onClick={(e) => e.stopPropagation()}
                       className="text-muted/40 hover:text-muted/60 transition-colors"

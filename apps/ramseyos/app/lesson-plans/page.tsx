@@ -126,10 +126,13 @@ export default function LessonPlansPage() {
           <Link href="/tools" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
             Tools &rarr;
           </Link>
+          <Link href="/communications" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Comms &rarr;
+          </Link>
           {sparkCount > 0 && (
-            <Link href="/product-ops" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
-              Product Ops &rarr;
-            </Link>
+            <a href="https://sparklearningstudio.ai" target="_blank" rel="noopener noreferrer" className="text-[11px] text-amber-400/40 hover:text-amber-400/70 transition-colors font-medium">
+              Spark ↗
+            </a>
           )}
         </div>
       </header>

@@ -188,8 +188,21 @@ export default function CommunicationsPage() {
           Communications
         </h1>
         <p className="text-[13px] text-muted/50 mt-1">
-          Templates, groups, and drafts for outbound communication.
+          Templates, groups, and drafts for students, parents, and outbound communication.
         </p>
+
+        {/* Teaching cross-links */}
+        <div className="flex items-center gap-3 mt-2">
+          <Link href="/lesson-plans" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Lesson Plans &rarr;
+          </Link>
+          <Link href="/tasks" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Tasks &rarr;
+          </Link>
+          <Link href="/projects" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            Projects &rarr;
+          </Link>
+        </div>
 
         {/* Workflow summary */}
         <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">

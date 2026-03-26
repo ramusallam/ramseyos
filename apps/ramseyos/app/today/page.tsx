@@ -274,6 +274,23 @@ export default function MobileDailyCard() {
           </section>
         )}
 
+        {/* Teach — lesson plans quick-access */}
+        <Link
+          href="/lesson-plans"
+          className="flex items-center gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3.5 transition-colors active:bg-surface-raised/40"
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400/60 shrink-0">
+            <rect x="3" y="1" width="10" height="14" rx="1.5" />
+            <path d="M5.5 5h5M5.5 8h3" />
+          </svg>
+          <span className="flex-1 text-[14px] text-foreground/60">
+            Lesson Plans
+          </span>
+          <span className="text-[10px] text-muted/35 shrink-0">
+            prep &amp; teach
+          </span>
+        </Link>
+
         {/* Inbox nudge */}
         {plan.inboxItems.length > 0 && (
           <Link
@@ -327,6 +344,13 @@ export default function MobileDailyCard() {
               className="text-[12px] text-muted/40 hover:text-muted/70 transition-colors"
             >
               Inbox
+            </Link>
+            <span className="text-muted/20">·</span>
+            <Link
+              href="/lesson-plans"
+              className="text-[12px] text-muted/40 hover:text-muted/70 transition-colors"
+            >
+              Lessons
             </Link>
           </div>
           <p className="text-[10px] text-muted/25 tracking-wide text-center">

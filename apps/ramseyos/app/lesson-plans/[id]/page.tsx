@@ -594,6 +594,23 @@ export default function LessonPlanEditorPage() {
         </div>
       </div>
 
+      {/* ── Teaching workflow links ── */}
+      <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border/30">
+        <span className="text-[10px] text-muted/25">Teaching flow:</span>
+        <Link href="/materials" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          Materials
+        </Link>
+        <Link href="/purchasing" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          Purchasing
+        </Link>
+        <Link href="/communications" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          Comms
+        </Link>
+        <Link href="/tools" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          Tools
+        </Link>
+      </div>
+
       {/* ── Bottom save (mobile convenience) ── */}
       <div className="flex items-center justify-end gap-3 mt-8">
         {saved && (

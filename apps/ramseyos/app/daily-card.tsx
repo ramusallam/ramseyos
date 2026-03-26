@@ -181,6 +181,9 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
         </div>
       )}
 
+      {/* Teach — lesson plans + Spark */}
+      <TeachNudge />
+
       {/* Inbox nudge */}
       <InboxNudge count={plan.inboxItems.length} />
 
@@ -467,5 +470,39 @@ function AdminContextRow({ item }: { item: AdminItem }) {
         {ADMIN_CAT_LABEL[item.category] ?? "ops"}
       </span>
     </li>
+  );
+}
+
+/* ── Teach nudge — classroom quick-access ── */
+
+function TeachNudge() {
+  return (
+    <div className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-surface-raised group">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400/50 shrink-0">
+        <rect x="3" y="1" width="10" height="14" rx="1.5" />
+        <path d="M5.5 5h5M5.5 8h3" />
+      </svg>
+      <Link
+        href="/lesson-plans"
+        className="flex-1 text-[12px] text-foreground/50 group-hover:text-foreground/70 transition-colors"
+      >
+        Lesson Plans
+      </Link>
+      <Link
+        href="/materials"
+        className="text-[10px] text-muted/35 hover:text-muted/60 transition-colors"
+      >
+        Materials
+      </Link>
+      <span className="text-muted/15">·</span>
+      <a
+        href="https://sparklearningstudio.ai"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[10px] text-amber-400/40 hover:text-amber-400/70 transition-colors font-medium"
+      >
+        Spark ↗
+      </a>
+    </div>
   );
 }
