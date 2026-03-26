@@ -51,8 +51,6 @@ function CalendarContent() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
-  const [seeding, setSeeding] = useState(false);
-  const [seedMsg, setSeedMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
@@ -106,24 +104,6 @@ function CalendarContent() {
     await fetch("/api/calendar/disconnect", { method: "POST" });
     setStatus({ connected: false, lastSyncedAt: null, email: null });
     setSyncResult(null);
-  }
-
-  async function handleSeed() {
-    setSeeding(true);
-    setSeedMsg(null);
-    try {
-      const res = await fetch("/api/calendar/seed", { method: "POST" });
-      const data = await res.json();
-      setSeedMsg(data.message ?? data.error ?? "Done");
-      if (data.success) {
-        const evts = await getCalendarEvents(new Date());
-        setEvents(evts);
-      }
-    } catch {
-      setSeedMsg("Seed failed");
-    } finally {
-      setSeeding(false);
-    }
   }
 
   if (loading) {
@@ -376,44 +356,13 @@ function CalendarContent() {
             </div>
             <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-5">
               <p className="text-[12px] text-muted/50 leading-relaxed">
-                Google Calendar integration requires OAuth credentials configured in your environment.
-                See the project documentation for setup details.
+                Connect your Google Calendar to sync events automatically.
+                Visit Settings to configure the integration.
               </p>
             </div>
           </section>
         )}
 
-        {/* ── Test data (development) ── */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
-              <rect x="2" y="2" width="12" height="12" rx="2" />
-              <path d="M5 6h6M5 9h4" />
-            </svg>
-            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-              Development
-            </h2>
-            <div className="flex-1 border-t border-border/40" />
-          </div>
-          <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-5">
-            <p className="text-[12px] text-muted/50 mb-3">
-              Seed sample schedule events to test the Daily Card pipeline.
-            </p>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleSeed}
-                disabled={seeding}
-                className="inline-flex items-center gap-2 rounded-lg border border-border/50 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-foreground/60 hover:text-foreground/80 hover:bg-surface-raised transition-colors disabled:opacity-50"
-              >
-                {seeding ? "Seeding…" : "Seed test events"}
-              </button>
-              {seedMsg && (
-                <span className="text-[11px] text-muted/50">{seedMsg}</span>
-              )}
-            </div>
-          </div>
-        </section>
       </div>
     </div>
   );

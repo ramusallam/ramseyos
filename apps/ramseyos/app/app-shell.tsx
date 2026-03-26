@@ -264,7 +264,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           )}
           <div className="flex-1 min-w-0">
             <p className="text-[10px] text-muted/40 tracking-wide truncate">
-              v0.1 · Foundation
+              RamseyOS
             </p>
           </div>
           <button

@@ -38,9 +38,9 @@ function categoryMeta(cat: string) {
 }
 
 const GMAIL_STATUS_META: Record<GmailHandoffStatus, { dot: string; label: string; color: string }> = {
-  not_prepared: { dot: "bg-muted/30", label: "Not prepared", color: "text-muted/50" },
-  ready_for_gmail: { dot: "bg-blue-400", label: "Ready for Gmail", color: "text-blue-400/70" },
-  handed_off: { dot: "bg-emerald-400", label: "Handed off", color: "text-emerald-400/70" },
+  not_prepared: { dot: "bg-muted/30", label: "Draft", color: "text-muted/50" },
+  ready_for_gmail: { dot: "bg-blue-400", label: "Ready to send", color: "text-blue-400/70" },
+  handed_off: { dot: "bg-emerald-400", label: "Sent", color: "text-emerald-400/70" },
 };
 
 const DRAFT_STATUS_META: Record<DraftStatus, { dot: string; label: string }> = {
@@ -245,11 +245,11 @@ export default function CommunicationsPage() {
             badgeColor="text-blue-400/70"
           />
 
-          {/* Gmail status — calm inline */}
+          {/* Send status — calm inline */}
           <div className="flex items-center gap-2 mb-4 px-1">
             <span className="size-1.5 rounded-full bg-amber-400/50" />
             <span className="text-[10px] text-muted/40">
-              Gmail API not connected — drafts hand off via mailto
+              Drafts open in your mail client when ready to send
             </span>
           </div>
 
@@ -261,10 +261,10 @@ export default function CommunicationsPage() {
             />
           ) : (
             <div className="space-y-6">
-              {/* Gmail-ready drafts first */}
+              {/* Ready-to-send drafts first */}
               {handoffDrafts.length > 0 && (
                 <div>
-                  <SubsectionLabel label="Ready for Gmail" count={handoffDrafts.length} color="text-blue-400/70" lineColor="border-blue-400/10" />
+                  <SubsectionLabel label="Ready to send" count={handoffDrafts.length} color="text-blue-400/70" lineColor="border-blue-400/10" />
                   <div className="space-y-2">
                     {handoffDrafts.map((d) => (
                       <DraftCard
@@ -634,12 +634,12 @@ function DraftCard({
   const preview =
     d.body.length > 100 ? d.body.slice(0, 100).trimEnd() + "…" : d.body;
 
-  // Pipeline steps: template, group, content, gmail
+  // Pipeline steps: template, group, content, send
   const steps = [
     { label: "Template", done: !!linkedTemplate },
     { label: "Group", done: !!linkedGroup },
     { label: "Content", done: !!(d.subject && d.body) },
-    { label: "Gmail", done: d.gmailStatus !== "not_prepared" },
+    { label: "Send", done: d.gmailStatus !== "not_prepared" },
   ];
   const completedSteps = steps.filter((s) => s.done).length;
 
@@ -805,10 +805,10 @@ function DraftCard({
             )}
           </div>
 
-          {/* Gmail Handoff */}
+          {/* Send */}
           <div className="border-t border-border/20 pt-3">
             <div className="flex items-center gap-3">
-              <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/40">Gmail</p>
+              <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/40">Send</p>
               <span className={`inline-flex items-center gap-1.5 text-[10px] ${gmail.color}`}>
                 <span className={`inline-block size-1.5 rounded-full ${gmail.dot}`} />
                 {gmail.label}
@@ -823,7 +823,7 @@ function DraftCard({
                   }}
                   className="text-[10px] font-medium text-blue-400/80 bg-blue-500/10 border border-blue-400/15 rounded-lg px-3 py-1 hover:bg-blue-500/15 transition-colors"
                 >
-                  Prepare for Gmail
+                  Prepare to send
                 </button>
               )}
               {d.gmailStatus === "not_prepared" && !isAssembled && (
@@ -841,7 +841,7 @@ function DraftCard({
                     }}
                     className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border/30 rounded-lg px-3 py-1 hover:bg-white/8 transition-colors"
                   >
-                    Unprepare
+                    Reset
                   </button>
                   <a
                     href={buildMailtoLink(d, recipients)}
@@ -857,7 +857,7 @@ function DraftCard({
                       <path d="M5 11L11 5" />
                       <path d="M7 5h4v4" />
                     </svg>
-                    Open in Gmail
+                    Send
                   </a>
                 </div>
               )}
@@ -880,7 +880,7 @@ function DraftCard({
                   <path d="M14 3l-8.5 8.5L2 8" />
                 </svg>
                 <span className="text-[11px] text-emerald-400/60">
-                  Opened in mail client — complete sending there
+                  Opened in mail client — finish sending there
                 </span>
               </div>
             )}

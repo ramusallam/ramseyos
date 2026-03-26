@@ -217,7 +217,7 @@ export default function SettingsPage() {
               </div>
               <span className="inline-flex items-center gap-1.5 text-[10px] text-emerald-400/70">
                 <span className="size-1.5 rounded-full bg-emerald-400" />
-                On
+                Active
               </span>
             </div>
             <div className="border-t border-border/30" />
@@ -228,16 +228,8 @@ export default function SettingsPage() {
               </div>
               <span className="inline-flex items-center gap-1.5 text-[10px] text-emerald-400/70">
                 <span className="size-1.5 rounded-full bg-emerald-400" />
-                On
+                Active
               </span>
-            </div>
-            <div className="border-t border-border/30" />
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[13px] text-foreground/80">Auto-sync Calendar</p>
-                <p className="text-[11px] text-muted/40">Sync events when you open the dashboard</p>
-              </div>
-              <span className="text-[10px] text-muted/40">Off</span>
             </div>
           </div>
         </section>
@@ -258,7 +250,7 @@ export default function SettingsPage() {
           <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-5 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[12px] text-muted/50">Version</span>
-              <span className="text-[12px] text-foreground/60 tabular-nums">0.1.0-alpha</span>
+              <span className="text-[12px] text-foreground/60 tabular-nums">0.1.0</span>
             </div>
             <div className="border-t border-border/30" />
             <div className="flex items-center justify-between">

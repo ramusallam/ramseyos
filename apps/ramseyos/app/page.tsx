@@ -100,16 +100,6 @@ export default function TodayDashboard() {
         </DashboardCard>
       </div>
 
-      {/* ── Ambient — lowest tier ── */}
-      <div className="mt-6">
-        <DashboardCard variant="ambient">
-          <CardHeader
-            icon="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z"
-            label="Evening reflection"
-          />
-          <p className="text-[12px] text-muted/35 italic">Available later today</p>
-        </DashboardCard>
-      </div>
     </div>
   );
 }
