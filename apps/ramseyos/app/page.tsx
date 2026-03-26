@@ -1,4 +1,4 @@
-import { ProjectFocus, SuggestedTools } from "./dashboard-live";
+import { ProjectFocus, SuggestedTools, PinnedItems } from "./dashboard-live";
 import { DailyControllerSection } from "./daily-controller";
 import { PlaybookSidebar } from "./playbook-sidebar";
 import { getQuickLaunchWorkflows } from "@/lib/workflows";
@@ -42,6 +42,10 @@ export default function TodayDashboard() {
       <DailyControllerSection
         sidebar={
           <>
+            <DashboardCard variant="sidebar">
+              <PinnedItems />
+            </DashboardCard>
+
             <DashboardCard variant="sidebar">
               <CardHeader
                 icon="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M8 4.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z"

@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { createTask, toggleChosenForToday, toggleTaskCompleted } from "@/lib/tasks";
+import { toggleProjectPinned } from "@/lib/projects";
 import { PRIORITY_STYLE, STATUS_STYLE } from "@/lib/shared";
 import Link from "next/link";
 import { useRef } from "react";
@@ -22,6 +23,7 @@ interface Project {
   description: string;
   status: string;
   color: string | null;
+  pinned?: boolean;
 }
 
 interface Task {
@@ -132,6 +134,17 @@ export default function ProjectDetailPage() {
           <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${status.bg} ${status.text}`}>
             {status.label}
           </span>
+          <button
+            type="button"
+            onClick={() => toggleProjectPinned(project.id, !!project.pinned)}
+            className={`text-[10px] px-2 py-0.5 rounded-md font-medium transition-colors ${
+              project.pinned
+                ? "bg-violet-500/10 text-violet-400"
+                : "text-muted/30 hover:text-muted/60 hover:bg-surface-raised"
+            }`}
+          >
+            {project.pinned ? "pinned" : "pin"}
+          </button>
         </div>
         {project.description && (
           <p className="text-[13px] text-muted/50 leading-relaxed max-w-xl mt-1">

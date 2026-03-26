@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   collection,
   query,
@@ -9,8 +9,8 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { createCapture } from "@/lib/captures";
 import { useAuth, type AuthStatus } from "@/lib/auth";
+import { CommandPalette } from "./command-palette";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -184,6 +184,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { status, user, signIn, signOut } = useAuth();
   const pathname = usePathname();
   const counts = useShellCounts();
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // Global Cmd+K / Ctrl+K listener
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setPaletteOpen((prev) => !prev);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Auth gate — show login/loading before anything else
   if (status !== "ready") {
@@ -193,11 +206,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const hideShell = SHELL_HIDDEN_ROUTES.some((r) => pathname.startsWith(r));
 
   if (hideShell) {
-    return <div className="min-h-screen bg-background">{children}</div>;
+    return (
+      <div className="min-h-screen bg-background">
+        {children}
+        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      </div>
+    );
   }
 
   return (
     <div className="flex min-h-screen bg-background">
+      {/* Command Palette */}
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+
       {/* Sidebar */}
       <aside className="w-56 shrink-0 border-r border-border bg-surface/50 flex flex-col">
         {/* Logo */}
@@ -247,9 +268,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        {/* Global Capture */}
+        {/* Command Palette Trigger */}
         <div className="px-3 py-3 border-t border-border/60">
-          <SidebarCapture />
+          <button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 w-full text-[13px] text-foreground/50 hover:bg-surface-raised hover:text-foreground/70 transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-muted/50">
+              <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <span>Search</span>
+            <span className="ml-auto text-[10px] text-muted/30 font-mono">⌘K</span>
+          </button>
         </div>
 
         {/* Footer — user + sign out */}
@@ -383,122 +415,6 @@ function AuthGate({
         </p>
       </div>
     </div>
-  );
-}
-
-/* ── Sidebar Capture ── */
-
-function SidebarCapture() {
-  const [open, setOpen] = useState(false);
-  const [text, setText] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (open) inputRef.current?.focus();
-  }, [open]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = text.trim();
-    if (!trimmed || saving) return;
-
-    setSaving(true);
-    try {
-      await createCapture({ text: trimmed, source: "manual" });
-      setText("");
-      setSaved(true);
-      setTimeout(() => {
-        setSaved(false);
-        setOpen(false);
-      }, 1200);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  if (!open) {
-    return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-3 rounded-xl px-3 py-2.5 w-full text-[13px] text-foreground/50 hover:bg-surface-raised hover:text-foreground/70 transition-colors"
-      >
-        <PlusIcon />
-        <span>Capture</span>
-        <span className="ml-auto text-[10px] text-muted/30 font-mono">⌘K</span>
-      </button>
-    );
-  }
-
-  if (saved) {
-    return (
-      <div className="flex items-center gap-2 px-3 py-2.5">
-        <span className="size-2 rounded-full bg-emerald-400" />
-        <span className="text-[13px] text-emerald-400/80">Captured → inbox</span>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-2.5">
-      <input
-        ref={inputRef}
-        type="text"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") {
-            setText("");
-            setOpen(false);
-          }
-        }}
-        placeholder="Capture a thought…"
-        className="w-full rounded-xl border border-border/60 bg-surface-raised px-3.5 py-2.5 text-[14px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
-        disabled={saving}
-      />
-      <div className="flex items-center justify-between px-1">
-        <button
-          type="button"
-          onClick={() => {
-            setText("");
-            setOpen(false);
-          }}
-          className="text-[12px] text-muted/50 hover:text-foreground transition-colors"
-        >
-          Cancel
-        </button>
-        {text.trim() && (
-          <button
-            type="submit"
-            disabled={saving}
-            className="text-[12px] font-medium text-accent hover:text-accent/80 transition-colors px-2 py-1 rounded-lg hover:bg-accent-dim"
-          >
-            {saving ? "Saving…" : "Save"}
-          </button>
-        )}
-      </div>
-    </form>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      className="text-muted/50"
-    >
-      <path
-        d="M8 3.5v9M3.5 8h9"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }
 

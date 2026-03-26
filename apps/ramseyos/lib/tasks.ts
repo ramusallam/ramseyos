@@ -68,3 +68,12 @@ export async function toggleChosenForToday(
     chosenForToday: !current,
   });
 }
+
+export async function toggleTaskPinned(
+  taskId: string,
+  current: boolean
+): Promise<void> {
+  await updateDoc(doc(db, COLLECTION, taskId), {
+    pinned: !current,
+  });
+}

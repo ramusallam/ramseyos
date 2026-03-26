@@ -10,7 +10,7 @@ import {
   type Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { updateTaskProject, toggleChosenForToday, toggleTaskCompleted } from "@/lib/tasks";
+import { updateTaskProject, toggleChosenForToday, toggleTaskCompleted, toggleTaskPinned } from "@/lib/tasks";
 import { type Priority, PRIORITY_STYLE } from "@/lib/shared";
 import Link from "next/link";
 
@@ -24,6 +24,7 @@ interface Task {
   sourceCaptureId: string | null;
   notes: string | null;
   chosenForToday?: boolean;
+  pinned?: boolean;
 }
 
 interface Project {
@@ -355,22 +356,36 @@ function TaskItem({
         )}
 
         {!task.completed && (
-          <button
-            type="button"
-            onClick={() =>
-              toggleChosenForToday(task.id, !!task.chosenForToday)
-            }
-            className={`text-[10px] px-2 py-1 rounded-lg shrink-0 transition-colors ${
-              task.chosenForToday
-                ? "bg-accent-dim text-accent font-medium"
-                : "text-muted/30 hover:text-muted/60 hover:bg-surface-raised"
-            }`}
-            aria-label={
-              task.chosenForToday ? "Remove from today" : "Choose for today"
-            }
-          >
-            {task.chosenForToday ? "today ✓" : "today"}
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => toggleTaskPinned(task.id, !!task.pinned)}
+              className={`text-[10px] px-2 py-1 rounded-lg shrink-0 transition-colors ${
+                task.pinned
+                  ? "bg-violet-500/10 text-violet-400 font-medium"
+                  : "text-muted/30 hover:text-muted/60 hover:bg-surface-raised"
+              }`}
+              aria-label={task.pinned ? "Unpin" : "Pin"}
+            >
+              {task.pinned ? "pinned" : "pin"}
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                toggleChosenForToday(task.id, !!task.chosenForToday)
+              }
+              className={`text-[10px] px-2 py-1 rounded-lg shrink-0 transition-colors ${
+                task.chosenForToday
+                  ? "bg-accent-dim text-accent font-medium"
+                  : "text-muted/30 hover:text-muted/60 hover:bg-surface-raised"
+              }`}
+              aria-label={
+                task.chosenForToday ? "Remove from today" : "Choose for today"
+              }
+            >
+              {task.chosenForToday ? "today ✓" : "today"}
+            </button>
+          </>
         )}
       </div>
 

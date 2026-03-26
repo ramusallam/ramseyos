@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   collection,
   query,
@@ -734,6 +734,178 @@ export function SuggestedTools() {
             </a>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Pinned / Active Work ── */
+
+interface PinnedTask {
+  id: string;
+  title: string;
+  priority: string | null;
+  projectId: string | null;
+}
+
+interface PinnedProject {
+  id: string;
+  title: string;
+  color: string | null;
+  status: string;
+}
+
+interface PinnedLesson {
+  id: string;
+  title: string;
+  course: string;
+}
+
+export function PinnedItems() {
+  const [tasks, setTasks] = useState<PinnedTask[]>([]);
+  const [projects, setProjects] = useState<PinnedProject[]>([]);
+  const [lessons, setLessons] = useState<PinnedLesson[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubs: (() => void)[] = [];
+    let loaded = 0;
+    const checkDone = () => {
+      loaded++;
+      if (loaded >= 3) setLoading(false);
+    };
+
+    const taskQ = query(
+      collection(db, "tasks"),
+      where("completed", "==", false),
+      where("pinned", "==", true)
+    );
+    unsubs.push(
+      onSnapshot(
+        taskQ,
+        (snap) => {
+          setTasks(
+            snap.docs.map((d) => ({
+              id: d.id,
+              title: d.data().title ?? "Untitled",
+              priority: d.data().priority ?? null,
+              projectId: d.data().projectId ?? null,
+            }))
+          );
+          checkDone();
+        },
+        () => checkDone()
+      )
+    );
+
+    const projQ = query(
+      collection(db, "projects"),
+      where("archived", "==", false),
+      where("pinned", "==", true)
+    );
+    unsubs.push(
+      onSnapshot(
+        projQ,
+        (snap) => {
+          setProjects(
+            snap.docs.map((d) => ({
+              id: d.id,
+              title: d.data().title ?? "Untitled",
+              color: d.data().color ?? null,
+              status: d.data().status ?? "active",
+            }))
+          );
+          checkDone();
+        },
+        () => checkDone()
+      )
+    );
+
+    const lessonQ = query(
+      collection(db, "lessonPlans"),
+      where("pinned", "==", true)
+    );
+    unsubs.push(
+      onSnapshot(
+        lessonQ,
+        (snap) => {
+          setLessons(
+            snap.docs.map((d) => ({
+              id: d.id,
+              title: d.data().title ?? "Untitled",
+              course: d.data().course ?? "",
+            }))
+          );
+          checkDone();
+        },
+        () => checkDone()
+      )
+    );
+
+    return () => unsubs.forEach((fn) => fn());
+  }, []);
+
+  const total = tasks.length + projects.length + lessons.length;
+
+  if (loading || total === 0) return null;
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-accent/60">
+          <path d="M9.5 2.5L13.5 6.5 7 13H3V9L9.5 2.5z" />
+        </svg>
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/60">
+          Active Work
+        </h2>
+        <span className="text-[10px] text-muted/40 tabular-nums">{total}</span>
+      </div>
+
+      <div className="space-y-1.5">
+        {projects.map((p) => (
+          <Link
+            key={p.id}
+            href={`/projects/${p.id}`}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/70 hover:bg-surface-raised hover:text-foreground transition-colors group"
+          >
+            <span
+              className="size-2 rounded-full shrink-0"
+              style={{ backgroundColor: p.color ?? "#f59e0b" }}
+            />
+            <span className="flex-1 truncate">{p.title}</span>
+            <span className="text-[9px] text-muted/30">project</span>
+          </Link>
+        ))}
+
+        {tasks.map((t) => (
+          <Link
+            key={t.id}
+            href={t.projectId ? `/projects/${t.projectId}` : "/tasks"}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/70 hover:bg-surface-raised hover:text-foreground transition-colors group"
+          >
+            <span className="size-2 rounded-full shrink-0 bg-accent" />
+            <span className="flex-1 truncate">{t.title}</span>
+            {t.priority && (
+              <span className={`text-[9px] px-1.5 py-0.5 rounded ${PRIORITY_STYLE[t.priority] ?? ""}`}>
+                {t.priority}
+              </span>
+            )}
+          </Link>
+        ))}
+
+        {lessons.map((l) => (
+          <Link
+            key={l.id}
+            href={`/lesson-plans/${l.id}`}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/70 hover:bg-surface-raised hover:text-foreground transition-colors group"
+          >
+            <span className="size-2 rounded-full shrink-0 bg-violet-400" />
+            <span className="flex-1 truncate">{l.title}</span>
+            {l.course && (
+              <span className="text-[9px] text-muted/30 truncate max-w-[80px]">{l.course}</span>
+            )}
+          </Link>
+        ))}
       </div>
     </div>
   );

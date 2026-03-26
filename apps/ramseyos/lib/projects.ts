@@ -76,3 +76,13 @@ export async function archiveProject(id: string): Promise<void> {
     updatedAt: serverTimestamp(),
   });
 }
+
+export async function toggleProjectPinned(
+  id: string,
+  current: boolean
+): Promise<void> {
+  await updateDoc(doc(db, COLLECTION, id), {
+    pinned: !current,
+    updatedAt: serverTimestamp(),
+  });
+}
