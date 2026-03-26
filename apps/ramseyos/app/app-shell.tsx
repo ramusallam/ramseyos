@@ -91,6 +91,7 @@ function useShellCounts(): ShellCounts {
 
 type NavKey =
   | "today"
+  | "week"
   | "inbox"
   | "tasks"
   | "projects"
@@ -123,6 +124,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: null,
     items: [
       { href: "/", label: "Today", icon: SunIcon, key: "today" },
+      { href: "/week", label: "This Week", icon: WeekIcon, key: "week" },
     ],
   },
   {
@@ -465,6 +467,34 @@ function AuthGate({
 }
 
 /* ── Icons (simple SVG, 16x16) ── */
+
+function WeekIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <rect
+        x="2"
+        y="3"
+        width="12"
+        height="11"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M2 7h12M5.5 3v-1M10.5 3v-1M5.5 9.5h5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 function SunIcon({ active }: { active: boolean }) {
   return (

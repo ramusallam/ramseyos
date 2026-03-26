@@ -34,6 +34,7 @@ interface PaletteItem {
 
 const NAV_ITEMS: PaletteItem[] = [
   { id: "nav-today", label: "Today", category: "navigate", href: "/", icon: "sun" },
+  { id: "nav-week", label: "This Week", detail: "Weekly planning & review", category: "navigate", href: "/week", icon: "calendar" },
   { id: "nav-inbox", label: "Inbox", category: "navigate", href: "/inbox", icon: "inbox" },
   { id: "nav-tasks", label: "Tasks", category: "navigate", href: "/tasks", icon: "check" },
   { id: "nav-projects", label: "Projects", category: "navigate", href: "/projects", icon: "folder" },

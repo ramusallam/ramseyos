@@ -1,4 +1,4 @@
-import { ProjectFocus, SuggestedTools, PinnedItems, RecentActivity, DraftsReady, NeedToBuy } from "./dashboard-live";
+import { ProjectFocus, SuggestedTools, PinnedItems, RecentActivity, DraftsReady, NeedToBuy, CarryForward } from "./dashboard-live";
 import { DailyControllerSection } from "./daily-controller";
 import { PlaybookSidebar } from "./playbook-sidebar";
 import { getQuickLaunchWorkflows } from "@/lib/workflows";
@@ -34,7 +34,10 @@ export default function TodayDashboard() {
           {getGreeting()}, Ramsey
         </h1>
         <p className="text-[14px] text-muted mt-1.5">
-          Here is your day.
+          Here is your day.{" "}
+          <Link href="/week" className="text-accent/70 hover:text-accent transition-colors">
+            See the week &rarr;
+          </Link>
         </p>
       </header>
 
@@ -44,6 +47,10 @@ export default function TodayDashboard() {
           <>
             <DashboardCard variant="sidebar">
               <PinnedItems />
+            </DashboardCard>
+
+            <DashboardCard variant="sidebar">
+              <CarryForward />
             </DashboardCard>
 
             <DashboardCard variant="sidebar">

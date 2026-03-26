@@ -16,6 +16,7 @@ import { getRecents, type RecentItem } from "@/lib/recents";
 import { getDrafts, type DraftItem } from "@/lib/drafts";
 import { getLessonPlans, type LessonPlan as LPItem } from "@/lib/lesson-plans";
 import { PRIORITY_STYLE } from "@/lib/shared";
+import { toggleChosenForToday } from "@/lib/tasks";
 import Link from "next/link";
 
 interface Capture {
@@ -1072,6 +1073,90 @@ export function NeedToBuy() {
           </Link>
         ))}
       </div>
+    </div>
+  );
+}
+
+/* ── Carry Forward — surfaces important incomplete tasks on the Today dashboard ── */
+
+interface CarryTask {
+  id: string;
+  title: string;
+  priority: string | null;
+  chosenForToday: boolean;
+  pinned: boolean;
+}
+
+export function CarryForward() {
+  const [tasks, setTasks] = useState<CarryTask[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "tasks"),
+      where("completed", "==", false),
+      orderBy("createdAt", "desc")
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      const all = snap.docs.map((d) => ({
+        id: d.id,
+        title: d.data().title,
+        priority: d.data().priority ?? null,
+        chosenForToday: d.data().chosenForToday ?? false,
+        pinned: d.data().pinned ?? false,
+      }));
+      // Carry-forward = high-priority or pinned, but NOT already chosen for today
+      const carry = all.filter(
+        (t) => !t.chosenForToday && (t.priority === "high" || t.pinned)
+      );
+      setTasks(carry.slice(0, 5));
+      setLoading(false);
+    });
+    return unsub;
+  }, []);
+
+  if (loading || tasks.length === 0) return null;
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500">
+          <path d="M2 8h12M8 2v12" />
+        </svg>
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+          Carry forward
+        </h2>
+        <span className="text-[10px] text-muted tabular-nums">{tasks.length}</span>
+      </div>
+      <ul className="space-y-1">
+        {tasks.map((task) => (
+          <li key={task.id} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-surface-raised/50 transition-colors">
+            <span className="size-1.5 rounded-full bg-amber-400 shrink-0" />
+            <span className="flex-1 text-[12px] text-foreground/80 truncate">
+              {task.title}
+            </span>
+            {task.priority === "high" && (
+              <span className="text-[9px] text-rose-600 font-medium shrink-0">high</span>
+            )}
+            {task.pinned && (
+              <span className="text-[9px] text-violet-500 font-medium shrink-0">pinned</span>
+            )}
+            <button
+              type="button"
+              onClick={() => toggleChosenForToday(task.id, false)}
+              className="text-[9px] text-muted hover:text-accent transition-colors shrink-0"
+            >
+              + today
+            </button>
+          </li>
+        ))}
+      </ul>
+      <Link
+        href="/week"
+        className="block mt-2 text-[11px] text-accent hover:text-accent/80 transition-colors"
+      >
+        See full week &rarr;
+      </Link>
     </div>
   );
 }
