@@ -93,7 +93,7 @@ export default function AdminPage() {
       <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading admin…</span>
+          <span className="text-[13px] text-muted">Loading admin…</span>
         </div>
       </div>
     );
@@ -116,7 +116,7 @@ export default function AdminPage() {
         </p>
 
         {(openCount > 0 || templates.length > 0) && (
-          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted">
             <span className="tabular-nums">{openCount} open</span>
             {inProgress.length > 0 && (
               <span className="flex items-center gap-1.5 text-blue-400/60">
@@ -143,13 +143,13 @@ export default function AdminPage() {
 
         {/* Cross-links */}
         <div className="flex items-center gap-3 mt-3">
-          <Link href="/life" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/life" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Life &rarr;
           </Link>
-          <Link href="/purchasing" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/purchasing" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Purchasing &rarr;
           </Link>
-          <Link href="/materials" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/materials" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Materials &rarr;
           </Link>
         </div>
@@ -202,7 +202,7 @@ export default function AdminPage() {
               title="Pending"
               count={pending.length}
               color="text-muted"
-              ruleColor="border-border/40"
+              ruleColor="border-border"
             />
             <div className="space-y-2">
               {pending.map((i) => (
@@ -226,7 +226,7 @@ export default function AdminPage() {
               <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400/60 group-hover:text-emerald-400/80 transition-colors">
                 Completed
               </span>
-              <span className="text-[10px] tabular-nums text-muted/40">
+              <span className="text-[10px] tabular-nums text-muted">
                 {doneItems.length}
               </span>
               <div className="flex-1 border-t border-emerald-400/10" />
@@ -238,7 +238,7 @@ export default function AdminPage() {
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
-                className={`text-muted/30 transition-transform ${showDone ? "rotate-180" : ""}`}
+                className={`text-muted transition-transform ${showDone ? "rotate-180" : ""}`}
               >
                 <path d="M4 6l4 4 4-4" />
               </svg>
@@ -262,7 +262,7 @@ export default function AdminPage() {
         )}
 
         {/* ── Divider ── */}
-        {templates.length > 0 && <div className="border-t border-border/30" />}
+        {templates.length > 0 && <div className="border-t border-border" />}
 
         {/* ── Admin Templates ── */}
         {templates.length > 0 && (
@@ -272,7 +272,7 @@ export default function AdminPage() {
               title="Reference Templates"
               count={templates.length}
               color="text-muted"
-              ruleColor="border-border/40"
+              ruleColor="border-border"
             />
 
             <div className="space-y-6">
@@ -287,10 +287,10 @@ export default function AdminPage() {
                       <span className={`text-[10px] font-semibold uppercase tracking-wider ${meta.text}`}>
                         {meta.label}
                       </span>
-                      <span className="text-[10px] tabular-nums text-muted/40">
+                      <span className="text-[10px] tabular-nums text-muted">
                         {catItems.length}
                       </span>
-                      <div className="flex-1 border-t border-border/30" />
+                      <div className="flex-1 border-t border-border" />
                     </div>
                     <div className="space-y-2">
                       {catItems.map((t) => (
@@ -341,7 +341,7 @@ function SectionHeader({
       <h2 className={`text-[11px] font-semibold uppercase tracking-wider ${color}`}>
         {title}
       </h2>
-      <span className="text-[10px] tabular-nums text-muted/40">
+      <span className="text-[10px] tabular-nums text-muted">
         {count}
       </span>
       <div className={`flex-1 border-t ${ruleColor}`} />
@@ -351,13 +351,13 @@ function SectionHeader({
 
 function EmptyState({ message, detail }: { message: string; detail: string }) {
   return (
-    <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
-      <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+    <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center">
+      <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
         <rect x="2" y="2" width="12" height="12" rx="2" />
         <path d="M5 5h6M5 8h4M5 11h5" />
       </svg>
       <p className="text-sm text-muted/60">{message}</p>
-      <p className="text-[12px] text-muted/35 mt-1">{detail}</p>
+      <p className="text-[12px] text-muted mt-1">{detail}</p>
     </div>
   );
 }
@@ -378,7 +378,7 @@ function AdminItemCard({
     i.body.length > 120 ? i.body.slice(0, 120).trimEnd() + "..." : i.body;
 
   return (
-    <div className={`rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 overflow-hidden ${i.recurring && i.status !== "done" ? "border-l-2 border-l-violet-400/30" : ""}`}>
+    <div className={`rounded-xl bg-surface backdrop-blur-sm border border-border overflow-hidden ${i.recurring && i.status !== "done" ? "border-l-2 border-l-violet-400/30" : ""}`}>
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
@@ -394,7 +394,7 @@ function AdminItemCard({
             >
               {style.label}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/30 bg-white/5 px-2 py-0 text-[9px] font-medium text-muted/60">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white/5 px-2 py-0 text-[9px] font-medium text-muted/60">
               <span className={`inline-block w-1.5 h-1.5 rounded-full ${status.dot}`} />
               {status.label}
             </span>
@@ -422,14 +422,14 @@ function AdminItemCard({
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
-          className={`shrink-0 mt-1.5 text-muted/30 transition-transform ${expanded ? "rotate-180" : ""}`}
+          className={`shrink-0 mt-1.5 text-muted transition-transform ${expanded ? "rotate-180" : ""}`}
         >
           <path d="M4 6l4 4 4-4" />
         </svg>
       </button>
 
       {expanded && (
-        <div className="border-t border-border/30 px-5 py-4 space-y-4">
+        <div className="border-t border-border px-5 py-4 space-y-4">
           {i.body && (
             <p className="text-[12px] text-foreground/65 leading-relaxed whitespace-pre-line">
               {i.body}
@@ -437,7 +437,7 @@ function AdminItemCard({
           )}
 
           <div className="flex items-center gap-2 pt-1">
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted/40 mr-1">Status</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-muted mr-1">Status</span>
             {STATUS_ORDER.map((s) => {
               const meta = STATUS_META[s];
               const isActive = i.status === s;
@@ -452,7 +452,7 @@ function AdminItemCard({
                   className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-medium transition-colors ${
                     isActive
                       ? "border-foreground/15 bg-foreground/5 text-foreground/70"
-                      : "border-border/30 bg-surface text-muted/45 hover:bg-surface-raised/60 hover:text-muted/60"
+                      : "border-border bg-surface text-muted/45 hover:bg-surface-raised/60 hover:text-muted/60"
                   }`}
                 >
                   <span className={`inline-block w-1.5 h-1.5 rounded-full ${meta.dot}`} />
@@ -475,7 +475,7 @@ function AdminTemplateCard({ template: t }: { template: AdminTemplate }) {
     t.body.length > 120 ? t.body.slice(0, 120).trimEnd() + "..." : t.body;
 
   return (
-    <div className="rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 overflow-hidden">
+    <div className="rounded-xl bg-surface backdrop-blur-sm border border-border overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
@@ -499,14 +499,14 @@ function AdminTemplateCard({ template: t }: { template: AdminTemplate }) {
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
-          className={`shrink-0 mt-1 text-muted/30 transition-transform ${expanded ? "rotate-180" : ""}`}
+          className={`shrink-0 mt-1 text-muted transition-transform ${expanded ? "rotate-180" : ""}`}
         >
           <path d="M4 6l4 4 4-4" />
         </svg>
       </button>
 
       {expanded && (
-        <div className="border-t border-border/30 px-5 py-4">
+        <div className="border-t border-border px-5 py-4">
           <p className="text-[12px] text-foreground/65 leading-relaxed whitespace-pre-line">
             {t.body}
           </p>

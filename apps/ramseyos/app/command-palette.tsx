@@ -13,6 +13,9 @@ import {
 import { db } from "@/lib/firebase";
 import { createCapture } from "@/lib/captures";
 import { createTask } from "@/lib/tasks";
+import { createProject } from "@/lib/projects";
+import { createLessonPlan } from "@/lib/lesson-plans";
+import { createDraft } from "@/lib/drafts";
 import { getRecents, type RecentItem } from "@/lib/recents";
 
 /* ── Types ── */
@@ -246,8 +249,50 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           setTimeout(onClose, 800);
         },
       },
+      {
+        id: "action-project",
+        label: "New Project",
+        detail: search.trim() ? `"${search.trim()}"` : "from search text",
+        category: "action",
+        icon: "folder",
+        action: async () => {
+          const text = search.trim();
+          if (!text) return;
+          const id = await createProject({ title: text });
+          setActionFeedback("Project created");
+          setTimeout(() => { router.push(`/projects/${id}`); onClose(); }, 800);
+        },
+      },
+      {
+        id: "action-lesson",
+        label: "New Lesson Plan",
+        detail: search.trim() ? `"${search.trim()}"` : "from search text",
+        category: "action",
+        icon: "lesson",
+        action: async () => {
+          const text = search.trim();
+          if (!text) return;
+          const id = await createLessonPlan({ title: text });
+          setActionFeedback("Lesson plan created");
+          setTimeout(() => { router.push(`/lesson-plans/${id}`); onClose(); }, 800);
+        },
+      },
+      {
+        id: "action-draft",
+        label: "New Draft",
+        detail: search.trim() ? `"${search.trim()}"` : "from search text",
+        category: "action",
+        icon: "comms",
+        action: async () => {
+          const text = search.trim();
+          if (!text) return;
+          await createDraft({ subject: text });
+          setActionFeedback("Draft created");
+          setTimeout(() => { router.push("/communications"); onClose(); }, 800);
+        },
+      },
     ],
-    [search, onClose]
+    [search, onClose, router]
   );
 
   // Build filtered results
@@ -344,10 +389,10 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
       }}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} />
 
       {/* Palette */}
-      <div className="relative w-full max-w-lg rounded-xl border border-border/60 bg-surface shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-lg rounded-2xl border border-border bg-surface shadow-2xl overflow-hidden">
         {/* Action feedback */}
         {actionFeedback ? (
           <div className="flex items-center gap-3 px-5 py-5">
@@ -359,7 +404,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
         ) : (
           <>
             {/* Search input */}
-            <div className="flex items-center gap-3 px-4 border-b border-border/40">
+            <div className="flex items-center gap-3 px-4 border-b border-border">
               <svg
                 width="16"
                 height="16"
@@ -369,7 +414,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="shrink-0 text-muted/40"
+                className="shrink-0 text-muted"
               >
                 <circle cx="7" cy="7" r="4.5" />
                 <path d="M10.5 10.5L14 14" />
@@ -384,10 +429,10 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder="Search or type a command…"
-                className="flex-1 bg-transparent py-3.5 text-[14px] text-foreground placeholder:text-muted/40 outline-none"
+                className="flex-1 bg-transparent py-3.5 text-[14px] text-foreground placeholder:text-muted outline-none"
                 autoComplete="off"
               />
-              <kbd className="text-[10px] text-muted/30 font-mono border border-border/30 rounded px-1.5 py-0.5">
+              <kbd className="text-[10px] text-muted font-mono border border-border rounded px-1.5 py-0.5">
                 esc
               </kbd>
             </div>
@@ -396,12 +441,12 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             <div className="max-h-[50vh] overflow-y-auto py-2">
               {flatResults.length === 0 ? (
                 <div className="px-5 py-8 text-center">
-                  <p className="text-[13px] text-muted/40">No results</p>
+                  <p className="text-[13px] text-muted">No results</p>
                 </div>
               ) : (
                 grouped.map(([category, items]) => (
                   <div key={category}>
-                    <p className="px-5 pt-3 pb-1 text-[9px] font-semibold uppercase tracking-widest text-muted/40">
+                    <p className="px-5 pt-3 pb-1 text-[9px] font-semibold uppercase tracking-widest text-muted">
                       {CATEGORY_LABEL[category] ?? category}
                     </p>
                     {items.map((item) => {
@@ -424,12 +469,12 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                             {item.label}
                           </span>
                           {item.detail && (
-                            <span className="text-[11px] text-muted/40 truncate max-w-[140px]">
+                            <span className="text-[11px] text-muted truncate max-w-[140px]">
                               {item.detail}
                             </span>
                           )}
                           {isSelected && (
-                            <kbd className="text-[9px] text-muted/30 font-mono">
+                            <kbd className="text-[9px] text-muted font-mono">
                               ↵
                             </kbd>
                           )}
@@ -442,19 +487,19 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-border/30 px-5 py-2 flex items-center gap-4">
-              <span className="text-[10px] text-muted/30">
+            <div className="border-t border-border px-5 py-2 flex items-center gap-4">
+              <span className="text-[10px] text-muted">
                 <kbd className="font-mono">↑↓</kbd> navigate
               </span>
-              <span className="text-[10px] text-muted/30">
+              <span className="text-[10px] text-muted">
                 <kbd className="font-mono">↵</kbd> select
               </span>
-              <span className="text-[10px] text-muted/30">
+              <span className="text-[10px] text-muted">
                 <kbd className="font-mono">esc</kbd> close
               </span>
               {search.trim() && (
-                <span className="ml-auto text-[10px] text-accent/50">
-                  Type to capture or create task
+                <span className="ml-auto text-[10px] text-accent font-medium">
+                  Type to create
                 </span>
               )}
             </div>

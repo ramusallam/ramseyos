@@ -149,7 +149,7 @@ export default function InboxPage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading inbox…</span>
+          <span className="text-[13px] text-muted">Loading inbox…</span>
         </div>
       </div>
     );
@@ -186,7 +186,7 @@ export default function InboxPage() {
 
         {/* Stat bar */}
         {items.length > 0 && (
-          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted">
             {unprocessed.length > 0 && (
               <span className="flex items-center gap-1.5">
                 <span className="size-1.5 rounded-full bg-amber-400" />
@@ -205,10 +205,10 @@ export default function InboxPage() {
 
         {/* Cross-links */}
         <div className="flex items-center gap-3 mt-3">
-          <Link href="/tasks" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/tasks" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Tasks &rarr;
           </Link>
-          <Link href="/projects" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/projects" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Projects &rarr;
           </Link>
         </div>
@@ -216,13 +216,13 @@ export default function InboxPage() {
 
       {/* ── Empty ── */}
       {items.length === 0 && (
-        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/25 mb-4">
+        <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
             <rect x="2" y="3" width="12" height="10" rx="2" />
             <path d="M2 9h3.5a1 1 0 011 1v0a1 1 0 001 1h1a1 1 0 001-1v0a1 1 0 011-1H14" />
           </svg>
           <p className="text-sm text-muted/60 font-medium">Inbox clear</p>
-          <p className="text-[12px] text-muted/35 mt-1">
+          <p className="text-[12px] text-muted mt-1">
             Capture from the sidebar, the{" "}
             <Link href="/capture" className="text-accent/50 hover:text-accent transition-colors">
               capture page
@@ -245,10 +245,10 @@ export default function InboxPage() {
                 <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                   Needs Triage
                 </h2>
-                <span className="text-[10px] text-muted/40 tabular-nums">
+                <span className="text-[10px] text-muted tabular-nums">
                   {unprocessed.length}
                 </span>
-                <div className="flex-1 border-t border-border/40" />
+                <div className="flex-1 border-t border-border" />
               </div>
               <ul className="space-y-2">
                 {unprocessed.map((item) => (
@@ -271,7 +271,7 @@ export default function InboxPage() {
                   All triaged — inbox clear
                 </span>
               </div>
-              <p className="text-[11px] text-muted/30 mt-2">
+              <p className="text-[11px] text-muted mt-2">
                 {taskCount > 0
                   ? `${taskCount} item${taskCount !== 1 ? "s" : ""} converted to tasks.`
                   : "Nothing to process right now."}
@@ -287,14 +287,14 @@ export default function InboxPage() {
                 onClick={() => setShowProcessed(!showProcessed)}
                 className="flex items-center gap-2 mb-4 group w-full"
               >
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
                   <path d="M5.5 8l2 2 3-4" />
                 </svg>
-                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/40">
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                   Processed
                 </h2>
-                <span className="text-[10px] text-muted/30 tabular-nums">{processed.length}</span>
-                <div className="flex-1 border-t border-border/30" />
+                <span className="text-[10px] text-muted tabular-nums">{processed.length}</span>
+                <div className="flex-1 border-t border-border" />
                 <svg
                   width="10"
                   height="10"
@@ -304,7 +304,7 @@ export default function InboxPage() {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={`text-muted/30 transition-transform ${showProcessed ? "rotate-180" : ""}`}
+                  className={`text-muted transition-transform ${showProcessed ? "rotate-180" : ""}`}
                 >
                   <path d="M4 6l4 4 4-4" />
                 </svg>
@@ -352,7 +352,7 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
 
   return (
     <li
-      className={`rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-4 py-4 transition-all hover:bg-surface-raised/30 ${
+      className={`rounded-xl border border-border bg-surface backdrop-blur-sm px-4 py-4 transition-all hover:bg-surface-raised/30 ${
         isProcessed ? "opacity-35" : ""
       }`}
     >
@@ -398,7 +398,7 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
           {!isProcessed && item.type && item.type !== "capture" && (
             <span className="flex items-center gap-1">
               <span className={`size-1.5 rounded-full ${typeMeta.dot}`} />
-              <span className="text-[10px] text-muted/40">{typeMeta.label.toLowerCase()}</span>
+              <span className="text-[10px] text-muted">{typeMeta.label.toLowerCase()}</span>
             </span>
           )}
           <span className={`text-[10px] ${sourceMeta.color}`}>
@@ -417,7 +417,7 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
             onChange={(e) =>
               updateCapture(item.id, { type: e.target.value as CaptureType })
             }
-            className="bg-surface-raised/50 rounded-lg text-[11px] text-muted/70 outline-none cursor-pointer hover:text-foreground/60 transition-colors px-2 py-1.5 border border-border/40"
+            className="bg-surface-raised/50 rounded-lg text-[11px] text-muted/70 outline-none cursor-pointer hover:text-foreground/60 transition-colors px-2 py-1.5 border border-border"
           >
             {TYPES.map((t) => (
               <option key={t} value={t} className="bg-surface text-foreground">
@@ -440,7 +440,7 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
                       ? value
                         ? PRIORITY_STYLE[value] ?? "bg-surface-raised text-muted/60"
                         : "bg-surface-raised text-muted/60"
-                      : "text-muted/30 hover:text-muted/60"
+                      : "text-muted hover:text-muted/60"
                   }`}
                 >
                   {label}
@@ -456,7 +456,7 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
             onChange={(e) =>
               updateCapture(item.id, { projectId: e.target.value || null })
             }
-            className="bg-surface-raised/50 rounded-lg text-[11px] text-muted/70 outline-none cursor-pointer hover:text-foreground/60 transition-colors px-2 py-1.5 border border-border/40 max-w-[160px] truncate"
+            className="bg-surface-raised/50 rounded-lg text-[11px] text-muted/70 outline-none cursor-pointer hover:text-foreground/60 transition-colors px-2 py-1.5 border border-border max-w-[160px] truncate"
           >
             <option value="" className="bg-surface text-foreground">
               No project
@@ -509,12 +509,12 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
             </span>
           )}
           {item.projectId && (
-            <span className="text-[10px] text-muted/30">
+            <span className="text-[10px] text-muted">
               → {projects.find((p) => p.id === item.projectId)?.title ?? "project"}
             </span>
           )}
           {item.createdAt && (
-            <span className="text-[10px] text-muted/25">
+            <span className="text-[10px] text-muted">
               {formatTimestamp(item.createdAt)}
             </span>
           )}

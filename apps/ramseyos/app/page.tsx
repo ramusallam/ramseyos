@@ -1,4 +1,4 @@
-import { ProjectFocus, SuggestedTools, PinnedItems, RecentActivity } from "./dashboard-live";
+import { ProjectFocus, SuggestedTools, PinnedItems, RecentActivity, DraftsReady, NeedToBuy } from "./dashboard-live";
 import { DailyControllerSection } from "./daily-controller";
 import { PlaybookSidebar } from "./playbook-sidebar";
 import { getQuickLaunchWorkflows } from "@/lib/workflows";
@@ -25,15 +25,15 @@ export default function TodayDashboard() {
       {/* ── OS Header — unified status line ── */}
       <header className="mb-10">
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-[11px] text-muted/50 tabular-nums tracking-wide">
+          <span className="text-[12px] text-muted tabular-nums tracking-wide">
             {formatDate()}
           </span>
-          <div className="flex-1 border-t border-border/30" />
+          <div className="flex-1 border-t border-border" />
         </div>
         <h1 className="text-[26px] sm:text-[30px] font-light text-foreground tracking-tight leading-tight">
           {getGreeting()}, Ramsey
         </h1>
-        <p className="text-[13px] text-muted/40 mt-1.5">
+        <p className="text-[14px] text-muted mt-1.5">
           Here is your day.
         </p>
       </header>
@@ -69,6 +69,14 @@ export default function TodayDashboard() {
             </DashboardCard>
 
             <DashboardCard variant="sidebar">
+              <DraftsReady />
+            </DashboardCard>
+
+            <DashboardCard variant="sidebar">
+              <NeedToBuy />
+            </DashboardCard>
+
+            <DashboardCard variant="sidebar">
               <CardHeader
                 icon="M3 2h10v12H3zM6 5h4M6 7.5h4M6 10h2"
                 label="Playbooks"
@@ -79,8 +87,8 @@ export default function TodayDashboard() {
         }
       />
 
-      {/* ── Secondary zone — lower visual weight ── */}
-      <div className="mt-4 space-y-4 opacity-80">
+      {/* ── Secondary zone ── */}
+      <div className="mt-4 space-y-4">
         <DashboardCard variant="secondary">
           <SuggestedTools />
         </DashboardCard>
@@ -100,13 +108,13 @@ type CardVariant = "default" | "sidebar" | "secondary" | "ambient";
 
 const CARD_STYLES: Record<CardVariant, string> = {
   default:
-    "bg-surface/60 rounded-xl border border-border/60 p-5",
+    "bg-surface rounded-xl border border-border p-5 shadow-card",
   sidebar:
-    "bg-surface/50 rounded-xl border border-border/50 p-4 backdrop-blur-sm",
+    "bg-surface rounded-xl border border-border p-4 shadow-card",
   secondary:
-    "bg-surface/40 rounded-xl border border-border/40 p-5",
+    "bg-surface rounded-xl border border-border p-5 shadow-card",
   ambient:
-    "bg-surface/30 rounded-xl border border-border/30 p-5 opacity-50",
+    "bg-surface-raised rounded-xl border border-border p-5 opacity-70",
 };
 
 function DashboardCard({
@@ -136,10 +144,10 @@ function CardHeader({
 }) {
   return (
     <div className="flex items-center gap-2 mb-3">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
         <path d={icon} />
       </svg>
-      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/60">
+      <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
         {label}
       </h2>
       {count !== undefined && count > 0 && (
@@ -165,7 +173,7 @@ function WorkflowLaunchButton({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-[13px] text-foreground/60 transition-colors hover:bg-surface-raised hover:text-foreground group"
+      className="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-[13px] text-foreground/70 transition-colors hover:bg-surface-raised hover:text-foreground group"
     >
       <svg
         width="14"
@@ -176,12 +184,12 @@ function WorkflowLaunchButton({
         strokeWidth="1.3"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-muted/40 group-hover:text-accent/60 transition-colors shrink-0"
+        className="text-muted group-hover:text-accent transition-colors shrink-0"
       >
         <path d={icon} />
       </svg>
       <span className="flex-1">{label}</span>
-      <span className="text-[9px] text-muted/30 tabular-nums shrink-0">
+      <span className="text-[9px] text-muted tabular-nums shrink-0">
         {stepCount} steps
       </span>
     </Link>

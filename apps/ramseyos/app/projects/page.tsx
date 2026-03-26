@@ -97,10 +97,10 @@ export default function ProjectsPage() {
 
         {/* Cross-links */}
         <div className="flex items-center gap-3 mt-3">
-          <Link href="/tasks" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/tasks" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Tasks &rarr;
           </Link>
-          <Link href="/inbox" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/inbox" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Inbox &rarr;
           </Link>
         </div>
@@ -109,15 +109,15 @@ export default function ProjectsPage() {
       {loading ? (
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading projects…</span>
+          <span className="text-[13px] text-muted">Loading projects…</span>
         </div>
       ) : projects.length === 0 ? (
-        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-12 text-center">
+        <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-12 text-center">
           <svg width="36" height="36" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/20 mb-5">
             <path d="M2 5V4a1 1 0 011-1h3l1.5 2H13a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" />
           </svg>
           <p className="text-[16px] text-muted/50 font-medium">No projects yet</p>
-          <p className="text-[13px] text-muted/30 mt-2">
+          <p className="text-[13px] text-muted mt-2">
             Projects give structure to your work.
           </p>
         </div>
@@ -135,7 +135,7 @@ export default function ProjectsPage() {
               <Link
                 key={project.id}
                 href={`/projects/${project.id}`}
-                className="group block rounded-xl border border-border/50 bg-surface/50 p-5 transition-all hover:bg-surface-raised/40 hover:border-border-strong/50"
+                className="group block rounded-xl border border-border bg-surface p-5 transition-all hover:bg-surface-raised/40 hover:border-border-strong/50"
               >
                 <div className="flex items-start gap-4">
                   {/* Color indicator */}
@@ -179,7 +179,7 @@ export default function ProjectsPage() {
                               style={{ width: `${progress}%` }}
                             />
                           </div>
-                          <span className="text-[10px] text-muted/40 tabular-nums">
+                          <span className="text-[10px] text-muted tabular-nums">
                             {progress}%
                           </span>
                         </div>

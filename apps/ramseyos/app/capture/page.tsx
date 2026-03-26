@@ -85,7 +85,7 @@ export default function CapturePage() {
             }}
             placeholder="What's on your mind?"
             rows={4}
-            className="w-full flex-1 min-h-[120px] max-h-[50vh] resize-none bg-surface/50 rounded-xl border border-border/50 px-5 py-4 text-[16px] leading-relaxed text-foreground placeholder:text-muted/35 outline-none focus:border-accent/30 transition-colors backdrop-blur-sm"
+            className="w-full flex-1 min-h-[120px] max-h-[50vh] resize-none bg-surface rounded-xl border border-border px-5 py-4 text-[16px] leading-relaxed text-foreground placeholder:text-muted outline-none focus:border-accent/30 transition-colors backdrop-blur-sm"
             disabled={saving}
           />
 
@@ -99,7 +99,7 @@ export default function CapturePage() {
                 className={`text-[12px] px-3 py-1.5 rounded-xl transition-colors active:scale-95 ${
                   typeHint === value
                     ? "bg-accent/10 text-accent font-medium border border-accent/20"
-                    : "text-muted/35 hover:text-muted/60 border border-transparent"
+                    : "text-muted hover:text-muted/60 border border-transparent"
                 }`}
               >
                 {label}
@@ -147,14 +147,14 @@ export default function CapturePage() {
           <span className="text-muted/15">·</span>
           <Link
             href="/"
-            className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors"
+            className="text-[11px] text-muted hover:text-muted/60 transition-colors"
           >
             Dashboard
           </Link>
           <span className="text-muted/15">·</span>
           <Link
             href="/inbox"
-            className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors"
+            className="text-[11px] text-muted hover:text-muted/60 transition-colors"
           >
             Inbox
           </Link>

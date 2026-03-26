@@ -111,7 +111,7 @@ function CalendarContent() {
       <div className="max-w-3xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading calendar…</span>
+          <span className="text-[13px] text-muted">Loading calendar…</span>
         </div>
       </div>
     );
@@ -139,7 +139,7 @@ function CalendarContent() {
         </p>
 
         {events.length > 0 && (
-          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted">
             <span className="tabular-nums">{events.length} event{events.length !== 1 ? "s" : ""} today</span>
             {status?.connected && (
               <span className="flex items-center gap-1.5 text-emerald-400/60">
@@ -152,7 +152,7 @@ function CalendarContent() {
 
         {/* Cross-links */}
         <div className="flex items-center gap-3 mt-3">
-          <Link href="/settings" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/settings" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Settings &rarr;
           </Link>
         </div>
@@ -171,7 +171,7 @@ function CalendarContent() {
         {/* ── Google Calendar connection ── */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
               <rect x="2" y="3" width="12" height="11" rx="2" />
               <path d="M2 7h12M5 1.5v3M11 1.5v3" />
             </svg>
@@ -184,10 +184,10 @@ function CalendarContent() {
                 Connected
               </span>
             )}
-            <div className="flex-1 border-t border-border/40" />
+            <div className="flex-1 border-t border-border" />
           </div>
 
-          <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-5">
+          <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-5">
             {status?.connected ? (
               <div className="space-y-3">
                 {status.email && (
@@ -226,7 +226,7 @@ function CalendarContent() {
                   <button
                     type="button"
                     onClick={handleDisconnect}
-                    className="text-[11px] text-muted/40 hover:text-rose-400/70 transition-colors"
+                    className="text-[11px] text-muted hover:text-rose-400/70 transition-colors"
                   >
                     Disconnect
                   </button>
@@ -269,22 +269,22 @@ function CalendarContent() {
         {/* ── Today's schedule ── */}
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
               <circle cx="8" cy="8" r="6" />
               <path d="M8 4.5v3.5l2.5 1.5" />
             </svg>
             <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
               Today&apos;s Schedule
             </h2>
-            <span className="text-[10px] text-muted/40 tabular-nums">
+            <span className="text-[10px] text-muted tabular-nums">
               {events.length}
             </span>
-            <div className="flex-1 border-t border-border/40" />
+            <div className="flex-1 border-t border-border" />
           </div>
 
           {events.length === 0 ? (
-            <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
-              <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+            <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center">
+              <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
                 <rect x="2" y="3" width="12" height="11" rx="2" />
                 <path d="M2 7h12M5 1.5v3M11 1.5v3" />
               </svg>
@@ -293,7 +293,7 @@ function CalendarContent() {
                   ? "No events today. Try syncing to pull the latest."
                   : "Connect Google Calendar to see today\u2019s events."}
               </p>
-              <p className="text-[12px] text-muted/35 mt-1">
+              <p className="text-[12px] text-muted mt-1">
                 Events appear in your Daily Card automatically.
               </p>
             </div>
@@ -302,7 +302,7 @@ function CalendarContent() {
               {events.map((evt) => (
                 <div
                   key={evt.id}
-                  className={`flex items-center gap-3 rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30 ${
+                  className={`flex items-center gap-3 rounded-xl border border-border bg-surface backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30 ${
                     isPast(evt) ? "opacity-30" : ""
                   } ${isActive(evt) ? "border-emerald-500/20 bg-emerald-500/[0.03]" : ""}`}
                 >
@@ -331,7 +331,7 @@ function CalendarContent() {
                   )}
 
                   {evt.source === "google" && !isActive(evt) && (
-                    <span className="text-[9px] text-muted/30 shrink-0">
+                    <span className="text-[9px] text-muted shrink-0">
                       gcal
                     </span>
                   )}
@@ -345,16 +345,16 @@ function CalendarContent() {
         {!status?.connected && (
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
                 <circle cx="8" cy="8" r="6" />
                 <path d="M8 5v3M8 10.5v.5" />
               </svg>
               <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                 Setup
               </h2>
-              <div className="flex-1 border-t border-border/40" />
+              <div className="flex-1 border-t border-border" />
             </div>
-            <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-5">
+            <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-5">
               <p className="text-[12px] text-muted/50 leading-relaxed">
                 Connect your Google Calendar to sync events automatically.
                 Visit Settings to configure the integration.

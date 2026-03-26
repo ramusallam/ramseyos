@@ -37,7 +37,7 @@ export function QuickCapture() {
             Captured → inbox
           </span>
         ) : (
-          <span className="text-[10px] text-muted/25">→ inbox</span>
+          <span className="text-[10px] text-muted">→ inbox</span>
         )}
       </div>
       <form onSubmit={handleSubmit} className="flex items-center gap-3">
@@ -52,7 +52,7 @@ export function QuickCapture() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Capture a thought, task, or idea…"
-          className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted/40 outline-none"
+          className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted outline-none"
           disabled={saving}
         />
         {text.trim() && (

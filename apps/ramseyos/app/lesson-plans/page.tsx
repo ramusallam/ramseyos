@@ -68,7 +68,7 @@ export default function LessonPlansPage() {
       <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading lesson plans…</span>
+          <span className="text-[13px] text-muted">Loading lesson plans…</span>
         </div>
       </div>
     );
@@ -93,7 +93,7 @@ export default function LessonPlansPage() {
 
         {/* Stat bar */}
         {plans.length > 0 && (
-          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted">
             <span className="tabular-nums">{plans.length} lesson{plans.length !== 1 ? "s" : ""}</span>
             {courseCount > 0 && (
               <span className="tabular-nums">{courseCount} course{courseCount !== 1 ? "s" : ""}</span>
@@ -119,14 +119,14 @@ export default function LessonPlansPage() {
         {/* Cross-links */}
         <div className="flex items-center gap-3 mt-3">
           {materialsCount > 0 && (
-            <Link href="/materials" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+            <Link href="/materials" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
               Materials &rarr;
             </Link>
           )}
-          <Link href="/tools" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/tools" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Tools &rarr;
           </Link>
-          <Link href="/communications" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/communications" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Comms &rarr;
           </Link>
           {sparkCount > 0 && (
@@ -139,13 +139,13 @@ export default function LessonPlansPage() {
 
       {/* ── Empty ── */}
       {plans.length === 0 ? (
-        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/25 mb-4">
+        <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
             <rect x="3" y="1" width="10" height="14" rx="1.5" />
             <path d="M5.5 5h5M5.5 8h3" />
           </svg>
           <p className="text-sm text-muted/60 font-medium">No lesson plans yet</p>
-          <p className="text-[12px] text-muted/35 mt-1">
+          <p className="text-[12px] text-muted mt-1">
             Lessons you create will be organized here by course.
           </p>
         </div>
@@ -160,14 +160,14 @@ export default function LessonPlansPage() {
               <section key={course}>
                 {/* Course section header */}
                 <div className="flex items-center gap-2 mb-4">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={isUnassigned ? "text-muted/25" : "text-muted/40"}>
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={isUnassigned ? "text-muted" : "text-muted"}>
                     <rect x="3" y="1" width="10" height="14" rx="1.5" />
                     <path d="M5.5 5h5M5.5 8h3" />
                   </svg>
-                  <h2 className={`text-[11px] font-semibold uppercase tracking-wider ${isUnassigned ? "text-muted/40" : "text-muted"}`}>
+                  <h2 className={`text-[11px] font-semibold uppercase tracking-wider ${isUnassigned ? "text-muted" : "text-muted"}`}>
                     {course}
                   </h2>
-                  <span className="text-[10px] tabular-nums text-muted/40">
+                  <span className="text-[10px] tabular-nums text-muted">
                     {coursePlans.length}
                   </span>
                   {courseSparkActive > 0 && (
@@ -177,11 +177,11 @@ export default function LessonPlansPage() {
                     </span>
                   )}
                   {courseMaterialsCount > 0 && (
-                    <span className="text-[10px] text-muted/30 tabular-nums">
+                    <span className="text-[10px] text-muted tabular-nums">
                       {courseMaterialsCount} mat.
                     </span>
                   )}
-                  <div className="flex-1 border-t border-border/50" />
+                  <div className="flex-1 border-t border-border" />
                 </div>
 
                 {/* Lesson cards grid */}
@@ -212,7 +212,7 @@ function LessonPlanCard({ plan }: { plan: LessonPlan }) {
   return (
     <Link
       href={`/lesson-plans/${plan.id}`}
-      className="group flex flex-col rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-4 transition-all hover:border-border-strong hover:bg-surface-raised/30 hover:shadow-[var(--shadow-card-hover)]"
+      className="group flex flex-col rounded-xl border border-border bg-surface backdrop-blur-sm p-4 transition-all hover:border-border-strong hover:bg-surface-raised/30 hover:shadow-[var(--shadow-card-hover)]"
     >
       {/* Title + Spark dot */}
       <div className="flex items-start gap-2">
@@ -245,7 +245,7 @@ function LessonPlanCard({ plan }: { plan: LessonPlan }) {
             </span>
           ))}
           {plan.tags.length > 3 && (
-            <span className="text-[9px] text-muted/25">+{plan.tags.length - 3}</span>
+            <span className="text-[9px] text-muted">+{plan.tags.length - 3}</span>
           )}
         </div>
       )}
@@ -254,7 +254,7 @@ function LessonPlanCard({ plan }: { plan: LessonPlan }) {
       <div className="mt-auto pt-3 flex items-center gap-2 flex-wrap">
         {/* Last taught date */}
         {lastTaught && (
-          <span className="text-[9px] text-muted/35">
+          <span className="text-[9px] text-muted">
             taught {lastTaught}
           </span>
         )}
@@ -271,7 +271,7 @@ function LessonPlanCard({ plan }: { plan: LessonPlan }) {
 
         {/* Materials */}
         {materialsLen > 0 && (
-          <span className="text-[9px] text-muted/30 tabular-nums">
+          <span className="text-[9px] text-muted tabular-nums">
             {materialsLen} mat.
           </span>
         )}

@@ -68,16 +68,16 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
         <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted/50">
           Daily plan
         </h2>
-        <span className="text-[9px] text-muted/25 tabular-nums">
+        <span className="text-[9px] text-muted tabular-nums">
           {plan.timeline.length} item{plan.timeline.length !== 1 ? "s" : ""}
         </span>
-        <div className="flex-1 border-t border-border/30" />
+        <div className="flex-1 border-t border-border" />
         {/* Delivery actions */}
         <div className="flex items-center gap-0.5">
           <button
             type="button"
             onClick={handleCopy}
-            className="p-1.5 rounded-md text-muted/30 hover:text-muted/60 hover:bg-surface-raised transition-colors"
+            className="p-1.5 rounded-md text-muted hover:text-muted/60 hover:bg-surface-raised transition-colors"
             aria-label="Copy daily card"
           >
             {copied ? (
@@ -94,7 +94,7 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
           <button
             type="button"
             onClick={handleShare}
-            className="p-1.5 rounded-md text-muted/30 hover:text-muted/60 hover:bg-surface-raised transition-colors"
+            className="p-1.5 rounded-md text-muted hover:text-muted/60 hover:bg-surface-raised transition-colors"
             aria-label="Share daily card"
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -104,7 +104,7 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
           </button>
           <Link
             href="/today"
-            className="p-1.5 rounded-md text-muted/30 hover:text-muted/60 hover:bg-surface-raised transition-colors"
+            className="p-1.5 rounded-md text-muted hover:text-muted/60 hover:bg-surface-raised transition-colors"
             aria-label="Open mobile daily card"
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -163,7 +163,7 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
                 <span className="flex-1 text-[13px] text-foreground/60 truncate">
                   {item.title}
                 </span>
-                <span className="text-[9px] text-muted/30 shrink-0">routine</span>
+                <span className="text-[9px] text-muted shrink-0">routine</span>
               </li>
             ))}
           </ul>
@@ -176,8 +176,8 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
             <path d="M8 2a6 6 0 100 12A6 6 0 008 2z" />
             <path d="M8 5v3l2 1" />
           </svg>
-          <p className="text-[13px] text-muted/35">Nothing planned for today</p>
-          <p className="text-[11px] text-muted/25">Add tasks or schedule events to build your day.</p>
+          <p className="text-[13px] text-muted">Nothing planned for today</p>
+          <p className="text-[11px] text-muted">Add tasks or schedule events to build your day.</p>
         </div>
       )}
 
@@ -191,18 +191,18 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
       {hasContext && (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
               <path d="M8 2a6 6 0 100 12A6 6 0 008 2z" />
             </svg>
             <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">
               Context
             </h3>
-            <span className="text-[9px] text-muted/30 tabular-nums">{plan.lifeContext.length + adminActive.length}</span>
+            <span className="text-[9px] text-muted tabular-nums">{plan.lifeContext.length + adminActive.length}</span>
             <div className="flex-1" />
             {plan.lifeContext.length > 0 && (
               <Link
                 href="/life"
-                className="text-[10px] text-muted/35 hover:text-muted/60 transition-colors"
+                className="text-[10px] text-muted hover:text-muted/60 transition-colors"
               >
                 Life &rarr;
               </Link>
@@ -210,7 +210,7 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
             {adminActive.length > 0 && (
               <Link
                 href="/admin"
-                className="text-[10px] text-muted/35 hover:text-muted/60 transition-colors"
+                className="text-[10px] text-muted hover:text-muted/60 transition-colors"
               >
                 Admin &rarr;
               </Link>
@@ -232,7 +232,7 @@ export function DailyCard({ plan, adminActive }: DailyCardProps) {
               {plan.lifeContext.length > 0 && (
                 <div className="flex items-center gap-2 mt-2 mb-1 px-3">
                   <div className="flex-1 border-t border-border/20" />
-                  <span className="text-[8px] uppercase tracking-widest text-muted/25">ops</span>
+                  <span className="text-[8px] uppercase tracking-widest text-muted">ops</span>
                   <div className="flex-1 border-t border-border/20" />
                 </div>
               )}
@@ -264,14 +264,14 @@ function SectionLabel({
 }) {
   return (
     <div className="flex items-center gap-2 mb-2">
-      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
+      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
         <path d={icon} />
       </svg>
       <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">
         {label}
       </h3>
       {count !== undefined && (
-        <span className="text-[9px] text-muted/30 tabular-nums">{count}</span>
+        <span className="text-[9px] text-muted tabular-nums">{count}</span>
       )}
       {completedCount !== undefined && completedCount > 0 && (
         <span className="text-[9px] text-emerald-400/60 tabular-nums font-medium">
@@ -289,7 +289,7 @@ function InboxNudge({ count }: { count: number }) {
     return (
       <div className="flex items-center gap-2 px-3 py-2 rounded-lg">
         <span className="size-1.5 shrink-0 rounded-full bg-emerald-400/40" />
-        <span className="text-[12px] text-muted/40 italic">Inbox clear</span>
+        <span className="text-[12px] text-muted italic">Inbox clear</span>
       </div>
     );
   }
@@ -340,7 +340,7 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
           {fmtCardTime(item.startTime)} – {fmtCardTime(item.endTime)}
         </span>
       ) : (
-        <span className="text-[10px] text-muted/40 uppercase tracking-wide shrink-0 w-28 font-medium">
+        <span className="text-[10px] text-muted uppercase tracking-wide shrink-0 w-28 font-medium">
           {TYPE_LABEL[item.type]}
         </span>
       )}
@@ -358,7 +358,7 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
       )}
 
       {item.source === "google" && !isActive && (
-        <span className="text-[9px] text-muted/25 shrink-0">
+        <span className="text-[9px] text-muted shrink-0">
           gcal
         </span>
       )}
@@ -402,16 +402,16 @@ function TaskRow({ item, onComplete }: { item: TimelineItem; onComplete?: (id: s
         <span className={`size-2 shrink-0 rounded-full ${TYPE_DOT[item.type]}`} />
       )}
 
-      <span className="text-[10px] text-muted/40 uppercase tracking-wide shrink-0 w-28 font-medium">
+      <span className="text-[10px] text-muted uppercase tracking-wide shrink-0 w-28 font-medium">
         {TYPE_LABEL[item.type]}
       </span>
 
-      <span className={`flex-1 text-[13px] truncate ${done ? "text-muted/40 line-through" : "text-foreground/70"}`}>
+      <span className={`flex-1 text-[13px] truncate ${done ? "text-muted line-through" : "text-foreground/70"}`}>
         {item.title}
       </span>
 
       {item.projectName && (
-        <span className="text-[9px] text-muted/40 shrink-0 truncate max-w-[80px]">
+        <span className="text-[9px] text-muted shrink-0 truncate max-w-[80px]">
           {item.projectName}
         </span>
       )}
@@ -445,7 +445,7 @@ function LifeContextRow({ item }: { item: LifeContextItem }) {
           recurring
         </span>
       )}
-      <span className="text-[9px] text-muted/30 shrink-0">
+      <span className="text-[9px] text-muted shrink-0">
         {item.category === "life-admin" ? "life admin" : item.category}
       </span>
     </li>
@@ -466,7 +466,7 @@ function AdminContextRow({ item }: { item: AdminItem }) {
           recurring
         </span>
       )}
-      <span className="text-[9px] text-muted/30 shrink-0">
+      <span className="text-[9px] text-muted shrink-0">
         {ADMIN_CAT_LABEL[item.category] ?? "ops"}
       </span>
     </li>
@@ -490,7 +490,7 @@ function TeachNudge() {
       </Link>
       <Link
         href="/materials"
-        className="text-[10px] text-muted/35 hover:text-muted/60 transition-colors"
+        className="text-[10px] text-muted hover:text-muted/60 transition-colors"
       >
         Materials
       </Link>

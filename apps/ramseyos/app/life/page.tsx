@@ -115,7 +115,7 @@ export default function LifePage() {
       <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading life items…</span>
+          <span className="text-[13px] text-muted">Loading life items…</span>
         </div>
       </div>
     );
@@ -143,7 +143,7 @@ export default function LifePage() {
           <button
             type="button"
             onClick={() => setShowAdd(!showAdd)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border/50 bg-surface/50 backdrop-blur-sm px-3 py-1.5 text-[11px] font-semibold text-muted/70 hover:bg-surface-raised/60 hover:text-foreground/70 transition-colors mt-6"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface backdrop-blur-sm px-3 py-1.5 text-[11px] font-semibold text-muted/70 hover:bg-surface-raised/60 hover:text-foreground/70 transition-colors mt-6"
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M8 3v10M3 8h10" />
@@ -153,7 +153,7 @@ export default function LifePage() {
         </div>
 
         {openItems.length > 0 && (
-          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted">
             <span className="tabular-nums">{openItems.length} open</span>
             {inProgressItems.length > 0 && (
               <span className="flex items-center gap-1.5 text-blue-400/60">
@@ -175,7 +175,7 @@ export default function LifePage() {
 
         {/* Cross-links */}
         <div className="flex items-center gap-3 mt-3">
-          <Link href="/admin" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/admin" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Admin &rarr;
           </Link>
         </div>
@@ -232,7 +232,7 @@ export default function LifePage() {
                       <path d={meta.icon} />
                     </svg>
                     {i.title}
-                    <span className="text-[9px] text-muted/40">{FREQUENCY_LABELS[i.frequency]}</span>
+                    <span className="text-[9px] text-muted">{FREQUENCY_LABELS[i.frequency]}</span>
                   </span>
                 );
               })}
@@ -254,7 +254,7 @@ export default function LifePage() {
                   title={meta.label}
                   count={catItems.length}
                   color={meta.text}
-                  ruleColor="border-border/40"
+                  ruleColor="border-border"
                 />
                 <div className="space-y-2">
                   {catRecurring.map((i) => (
@@ -292,7 +292,7 @@ export default function LifePage() {
               <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400/60 group-hover:text-emerald-400/80 transition-colors">
                 Completed
               </span>
-              <span className="text-[10px] tabular-nums text-muted/40">
+              <span className="text-[10px] tabular-nums text-muted">
                 {doneItems.length}
               </span>
               <div className="flex-1 border-t border-emerald-400/10" />
@@ -304,7 +304,7 @@ export default function LifePage() {
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
-                className={`text-muted/30 transition-transform ${showDone ? "rotate-180" : ""}`}
+                className={`text-muted transition-transform ${showDone ? "rotate-180" : ""}`}
               >
                 <path d="M4 6l4 4 4-4" />
               </svg>
@@ -357,7 +357,7 @@ function SectionHeader({
       <h2 className={`text-[11px] font-semibold uppercase tracking-wider ${color}`}>
         {title}
       </h2>
-      <span className="text-[10px] tabular-nums text-muted/40">
+      <span className="text-[10px] tabular-nums text-muted">
         {count}
       </span>
       <div className={`flex-1 border-t ${ruleColor}`} />
@@ -367,12 +367,12 @@ function SectionHeader({
 
 function EmptyState({ message, detail }: { message: string; detail: string }) {
   return (
-    <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
-      <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+    <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center">
+      <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
         <path d="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4a3.5 3.5 0 015.5 3c0 3.5-5.5 7-5.5 7z" />
       </svg>
       <p className="text-sm text-muted/60">{message}</p>
-      <p className="text-[12px] text-muted/35 mt-1">{detail}</p>
+      <p className="text-[12px] text-muted mt-1">{detail}</p>
     </div>
   );
 }
@@ -395,19 +395,19 @@ function QuickAddForm({
   const canSubmit = title.trim().length > 0;
 
   return (
-    <div className="mb-8 rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-5 space-y-4">
+    <div className="mb-8 rounded-xl border border-border bg-surface backdrop-blur-sm p-5 space-y-4">
       <input
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="What needs doing?"
         autoFocus
-        className="w-full bg-transparent text-[14px] text-foreground/85 placeholder:text-muted/30 outline-none border-b border-border/30 pb-2"
+        className="w-full bg-transparent text-[14px] text-foreground/85 placeholder:text-muted outline-none border-b border-border pb-2"
       />
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1.5">
-          <span className="text-[9px] font-semibold uppercase tracking-wider text-muted/40">Category</span>
+          <span className="text-[9px] font-semibold uppercase tracking-wider text-muted">Category</span>
           <div className="flex gap-1">
             {CATEGORY_ORDER.map((cat) => {
               const meta = categoryMeta(cat);
@@ -420,7 +420,7 @@ function QuickAddForm({
                   className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-medium transition-colors ${
                     isActive
                       ? `${meta.bg} ${meta.text} border-current/20`
-                      : "border-border/30 text-muted/40 hover:text-muted/60"
+                      : "border-border text-muted hover:text-muted/60"
                   }`}
                 >
                   {meta.label}
@@ -436,7 +436,7 @@ function QuickAddForm({
           className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-medium transition-colors ${
             recurring
               ? "border-violet-400/20 bg-violet-500/10 text-violet-400/70"
-              : "border-border/30 text-muted/40 hover:text-muted/60"
+              : "border-border text-muted hover:text-muted/60"
           }`}
         >
           <svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -451,7 +451,7 @@ function QuickAddForm({
             value={frequency}
             onChange={(e) => setFrequency(e.target.value as LifeItemFrequency)}
             aria-label="Frequency"
-            className="bg-surface-raised/50 border border-border/40 rounded-lg px-2 py-0.5 text-[10px] text-muted/60 outline-none"
+            className="bg-surface-raised/50 border border-border rounded-lg px-2 py-0.5 text-[10px] text-muted/60 outline-none"
           >
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
@@ -466,7 +466,7 @@ function QuickAddForm({
         onChange={(e) => setBody(e.target.value)}
         placeholder="Notes (optional)"
         rows={2}
-        className="w-full bg-transparent text-[12px] text-foreground/65 placeholder:text-muted/30 outline-none border border-border/30 rounded-lg px-3 py-2 resize-y"
+        className="w-full bg-transparent text-[12px] text-foreground/65 placeholder:text-muted outline-none border border-border rounded-lg px-3 py-2 resize-y"
       />
 
       <div className="flex items-center gap-2 pt-1">
@@ -508,7 +508,7 @@ function LifeItemCard({
     i.body.length > 120 ? i.body.slice(0, 120).trimEnd() + "..." : i.body;
 
   return (
-    <div className={`rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 overflow-hidden ${i.recurring && i.status !== "done" ? "border-l-2 border-l-violet-400/30" : ""}`}>
+    <div className={`rounded-xl bg-surface backdrop-blur-sm border border-border overflow-hidden ${i.recurring && i.status !== "done" ? "border-l-2 border-l-violet-400/30" : ""}`}>
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
@@ -524,7 +524,7 @@ function LifeItemCard({
             >
               {style.label}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/30 bg-white/5 px-2 py-0 text-[9px] font-medium text-muted/60">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white/5 px-2 py-0 text-[9px] font-medium text-muted/60">
               <span className={`inline-block w-1.5 h-1.5 rounded-full ${status.dot}`} />
               {status.label}
             </span>
@@ -552,14 +552,14 @@ function LifeItemCard({
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
-          className={`shrink-0 mt-1.5 text-muted/30 transition-transform ${expanded ? "rotate-180" : ""}`}
+          className={`shrink-0 mt-1.5 text-muted transition-transform ${expanded ? "rotate-180" : ""}`}
         >
           <path d="M4 6l4 4 4-4" />
         </svg>
       </button>
 
       {expanded && (
-        <div className="border-t border-border/30 px-5 py-4 space-y-4">
+        <div className="border-t border-border px-5 py-4 space-y-4">
           {i.body && (
             <p className="text-[12px] text-foreground/65 leading-relaxed whitespace-pre-line">
               {i.body}
@@ -568,7 +568,7 @@ function LifeItemCard({
 
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-2">
-              <span className="text-[9px] font-semibold uppercase tracking-wider text-muted/40 mr-1">Status</span>
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-muted mr-1">Status</span>
               {STATUS_ORDER.map((s) => {
                 const meta = STATUS_META[s];
                 const isActive = i.status === s;
@@ -583,7 +583,7 @@ function LifeItemCard({
                     className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-medium transition-colors ${
                       isActive
                         ? "border-foreground/15 bg-foreground/5 text-foreground/70"
-                        : "border-border/30 bg-surface text-muted/45 hover:bg-surface-raised/60 hover:text-muted/60"
+                        : "border-border bg-surface text-muted/45 hover:bg-surface-raised/60 hover:text-muted/60"
                     }`}
                   >
                     <span className={`inline-block w-1.5 h-1.5 rounded-full ${meta.dot}`} />
@@ -599,7 +599,7 @@ function LifeItemCard({
                 e.stopPropagation();
                 onArchive(i.id);
               }}
-              className="text-[9px] font-medium text-muted/30 hover:text-red-400/60 transition-colors"
+              className="text-[9px] font-medium text-muted hover:text-red-400/60 transition-colors"
               title="Archive item"
             >
               Archive

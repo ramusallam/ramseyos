@@ -130,7 +130,7 @@ export default function PurchasingPage() {
       <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading purchasing…</span>
+          <span className="text-[13px] text-muted">Loading purchasing…</span>
         </div>
       </div>
     );
@@ -146,14 +146,14 @@ export default function PurchasingPage() {
           >
             Today
           </Link>
-          <span className="text-muted/30">/</span>
+          <span className="text-muted">/</span>
           <Link
             href="/materials"
             className="hover:text-foreground/60 transition-colors"
           >
             Materials
           </Link>
-          <span className="text-muted/30">/</span>
+          <span className="text-muted">/</span>
           <span className="text-muted/70">Purchasing</span>
         </div>
         <h1 className="text-[20px] font-semibold text-foreground tracking-tight mt-2">
@@ -166,7 +166,7 @@ export default function PurchasingPage() {
         </p>
 
         {totalCount > 0 && (
-          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted">
             <span className="flex items-center gap-1.5 text-rose-400/60">
               <span className="size-1.5 rounded-full bg-rose-400" />
               {totalCount} to buy
@@ -182,13 +182,13 @@ export default function PurchasingPage() {
 
         {/* Cross-links */}
         <div className="flex items-center gap-3 mt-3">
-          <Link href="/materials" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/materials" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Materials &rarr;
           </Link>
-          <Link href="/vendors" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/vendors" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Sources{vendorCount > 0 && ` (${vendorCount})`} &rarr;
           </Link>
-          <Link href="/lesson-plans" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/lesson-plans" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Lesson Plans &rarr;
           </Link>
         </div>
@@ -199,7 +199,7 @@ export default function PurchasingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
           {/* Top Sources */}
           {summary.vendorStats.length > 0 && (
-            <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-5">
+            <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-5">
               <div className="flex items-center gap-2 mb-3">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/50">
                   <rect x="2" y="3" width="12" height="10" rx="1.5" />
@@ -246,7 +246,7 @@ export default function PurchasingPage() {
                   <div key={i} className="flex items-center justify-between">
                     <span className="text-[12px] text-foreground/70">{mat.name}</span>
                     {mat.quantity && (
-                      <span className="text-[10px] text-muted/40 tabular-nums">
+                      <span className="text-[10px] text-muted tabular-nums">
                         qty: {mat.quantity}
                       </span>
                     )}
@@ -260,14 +260,14 @@ export default function PurchasingPage() {
 
       {/* Vendor groups */}
       {totalCount === 0 ? (
-        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+        <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
             <circle cx="6" cy="13.5" r="1" fill="currentColor" />
             <circle cx="12.5" cy="13.5" r="1" fill="currentColor" />
             <path d="M1 1h2.5l1.3 7.5a1 1 0 001 .8h6.4a1 1 0 001-.8L14.5 4H4" />
           </svg>
           <p className="text-sm text-muted/60">Nothing to buy right now</p>
-          <p className="text-[12px] text-muted/35 mt-1">
+          <p className="text-[12px] text-muted mt-1">
             Mark materials as &ldquo;Need to buy&rdquo; in your lesson plans to see them here.
           </p>
         </div>
@@ -283,10 +283,10 @@ export default function PurchasingPage() {
                 <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                   {group.label}
                 </h2>
-                <span className="text-[10px] tabular-nums text-muted/40">
+                <span className="text-[10px] tabular-nums text-muted">
                   {group.items.length} item{group.items.length === 1 ? "" : "s"}
                 </span>
-                <div className="flex-1 border-t border-border/40" />
+                <div className="flex-1 border-t border-border" />
                 {group.vendor?.url && (
                   <a
                     href={group.vendor.url}
@@ -304,7 +304,7 @@ export default function PurchasingPage() {
                   return (
                     <div
                       key={i}
-                      className="flex items-start gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3"
+                      className="flex items-start gap-3 rounded-xl bg-surface backdrop-blur-sm border border-border px-4 py-3"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -334,7 +334,7 @@ export default function PurchasingPage() {
                         )}
                         <Link
                           href={`/lesson-plans/${item.lessonId}`}
-                          className="text-[10px] text-muted/35 hover:text-muted/60 transition-colors mt-1.5 inline-flex items-center gap-1"
+                          className="text-[10px] text-muted hover:text-muted/60 transition-colors mt-1.5 inline-flex items-center gap-1"
                         >
                           <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                             <rect x="3" y="1" width="10" height="14" rx="1.5" />
@@ -342,7 +342,7 @@ export default function PurchasingPage() {
                           </svg>
                           {item.lessonTitle || "Untitled lesson"}
                           {item.course && (
-                            <span className="text-muted/25">· {item.course}</span>
+                            <span className="text-muted">· {item.course}</span>
                           )}
                         </Link>
                       </div>
@@ -351,7 +351,7 @@ export default function PurchasingPage() {
                           href={launchUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="shrink-0 mt-0.5 inline-flex items-center gap-1.5 rounded-md border border-border/50 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-foreground/60 hover:text-accent hover:border-accent/30 transition-colors"
+                          className="shrink-0 mt-0.5 inline-flex items-center gap-1.5 rounded-md border border-border bg-white/5 px-3 py-1.5 text-[11px] font-medium text-foreground/60 hover:text-accent hover:border-accent/30 transition-colors"
                         >
                           Open
                           <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">

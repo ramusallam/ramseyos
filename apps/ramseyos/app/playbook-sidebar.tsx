@@ -65,7 +65,7 @@ export function PlaybookSidebar() {
             strokeWidth="1.3"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-muted/40 shrink-0 mt-0.5"
+            className="text-muted shrink-0 mt-0.5"
           >
             <path d={TYPE_ICON[entry.type] ?? TYPE_ICON.note} />
           </svg>

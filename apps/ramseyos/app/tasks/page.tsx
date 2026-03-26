@@ -123,7 +123,7 @@ export default function TasksPage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading tasks…</span>
+          <span className="text-[13px] text-muted">Loading tasks…</span>
         </div>
       </div>
     );
@@ -148,7 +148,7 @@ export default function TasksPage() {
 
         {/* Stat bar */}
         {tasks.length > 0 && (
-          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted">
             <span className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-sky-400" />
               <span className="tabular-nums">{incomplete.length} open</span>
@@ -173,10 +173,10 @@ export default function TasksPage() {
 
         {/* Cross-links */}
         <div className="flex items-center gap-3 mt-3">
-          <Link href="/inbox" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/inbox" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Inbox &rarr;
           </Link>
-          <Link href="/projects" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/projects" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Projects &rarr;
           </Link>
         </div>
@@ -184,13 +184,13 @@ export default function TasksPage() {
 
       {/* ── Empty ── */}
       {tasks.length === 0 ? (
-        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/25 mb-4">
+        <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
             <rect x="2" y="2" width="12" height="12" rx="3" />
             <path d="M5.5 8l2 2 3-4" />
           </svg>
           <p className="text-sm text-muted/60 font-medium">No tasks yet</p>
-          <p className="text-[12px] text-muted/35 mt-1">
+          <p className="text-[12px] text-muted mt-1">
             Convert captures from the{" "}
             <Link href="/inbox" className="text-accent/50 hover:text-accent transition-colors">
               Inbox
@@ -226,12 +226,12 @@ export default function TasksPage() {
                     Unassigned
                   </h2>
                 )}
-                <span className="text-[10px] text-muted/40 tabular-nums">{groupTasks.length}</span>
-                <div className="flex-1 border-t border-border/40" />
+                <span className="text-[10px] text-muted tabular-nums">{groupTasks.length}</span>
+                <div className="flex-1 border-t border-border" />
                 {project && (
                   <Link
                     href={`/projects/${project.id}`}
-                    className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors"
+                    className="text-[11px] text-muted hover:text-muted/60 transition-colors"
                   >
                     Open &rarr;
                   </Link>
@@ -255,14 +255,14 @@ export default function TasksPage() {
                 onClick={() => setShowCompleted(!showCompleted)}
                 className="flex items-center gap-2 mb-3 group w-full"
               >
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
                   <path d="M5.5 8l2 2 3-4" />
                 </svg>
-                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/40">
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                   Completed
                 </h2>
-                <span className="text-[10px] text-muted/30 tabular-nums">{completed.length}</span>
-                <div className="flex-1 border-t border-border/30" />
+                <span className="text-[10px] text-muted tabular-nums">{completed.length}</span>
+                <div className="flex-1 border-t border-border" />
                 <svg
                   width="10"
                   height="10"
@@ -272,7 +272,7 @@ export default function TasksPage() {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={`text-muted/30 transition-transform ${showCompleted ? "rotate-180" : ""}`}
+                  className={`text-muted transition-transform ${showCompleted ? "rotate-180" : ""}`}
                 >
                   <path d="M4 6l4 4 4-4" />
                 </svg>
@@ -322,7 +322,7 @@ function TaskItem({
 
   return (
     <li
-      className={`rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-4 py-3 transition-all hover:bg-surface-raised/30 ${
+      className={`rounded-xl border border-border bg-surface backdrop-blur-sm px-4 py-3 transition-all hover:bg-surface-raised/30 ${
         task.completed ? "opacity-35" : ""
       }`}
     >
@@ -379,7 +379,7 @@ function TaskItem({
 
         {/* Inbox origin indicator */}
         {task.sourceCaptureId && !task.completed && (
-          <span className="text-[10px] text-muted/40 shrink-0">inbox</span>
+          <span className="text-[10px] text-muted shrink-0">inbox</span>
         )}
 
         {task.priority && !task.completed && (
@@ -400,7 +400,7 @@ function TaskItem({
               className={`text-[10px] px-2 py-1 rounded-lg shrink-0 transition-colors ${
                 task.pinned
                   ? "bg-violet-500/10 text-violet-400 font-medium"
-                  : "text-muted/30 hover:text-muted/60 hover:bg-surface-raised"
+                  : "text-muted hover:text-muted/60 hover:bg-surface-raised"
               }`}
               aria-label={task.pinned ? "Unpin" : "Pin"}
             >
@@ -414,7 +414,7 @@ function TaskItem({
               className={`text-[10px] px-2 py-1 rounded-lg shrink-0 transition-colors ${
                 task.chosenForToday
                   ? "bg-accent-dim text-accent font-medium"
-                  : "text-muted/30 hover:text-muted/60 hover:bg-surface-raised"
+                  : "text-muted hover:text-muted/60 hover:bg-surface-raised"
               }`}
               aria-label={
                 task.chosenForToday ? "Remove from today" : "Choose for today"
@@ -435,7 +435,7 @@ function TaskItem({
             onChange={(e) =>
               updateTaskProject(task.id, e.target.value || null)
             }
-            className="bg-surface-raised/50 rounded-lg text-[11px] text-muted/60 outline-none cursor-pointer hover:text-foreground/60 transition-colors px-2 py-1.5 border border-border/40"
+            className="bg-surface-raised/50 rounded-lg text-[11px] text-muted/60 outline-none cursor-pointer hover:text-foreground/60 transition-colors px-2 py-1.5 border border-border"
           >
             <option value="" className="bg-surface text-foreground">
               No project

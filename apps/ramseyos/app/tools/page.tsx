@@ -140,10 +140,10 @@ export default function ToolsPage() {
 
         {/* Cross-links */}
         <div className="flex items-center gap-3 mt-3">
-          <Link href="/product-ops" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/product-ops" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Product Ops &rarr;
           </Link>
-          <Link href="/lesson-plans" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/lesson-plans" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Lesson Plans &rarr;
           </Link>
         </div>
@@ -153,19 +153,19 @@ export default function ToolsPage() {
       {loading && (
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading tools…</span>
+          <span className="text-[13px] text-muted">Loading tools…</span>
         </div>
       )}
 
       {/* Empty */}
       {!loading && tools.length === 0 && (
-        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+        <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
             <rect x="2" y="2" width="12" height="12" rx="2" />
             <path d="M5 6h6M5 9h4" />
           </svg>
           <p className="text-sm text-muted/60">No tools or resources yet</p>
-          <p className="text-[12px] text-muted/35 mt-1">
+          <p className="text-[12px] text-muted mt-1">
             Tools added to RamseyOS will appear here.
           </p>
         </div>
@@ -197,7 +197,7 @@ export default function ToolsPage() {
                     <h3 className="text-[15px] font-medium text-foreground group-hover:text-foreground transition-colors">
                       {sparkTool.title}
                     </h3>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-muted/30 group-hover:text-muted/60 transition-colors shrink-0">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-muted group-hover:text-muted/60 transition-colors shrink-0">
                       <path d="M4.5 2H10v5.5M10 2L3 9" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
@@ -218,7 +218,7 @@ export default function ToolsPage() {
                     <Link
                       href="/materials"
                       onClick={(e) => e.stopPropagation()}
-                      className="text-muted/40 hover:text-muted/60 transition-colors"
+                      className="text-muted hover:text-muted/60 transition-colors"
                     >
                       Materials &rarr;
                     </Link>
@@ -226,7 +226,7 @@ export default function ToolsPage() {
                     <Link
                       href="/product-ops"
                       onClick={(e) => e.stopPropagation()}
-                      className="text-muted/40 hover:text-muted/60 transition-colors"
+                      className="text-muted hover:text-muted/60 transition-colors"
                     >
                       Product Ops &rarr;
                     </Link>
@@ -243,7 +243,7 @@ export default function ToolsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search tools…"
-              className="w-full rounded-lg border border-border/60 bg-surface/60 px-4 py-2.5 text-[13px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+              className="w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-[13px] text-foreground placeholder:text-muted outline-none focus:border-accent/30 transition-colors"
             />
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
@@ -311,7 +311,7 @@ export default function ToolsPage() {
                 icon={CATEGORY_ICON[category] ?? "M2 2h12v12H2z"}
                 title={CATEGORY_LABEL[category] ?? category}
                 count={items.length}
-                color="text-muted/40"
+                color="text-muted"
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {items.map((tool) => (
@@ -336,7 +336,7 @@ function SectionHeader({
   icon,
   title,
   count,
-  color = "text-muted/40",
+  color = "text-muted",
 }: {
   icon: string;
   title: string;
@@ -352,9 +352,9 @@ function SectionHeader({
         {title}
       </h2>
       {count !== undefined && (
-        <span className="text-[10px] text-muted/40 tabular-nums">{count}</span>
+        <span className="text-[10px] text-muted tabular-nums">{count}</span>
       )}
-      <div className="flex-1 border-t border-border/40 ml-2" />
+      <div className="flex-1 border-t border-border ml-2" />
     </div>
   );
 }
@@ -372,7 +372,7 @@ function ToolCard({
   const desktopOnly = tool.environment === "desktop" && !isDesktop();
 
   return (
-    <div className={`group relative flex flex-col rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-4 transition-all hover:border-border-strong hover:bg-surface-raised/30 ${desktopOnly ? "opacity-50" : ""}`}>
+    <div className={`group relative flex flex-col rounded-xl border border-border bg-surface backdrop-blur-sm p-4 transition-all hover:border-border-strong hover:bg-surface-raised/30 ${desktopOnly ? "opacity-50" : ""}`}>
       <a
         href={desktopOnly ? undefined : tool.url}
         target={isExternal && !desktopOnly ? "_blank" : undefined}
@@ -400,7 +400,7 @@ function ToolCard({
               height="12"
               viewBox="0 0 12 12"
               fill="none"
-              className="text-muted/30 group-hover:text-muted/60 transition-colors shrink-0"
+              className="text-muted group-hover:text-muted/60 transition-colors shrink-0"
             >
               <path
                 d="M4.5 2H10v5.5M10 2L3 9"

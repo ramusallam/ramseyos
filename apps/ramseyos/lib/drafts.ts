@@ -44,6 +44,22 @@ export async function getDrafts(): Promise<DraftItem[]> {
   }));
 }
 
+export async function createDraft(fields: {
+  subject: string;
+  body?: string;
+}): Promise<string> {
+  const ref = await addDoc(collection(db, "communicationDrafts"), {
+    templateId: "",
+    groupId: "",
+    subject: fields.subject,
+    body: fields.body ?? "",
+    status: "draft" as DraftStatus,
+    gmailStatus: "not_prepared" as GmailHandoffStatus,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
 export async function updateDraftGmailStatus(
   id: string,
   gmailStatus: GmailHandoffStatus

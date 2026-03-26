@@ -75,7 +75,7 @@ export default function MaterialsPage() {
       <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading materials…</span>
+          <span className="text-[13px] text-muted">Loading materials…</span>
         </div>
       </div>
     );
@@ -97,7 +97,7 @@ export default function MaterialsPage() {
           Supplies and materials across all lesson plans.
         </p>
         {allMaterials.length > 0 && (
-          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted">
             <span className="tabular-nums">{allMaterials.length} total</span>
             {needToBuy.length > 0 && (
               <span className="flex items-center gap-1.5 text-rose-400/60">
@@ -121,10 +121,10 @@ export default function MaterialsPage() {
               Purchasing &rarr;
             </Link>
           )}
-          <Link href="/vendors" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/vendors" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Sources{vendorCount > 0 && ` (${vendorCount})`} &rarr;
           </Link>
-          <Link href="/lesson-plans" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/lesson-plans" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Lesson Plans &rarr;
           </Link>
         </div>
@@ -195,7 +195,7 @@ export default function MaterialsPage() {
               title="All Materials"
               count={rest.length}
               color="text-muted"
-              ruleColor="border-border/50"
+              ruleColor="border-border"
               icon={
                 <>
                   <rect x="2" y="2" width="12" height="12" rx="2" />
@@ -224,20 +224,20 @@ function Stat({ label, value, accent }: { label: string; value: number; accent?:
   return (
     <div className="flex items-center gap-1.5">
       <span className={`text-[13px] font-medium tabular-nums ${color}`}>{value}</span>
-      <span className="text-[10px] text-muted/40">{label}</span>
+      <span className="text-[10px] text-muted">{label}</span>
     </div>
   );
 }
 
 function EmptyState({ message, detail }: { message: string; detail: string }) {
   return (
-    <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
-      <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+    <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center">
+      <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
         <rect x="2" y="2" width="12" height="12" rx="2" />
         <path d="M5 6h6M5 9h4" />
       </svg>
       <p className="text-sm text-muted/60">{message}</p>
-      <p className="text-[12px] text-muted/35 mt-1">{detail}</p>
+      <p className="text-[12px] text-muted mt-1">{detail}</p>
     </div>
   );
 }
@@ -278,7 +278,7 @@ function MaterialSection({
         <h2 className={`text-[11px] font-semibold uppercase tracking-wider ${color}`}>
           {title}
         </h2>
-        <span className="text-[10px] tabular-nums text-muted/40">
+        <span className="text-[10px] tabular-nums text-muted">
           {count}
         </span>
         <div className={`flex-1 border-t ${ruleColor}`} />
@@ -300,7 +300,7 @@ function MaterialCard({
   source: { name: string; url: string; isVendor: boolean } | null;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3">
+    <div className="flex items-start gap-3 rounded-xl bg-surface backdrop-blur-sm border border-border px-4 py-3">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[13px] font-medium text-foreground/85">
@@ -349,15 +349,15 @@ function MaterialCard({
                 {source.name} &rarr;
               </a>
             ) : (
-              <span className="text-[10px] text-muted/40">{source.name}</span>
+              <span className="text-[10px] text-muted">{source.name}</span>
             )
           )}
           <Link
             href={`/lesson-plans/${mat.lessonId}`}
-            className="text-[10px] text-muted/35 hover:text-muted/60 transition-colors"
+            className="text-[10px] text-muted hover:text-muted/60 transition-colors"
           >
             {mat.lessonTitle || "Untitled lesson"}
-            {mat.course && <span className="ml-1 text-muted/25">· {mat.course}</span>}
+            {mat.course && <span className="ml-1 text-muted">· {mat.course}</span>}
           </Link>
         </div>
       </div>

@@ -64,14 +64,14 @@ export default function VendorsPage() {
           >
             Today
           </Link>
-          <span className="text-muted/30">/</span>
+          <span className="text-muted">/</span>
           <Link
             href="/materials"
             className="hover:text-foreground/60 transition-colors"
           >
             Materials
           </Link>
-          <span className="text-muted/30">/</span>
+          <span className="text-muted">/</span>
           <span className="text-muted/70">Sources</span>
         </div>
         <h1 className="text-[20px] font-semibold text-foreground tracking-tight mt-2">
@@ -82,7 +82,7 @@ export default function VendorsPage() {
         </p>
 
         {vendors.length > 0 && (
-          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted">
             <span className="tabular-nums">{vendors.length} vendor{vendors.length !== 1 ? "s" : ""}</span>
             {totalMaterials > 0 && (
               <span className="tabular-nums">{totalMaterials} linked material{totalMaterials !== 1 ? "s" : ""}</span>
@@ -98,7 +98,7 @@ export default function VendorsPage() {
 
         {/* Cross-links */}
         <div className="flex items-center gap-3 mt-3">
-          <Link href="/materials" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/materials" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Materials &rarr;
           </Link>
           {totalToBuy > 0 && (
@@ -112,16 +112,16 @@ export default function VendorsPage() {
       {loading ? (
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading sources…</span>
+          <span className="text-[13px] text-muted">Loading sources…</span>
         </div>
       ) : vendors.length === 0 ? (
-        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/30 mb-4">
+        <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
             <rect x="2" y="3" width="12" height="10" rx="1.5" />
             <path d="M2 7h12" />
           </svg>
           <p className="text-sm text-muted/60">No sources yet</p>
-          <p className="text-[12px] text-muted/35 mt-1">
+          <p className="text-[12px] text-muted mt-1">
             Vendors added to RamseyOS will appear here.
           </p>
         </div>
@@ -144,7 +144,7 @@ function VendorCard({ vendor }: { vendor: VendorWithCounts }) {
       href={vendor.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex flex-col rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 p-4 transition-all hover:border-border-strong hover:bg-surface-raised/30"
+      className="group flex flex-col rounded-xl bg-surface backdrop-blur-sm border border-border p-4 transition-all hover:border-border-strong hover:bg-surface-raised/30"
     >
       <div className="flex items-center justify-between">
         <span
@@ -169,7 +169,7 @@ function VendorCard({ vendor }: { vendor: VendorWithCounts }) {
           Visit site &rarr;
         </span>
         {vendor.materialCount > 0 && (
-          <span className="text-[10px] text-muted/40 tabular-nums">
+          <span className="text-[10px] text-muted tabular-nums">
             {vendor.materialCount} material{vendor.materialCount !== 1 ? "s" : ""}
           </span>
         )}

@@ -182,7 +182,7 @@ function getNavCount(
 const SHELL_HIDDEN_ROUTES = ["/today", "/capture"];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { status, user, signIn, signOut } = useAuth();
+  const { status, user, error: authError, signIn, signOut } = useAuth();
   const pathname = usePathname();
   const counts = useShellCounts();
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -215,7 +215,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // Auth gate — show login/loading before anything else
   if (status !== "ready") {
-    return <AuthGate status={status} signIn={signIn} />;
+    return <AuthGate status={status} signIn={signIn} error={authError} />;
   }
 
   const hideShell = SHELL_HIDDEN_ROUTES.some((r) => pathname.startsWith(r));
@@ -235,10 +235,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
 
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 border-r border-border bg-surface/50 flex flex-col">
+      <aside className="w-56 shrink-0 border-r border-border bg-surface flex flex-col">
         {/* Logo */}
         <div className="h-14 flex items-center px-5">
-          <Link href="/" className="text-[11px] font-semibold tracking-widest uppercase text-accent hover:text-accent/80 transition-colors">
+          <Link href="/" className="text-[12px] font-bold tracking-widest uppercase text-accent hover:text-accent/80 transition-colors">
             RamseyOS
           </Link>
         </div>
@@ -248,7 +248,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {NAV_GROUPS.map((group, gi) => (
             <div key={gi}>
               {group.label && (
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-muted/40 px-3 mb-1.5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted px-3 mb-1.5">
                   {group.label}
                 </p>
               )}
@@ -263,14 +263,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         href={href}
                         className={`flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors ${
                           isActive
-                            ? "bg-accent-dim text-accent font-medium"
-                            : "text-foreground/60 hover:bg-surface-raised hover:text-foreground"
+                            ? "bg-accent-dim text-accent font-semibold"
+                            : "text-foreground/70 hover:bg-surface-raised hover:text-foreground"
                         }`}
                       >
                         <Icon active={isActive} />
                         <span className="flex-1">{label}</span>
                         {count !== null && (
-                          <span className="text-[10px] font-medium tabular-nums text-muted/60">
+                          <span className="text-[10px] font-semibold tabular-nums text-muted">
                             {count}
                           </span>
                         )}
@@ -284,23 +284,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Command Palette Trigger */}
-        <div className="px-3 py-3 border-t border-border/60">
+        <div className="px-3 py-3 border-t border-border">
           <button
             type="button"
             onClick={() => setPaletteOpen(true)}
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 w-full text-[13px] text-foreground/50 hover:bg-surface-raised hover:text-foreground/70 transition-colors"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 w-full text-[13px] text-muted hover:bg-surface-raised hover:text-foreground transition-colors"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-muted/50">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-muted">
               <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" />
               <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
             <span>Search</span>
-            <span className="ml-auto text-[10px] text-muted/30 font-mono">⌘K</span>
+            <span className="ml-auto text-[10px] text-muted font-mono">⌘K</span>
           </button>
         </div>
 
         {/* Footer — user + sign out */}
-        <div className="px-4 py-3 border-t border-border/40 flex items-center gap-2.5">
+        <div className="px-4 py-3 border-t border-border flex items-center gap-2.5">
           {user?.photoURL && (
             <img
               src={user.photoURL}
@@ -310,14 +310,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             />
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] text-muted/40 tracking-wide truncate">
+            <p className="text-[11px] text-muted tracking-wide truncate">
               RamseyOS
             </p>
           </div>
           <button
             type="button"
             onClick={signOut}
-            className="text-[10px] text-muted/30 hover:text-muted/60 transition-colors shrink-0"
+            className="text-[11px] text-muted hover:text-foreground transition-colors shrink-0"
             aria-label="Sign out"
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -338,16 +338,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 function AuthGate({
   status,
   signIn,
+  error,
 }: {
   status: AuthStatus;
   signIn: () => Promise<void>;
+  error: string | null;
 }) {
   if (status === "loading") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="size-5 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
-          <p className="text-[11px] tracking-widest uppercase text-muted/30">
+          <div className="size-5 border-2 border-accent/40 border-t-accent rounded-full animate-spin" />
+          <p className="text-[12px] tracking-widest uppercase text-muted font-medium">
             RamseyOS
           </p>
         </div>
@@ -359,10 +361,10 @@ function AuthGate({
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-6">
         <div className="max-w-sm w-full text-center">
-          <p className="text-[11px] tracking-widest uppercase text-accent/60 mb-6">
+          <p className="text-[12px] tracking-widest uppercase text-accent font-semibold mb-8">
             RamseyOS
           </p>
-          <div className="rounded-xl border border-border/50 bg-surface/50 p-8">
+          <div className="rounded-2xl border border-border bg-surface p-10 shadow-card">
             <svg
               width="32"
               height="32"
@@ -372,22 +374,22 @@ function AuthGate({
               strokeWidth="1.2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="mx-auto text-muted/25 mb-5"
+              className="mx-auto text-muted mb-5"
             >
               <rect x="3" y="7" width="10" height="7" rx="1.5" />
               <path d="M5 7V5a3 3 0 016 0v2" />
             </svg>
-            <p className="text-[16px] text-foreground/80 font-medium mb-2">
+            <p className="text-[18px] text-foreground font-semibold mb-2">
               Access restricted
             </p>
-            <p className="text-[13px] text-muted/50 leading-relaxed mb-6">
+            <p className="text-[14px] text-muted leading-relaxed mb-6">
               This system is private. The account you signed in with does not
               have access.
             </p>
             <button
               type="button"
               onClick={signIn}
-              className="text-[13px] text-accent/70 hover:text-accent transition-colors"
+              className="text-[14px] text-accent font-medium hover:text-accent/80 transition-colors"
             >
               Try a different account
             </button>
@@ -401,31 +403,37 @@ function AuthGate({
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <div className="max-w-sm w-full text-center">
-        <p className="text-[11px] tracking-widest uppercase text-accent/60 mb-6">
+        <p className="text-[12px] tracking-widest uppercase text-accent font-semibold mb-8">
           RamseyOS
         </p>
-        <div className="rounded-xl border border-border/50 bg-surface/50 p-8">
-          <p className="text-[20px] text-foreground font-semibold mb-1">
+        <div className="rounded-2xl border border-border bg-surface p-10 shadow-card">
+          <p className="text-[22px] text-foreground font-semibold mb-2">
             Welcome back
           </p>
-          <p className="text-[13px] text-muted/50 leading-relaxed mb-8">
+          <p className="text-[14px] text-muted leading-relaxed mb-8">
             Sign in to access your personal operating system.
           </p>
           <button
             type="button"
             onClick={signIn}
-            className="w-full flex items-center justify-center gap-3 rounded-xl bg-accent/10 hover:bg-accent/15 border border-accent/20 px-5 py-3 text-[14px] font-medium text-accent transition-colors"
+            className="w-full flex items-center justify-center gap-3 rounded-xl bg-accent hover:bg-accent/90 px-5 py-3.5 text-[15px] font-semibold text-white transition-colors shadow-sm"
           >
             <svg width="18" height="18" viewBox="0 0 48 48">
-              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+              <path fill="#fff" fillOpacity="0.6" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+              <path fill="#fff" fillOpacity="0.8" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+              <path fill="#fff" fillOpacity="0.6" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+              <path fill="#fff" fillOpacity="0.7" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
             </svg>
             Sign in with Google
           </button>
+          {error && (
+            <div className="mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-left">
+              <p className="text-[13px] text-red-700 font-medium">Sign-in error</p>
+              <p className="text-[12px] text-red-600 mt-1">{error}</p>
+            </div>
+          )}
         </div>
-        <p className="text-[11px] text-muted/25 mt-6">
+        <p className="text-[12px] text-muted/60 mt-6">
           Private system · Single-user access
         </p>
       </div>

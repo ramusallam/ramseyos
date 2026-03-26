@@ -121,13 +121,13 @@ function FocusCard({
       className={`rounded-xl border p-5 backdrop-blur-sm transition-all ${
         isPrimary
           ? "bg-surface/70 border-accent/15 shadow-[var(--glow-accent)]"
-          : "bg-surface/50 border-border/50"
+          : "bg-surface border-border"
       }`}
     >
       {/* Label row */}
       <div className="flex items-center gap-2 mb-4">
         <span className={`text-[10px] font-semibold uppercase tracking-widest ${
-          isPrimary ? "text-accent/70" : "text-muted/40"
+          isPrimary ? "text-accent/70" : "text-muted"
         }`}>
           {label}
         </span>
@@ -137,7 +137,7 @@ function FocusCard({
           </span>
         )}
         {startsIn && (
-          <span className="text-[9px] font-medium text-muted/40">
+          <span className="text-[9px] font-medium text-muted">
             {startsIn}
           </span>
         )}
@@ -159,7 +159,7 @@ function FocusCard({
               ? `${fmtCardTime(item.startTime)} – ${fmtCardTime(item.endTime)}`
               : NOWNEXT_TYPE_LABEL[item.type]}
             {item.projectName && (
-              <span className="text-muted/35"> · {item.projectName}</span>
+              <span className="text-muted"> · {item.projectName}</span>
             )}
           </p>
         </div>
@@ -171,14 +171,14 @@ function FocusCard({
         className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-colors ${
           isPrimary
             ? "border-accent/20 bg-accent/[0.06] text-foreground/70 hover:bg-accent/[0.12] hover:text-foreground/90"
-            : "border-border/40 bg-surface-raised/30 text-foreground/50 hover:bg-surface-raised hover:text-foreground/70"
+            : "border-border bg-surface-raised/30 text-foreground/50 hover:bg-surface-raised hover:text-foreground/70"
         }`}
       >
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={isPrimary ? "text-accent/70" : "text-accent/50"}>
           <path d={action.icon} />
         </svg>
         {action.label}
-        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted/25">
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
           <path d="M6 4l4 4-4 4" />
         </svg>
       </Link>
@@ -200,11 +200,11 @@ function InboxCard({
       className={`rounded-xl border p-5 backdrop-blur-sm transition-all ${
         isPrimary
           ? "bg-surface/70 border-accent/15 shadow-[var(--glow-accent)]"
-          : "bg-surface/50 border-border/50"
+          : "bg-surface border-border"
       }`}
     >
       <p className={`text-[10px] font-semibold uppercase tracking-widest mb-4 ${
-        isPrimary ? "text-accent/70" : "text-muted/40"
+        isPrimary ? "text-accent/70" : "text-muted"
       }`}>
         {label}
       </p>
@@ -228,7 +228,7 @@ function InboxCard({
         className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-colors ${
           isPrimary
             ? "border-accent/20 bg-accent/[0.06] text-foreground/70 hover:bg-accent/[0.12] hover:text-foreground/90"
-            : "border-border/40 bg-surface-raised/30 text-foreground/50 hover:bg-surface-raised hover:text-foreground/70"
+            : "border-border bg-surface-raised/30 text-foreground/50 hover:bg-surface-raised hover:text-foreground/70"
         }`}
       >
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={isPrimary ? "text-accent/70" : "text-accent/50"}>
@@ -236,7 +236,7 @@ function InboxCard({
           <path d="M2 9h3.5a1 1 0 011 1v0a1 1 0 001 1h1a1 1 0 001-1v0a1 1 0 011-1H14" />
         </svg>
         Review inbox
-        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted/25">
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
           <path d="M6 4l4 4-4 4" />
         </svg>
       </Link>

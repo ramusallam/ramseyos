@@ -3,6 +3,7 @@ import {
   query,
   orderBy,
   getDocs,
+  addDoc,
   doc,
   getDoc,
   updateDoc,
@@ -40,6 +41,28 @@ export interface LessonPlan {
   lastTaughtAt: Timestamp | null;
   createdAt: Timestamp | null;
   updatedAt: Timestamp | null;
+}
+
+export async function createLessonPlan(fields: {
+  title: string;
+  course?: string;
+}): Promise<string> {
+  const ref = await addDoc(collection(db, "lessonPlans"), {
+    title: fields.title,
+    course: fields.course ?? "",
+    description: "",
+    tags: [],
+    reflection: "",
+    linkedResourceIds: [],
+    materials: [],
+    sparkLink: "",
+    sparkStatus: "not-started" as SparkStatus,
+    lastTaughtAt: null,
+    pinned: false,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
 }
 
 export async function getLessonPlans(): Promise<LessonPlan[]> {

@@ -164,7 +164,7 @@ export default function LessonPlanEditorPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading lesson…</span>
+          <span className="text-[13px] text-muted">Loading lesson…</span>
         </div>
       </div>
     );
@@ -179,13 +179,13 @@ export default function LessonPlanEditorPage() {
         >
           &larr; Lesson Plans
         </Link>
-        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center mt-6">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/25 mb-4">
+        <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center mt-6">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
             <rect x="3" y="1" width="10" height="14" rx="1.5" />
             <path d="M5.5 5h5M5.5 8h3" />
           </svg>
           <p className="text-sm text-muted/60">Lesson plan not found</p>
-          <p className="text-[12px] text-muted/35 mt-1">
+          <p className="text-[12px] text-muted mt-1">
             It may have been removed or the link is invalid.
           </p>
         </div>
@@ -242,13 +242,13 @@ export default function LessonPlanEditorPage() {
         {/* ── Left: Lesson Editor + Materials ── */}
         <div className="space-y-6">
           {/* Editor surface */}
-          <section className="bg-surface/50 rounded-xl border border-border/50 p-6 sm:p-8 backdrop-blur-sm">
+          <section className="bg-surface rounded-xl border border-border p-6 sm:p-8 backdrop-blur-sm">
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Lesson title"
-              className="w-full text-xl sm:text-2xl font-semibold text-foreground tracking-tight bg-transparent border-none outline-none placeholder:text-muted/30 mb-6"
+              className="w-full text-xl sm:text-2xl font-semibold text-foreground tracking-tight bg-transparent border-none outline-none placeholder:text-muted mb-6"
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -258,7 +258,7 @@ export default function LessonPlanEditorPage() {
                   value={course}
                   onChange={(e) => setCourse(e.target.value)}
                   placeholder="e.g. AP Chemistry"
-                  className="w-full rounded-lg border border-border/50 bg-white/5 px-3 py-2 text-[13px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+                  className="w-full rounded-lg border border-border bg-white/5 px-3 py-2 text-[13px] text-foreground placeholder:text-muted outline-none focus:border-accent/30 transition-colors"
                 />
               </FieldGroup>
               <FieldGroup label="Tags">
@@ -267,7 +267,7 @@ export default function LessonPlanEditorPage() {
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   placeholder="inquiry, atomic structure, lab"
-                  className="w-full rounded-lg border border-border/50 bg-white/5 px-3 py-2 text-[13px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+                  className="w-full rounded-lg border border-border bg-white/5 px-3 py-2 text-[13px] text-foreground placeholder:text-muted outline-none focus:border-accent/30 transition-colors"
                 />
               </FieldGroup>
             </div>
@@ -278,22 +278,22 @@ export default function LessonPlanEditorPage() {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Describe your lesson — objectives, activities, key questions, assessment…"
                 rows={14}
-                className="w-full rounded-lg border border-border/50 bg-white/5 px-4 py-3 text-[13px] text-foreground leading-[1.8] placeholder:text-muted/30 outline-none focus:border-accent/30 transition-colors resize-none"
+                className="w-full rounded-lg border border-border bg-white/5 px-4 py-3 text-[13px] text-foreground leading-[1.8] placeholder:text-muted outline-none focus:border-accent/30 transition-colors resize-none"
               />
             </FieldGroup>
           </section>
 
           {/* ── Materials & Supplies ── */}
-          <section className="bg-surface/50 rounded-xl border border-border/50 p-5 backdrop-blur-sm">
+          <section className="bg-surface rounded-xl border border-border p-5 backdrop-blur-sm">
             <div className="flex items-center gap-2 mb-4">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
                 <path d="M3 3h10a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1z" />
               </svg>
               <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                 Materials & Supplies
               </h3>
               {materials.length > 0 && (
-                <span className="text-[9px] text-muted/40 tabular-nums">
+                <span className="text-[9px] text-muted tabular-nums">
                   {materials.length}
                 </span>
               )}
@@ -306,13 +306,13 @@ export default function LessonPlanEditorPage() {
               <div className="flex items-center gap-2">
                 <Link
                   href="/materials"
-                  className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors"
+                  className="text-[11px] text-muted hover:text-muted/60 transition-colors"
                 >
                   Library
                 </Link>
                 <Link
                   href="/purchasing"
-                  className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors"
+                  className="text-[11px] text-muted hover:text-muted/60 transition-colors"
                 >
                   Purchasing
                 </Link>
@@ -342,7 +342,7 @@ export default function LessonPlanEditorPage() {
                   + Add material
                 </button>
                 {materials.length === 0 && (
-                  <p className="text-[10px] text-muted/30 mt-1">
+                  <p className="text-[10px] text-muted mt-1">
                     Add materials needed for this lesson. They&#39;ll appear in your{" "}
                     <Link href="/purchasing" className="text-accent/40 hover:text-accent/60 transition-colors">
                       purchasing workflow
@@ -382,16 +382,16 @@ export default function LessonPlanEditorPage() {
         <div className="space-y-4">
           {/* Studio zone label */}
           <div className="flex items-center gap-2">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
               <rect x="2" y="2" width="5" height="5" rx="1" />
               <rect x="9" y="2" width="5" height="5" rx="1" />
               <rect x="2" y="9" width="5" height="5" rx="1" />
               <rect x="9" y="9" width="5" height="5" rx="1" />
             </svg>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/35">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">
               Teaching Studio
             </span>
-            <div className="flex-1 border-t border-border/50" />
+            <div className="flex-1 border-t border-border" />
           </div>
           {/* ── Spark Inquiry Studio — companion panel ── */}
           <section className="rounded-xl border border-amber-400/15 bg-amber-500/[0.02] p-5 backdrop-blur-sm">
@@ -418,7 +418,7 @@ export default function LessonPlanEditorPage() {
                   value={sparkLink}
                   onChange={(e) => setSparkLink(e.target.value)}
                   placeholder="https://sparklearningstudio.ai/…"
-                  className="w-full rounded-md border border-amber-400/15 bg-white/5 px-3 py-2 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-amber-300/40 transition-colors"
+                  className="w-full rounded-md border border-amber-400/15 bg-white/5 px-3 py-2 text-[12px] text-foreground placeholder:text-muted outline-none focus:border-amber-300/40 transition-colors"
                 />
               </div>
 
@@ -438,7 +438,7 @@ export default function LessonPlanEditorPage() {
                           className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium transition-colors ${
                             sparkStatus === s
                               ? `${meta.bg} ${meta.color} ring-1 ${meta.ring}`
-                              : "bg-white/[0.04] text-muted/40 hover:text-muted/60"
+                              : "bg-white/[0.04] text-muted hover:text-muted/60"
                           }`}
                         >
                           {meta.label}
@@ -474,7 +474,7 @@ export default function LessonPlanEditorPage() {
             icon="M2 2h12a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z"
             title="Linked Resources"
             count={linkedResourceIds.length}
-            action={<Link href="/tools" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">Tools</Link>}
+            action={<Link href="/tools" className="text-[11px] text-muted hover:text-muted/60 transition-colors">Tools</Link>}
           >
             {linkedResourceIds.length > 0 && (
               <div className="space-y-1.5 mb-3">
@@ -484,7 +484,7 @@ export default function LessonPlanEditorPage() {
                   return (
                     <div
                       key={rid}
-                      className="group flex items-center gap-2 rounded-md bg-white/[0.03] border border-border/40 px-3 py-2"
+                      className="group flex items-center gap-2 rounded-md bg-white/[0.03] border border-border px-3 py-2"
                     >
                       <a
                         href={tool.url}
@@ -503,7 +503,7 @@ export default function LessonPlanEditorPage() {
                             prev.filter((x) => x !== rid)
                           )
                         }
-                        className="shrink-0 text-[10px] text-muted/30 hover:text-red-400 transition-colors"
+                        className="shrink-0 text-[10px] text-muted hover:text-red-400 transition-colors"
                         aria-label={`Remove ${tool.title}`}
                       >
                         &times;
@@ -523,7 +523,7 @@ export default function LessonPlanEditorPage() {
                 + Link a resource
               </button>
             ) : (
-              <div className="rounded-md border border-border/40 bg-white/[0.03] p-2 space-y-0.5">
+              <div className="rounded-md border border-border bg-white/[0.03] p-2 space-y-0.5">
                 <div className="flex items-center justify-between mb-1 px-1">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">
                     Select
@@ -531,7 +531,7 @@ export default function LessonPlanEditorPage() {
                   <button
                     type="button"
                     onClick={() => setShowPicker(false)}
-                    className="text-[10px] text-muted/40 hover:text-foreground/60 transition-colors"
+                    className="text-[10px] text-muted hover:text-foreground/60 transition-colors"
                   >
                     Done
                   </button>
@@ -554,7 +554,7 @@ export default function LessonPlanEditorPage() {
                   ))}
                 {allTools.filter((t) => !linkedResourceIds.includes(t.id))
                   .length === 0 && (
-                  <p className="text-[10px] text-muted/40 py-1 text-center">
+                  <p className="text-[10px] text-muted py-1 text-center">
                     All resources linked.
                   </p>
                 )}
@@ -562,7 +562,7 @@ export default function LessonPlanEditorPage() {
             )}
 
             {linkedResourceIds.length === 0 && !showPicker && (
-              <p className="text-[10px] text-muted/30 mt-1">
+              <p className="text-[10px] text-muted mt-1">
                 No resources linked yet.
               </p>
             )}
@@ -582,7 +582,7 @@ export default function LessonPlanEditorPage() {
                 value={lastTaughtAt}
                 onChange={(e) => setLastTaughtAt(e.target.value)}
                 aria-label="Last taught date"
-                className="rounded-md border border-border/40 bg-white/5 px-2 py-1 text-[11px] text-foreground outline-none focus:border-accent/30 transition-colors"
+                className="rounded-md border border-border bg-white/5 px-2 py-1 text-[11px] text-foreground outline-none focus:border-accent/30 transition-colors"
               />
             </div>
             <textarea
@@ -590,25 +590,25 @@ export default function LessonPlanEditorPage() {
               onChange={(e) => setReflection(e.target.value)}
               placeholder="What worked? What would you change next time?"
               rows={5}
-              className="w-full rounded-lg border border-border/40 bg-white/[0.03] px-3 py-2.5 text-[13px] text-foreground leading-relaxed placeholder:text-muted/30 outline-none focus:border-accent/30 transition-colors resize-none"
+              className="w-full rounded-lg border border-border bg-white/[0.03] px-3 py-2.5 text-[13px] text-foreground leading-relaxed placeholder:text-muted outline-none focus:border-accent/30 transition-colors resize-none"
             />
           </StudioPanel>
         </div>
       </div>
 
       {/* ── Teaching workflow links ── */}
-      <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border/30">
-        <span className="text-[10px] text-muted/25">Teaching flow:</span>
-        <Link href="/materials" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+      <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
+        <span className="text-[10px] text-muted">Teaching flow:</span>
+        <Link href="/materials" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
           Materials
         </Link>
-        <Link href="/purchasing" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+        <Link href="/purchasing" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
           Purchasing
         </Link>
-        <Link href="/communications" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+        <Link href="/communications" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
           Comms
         </Link>
-        <Link href="/tools" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+        <Link href="/tools" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
           Tools
         </Link>
       </div>
@@ -650,16 +650,16 @@ function StudioPanel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-border/50 bg-surface/50 p-5 backdrop-blur-sm">
+    <section className="rounded-xl border border-border bg-surface p-5 backdrop-blur-sm">
       <div className="flex items-center gap-2 mb-3">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
           <path d={icon} />
         </svg>
         <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
           {title}
         </h3>
         {count !== undefined && count > 0 && (
-          <span className="text-[9px] text-muted/40 tabular-nums">
+          <span className="text-[9px] text-muted tabular-nums">
             {count}
           </span>
         )}
@@ -700,7 +700,7 @@ function MaterialRow({
     : null;
 
   return (
-    <div className="flex items-start gap-3 rounded-lg bg-white/[0.03] border border-border/40 px-3 py-2.5">
+    <div className="flex items-start gap-3 rounded-lg bg-white/[0.03] border border-border px-3 py-2.5">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[12px] font-medium text-foreground/80">
@@ -745,7 +745,7 @@ function MaterialRow({
             {vendor.name} &rarr;
           </a>
         ) : mat.sourceName ? (
-          <span className="text-[10px] text-muted/40 mt-0.5 inline-flex items-center gap-1">
+          <span className="text-[10px] text-muted mt-0.5 inline-flex items-center gap-1">
             {mat.sourceUrl ? (
               <a
                 href={mat.sourceUrl}
@@ -764,7 +764,7 @@ function MaterialRow({
       <button
         type="button"
         onClick={onRemove}
-        className="shrink-0 text-[10px] text-muted/30 hover:text-red-400 transition-colors mt-0.5"
+        className="shrink-0 text-[10px] text-muted hover:text-red-400 transition-colors mt-0.5"
         aria-label={`Remove ${mat.name}`}
       >
         &times;
@@ -805,20 +805,20 @@ function MaterialForm({
   onCancel: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-border/40 bg-white/[0.03] p-3 space-y-2.5">
+    <div className="rounded-lg border border-border bg-white/[0.03] p-3 space-y-2.5">
       <input
         type="text"
         value={matName}
         onChange={(e) => setMatName(e.target.value)}
         placeholder="Material name"
-        className="w-full rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+        className="w-full rounded-md border border-border px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted outline-none focus:border-accent/30 transition-colors"
       />
       <input
         type="text"
         value={matQty}
         onChange={(e) => setMatQty(e.target.value)}
         placeholder="Quantity (optional)"
-        className="w-full rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+        className="w-full rounded-md border border-border px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted outline-none focus:border-accent/30 transition-colors"
       />
 
       <div>
@@ -835,7 +835,7 @@ function MaterialForm({
               setMatUrl("");
             }
           }}
-          className="w-full rounded-md border border-border/40 bg-white/5 px-3 py-1.5 text-[12px] text-foreground outline-none focus:border-accent/30 transition-colors"
+          className="w-full rounded-md border border-border bg-white/5 px-3 py-1.5 text-[12px] text-foreground outline-none focus:border-accent/30 transition-colors"
         >
           <option value="">Manual source…</option>
           {allVendors.map((v) => (
@@ -853,14 +853,14 @@ function MaterialForm({
             value={matSource}
             onChange={(e) => setMatSource(e.target.value)}
             placeholder="Source name"
-            className="rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+            className="rounded-md border border-border px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted outline-none focus:border-accent/30 transition-colors"
           />
           <input
             type="url"
             value={matUrl}
             onChange={(e) => setMatUrl(e.target.value)}
             placeholder="Source URL"
-            className="rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+            className="rounded-md border border-border px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted outline-none focus:border-accent/30 transition-colors"
           />
         </div>
       )}
@@ -870,7 +870,7 @@ function MaterialForm({
         value={matNotes}
         onChange={(e) => setMatNotes(e.target.value)}
         placeholder="Notes (optional)"
-        className="w-full rounded-md border border-border/40 px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted/40 outline-none focus:border-accent/30 transition-colors"
+        className="w-full rounded-md border border-border px-3 py-1.5 text-[12px] text-foreground placeholder:text-muted outline-none focus:border-accent/30 transition-colors"
       />
 
       <div className="flex items-center gap-4 pt-0.5">
@@ -879,7 +879,7 @@ function MaterialForm({
             type="checkbox"
             checked={matFavorite}
             onChange={(e) => setMatFavorite(e.target.checked)}
-            className="rounded border-border/60 text-amber-500 focus:ring-amber-300 w-3.5 h-3.5"
+            className="rounded border-border text-amber-500 focus:ring-amber-300 w-3.5 h-3.5"
           />
           <span className="text-[11px] text-muted/60">Favorite</span>
         </label>
@@ -888,7 +888,7 @@ function MaterialForm({
             type="checkbox"
             checked={matRecurring}
             onChange={(e) => setMatRecurring(e.target.checked)}
-            className="rounded border-border/60 text-blue-500 focus:ring-blue-300 w-3.5 h-3.5"
+            className="rounded border-border text-blue-500 focus:ring-blue-300 w-3.5 h-3.5"
           />
           <span className="text-[11px] text-muted/60">Recurring</span>
         </label>
@@ -897,7 +897,7 @@ function MaterialForm({
             type="checkbox"
             checked={matNeedToBuy}
             onChange={(e) => setMatNeedToBuy(e.target.checked)}
-            className="rounded border-border/60 text-rose-500 focus:ring-rose-300 w-3.5 h-3.5"
+            className="rounded border-border text-rose-500 focus:ring-rose-300 w-3.5 h-3.5"
           />
           <span className="text-[11px] text-muted/60">Need to buy</span>
         </label>

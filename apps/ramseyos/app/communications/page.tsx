@@ -168,7 +168,7 @@ export default function CommunicationsPage() {
       <div className="max-w-5xl px-4 sm:px-8 pt-10 pb-20">
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading communications…</span>
+          <span className="text-[13px] text-muted">Loading communications…</span>
         </div>
       </div>
     );
@@ -193,19 +193,19 @@ export default function CommunicationsPage() {
 
         {/* Teaching cross-links */}
         <div className="flex items-center gap-3 mt-2">
-          <Link href="/lesson-plans" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/lesson-plans" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Lesson Plans &rarr;
           </Link>
-          <Link href="/tasks" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/tasks" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Tasks &rarr;
           </Link>
-          <Link href="/projects" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/projects" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Projects &rarr;
           </Link>
         </div>
 
         {/* Workflow summary */}
-        <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+        <div className="flex items-center gap-4 mt-3 text-[11px] text-muted">
           <span className="tabular-nums">{templates.length} template{templates.length !== 1 ? "s" : ""}</span>
           <span className="text-border/30">·</span>
           <span className="tabular-nums">{groups.length} group{groups.length !== 1 ? "s" : ""}</span>
@@ -248,7 +248,7 @@ export default function CommunicationsPage() {
           {/* Send status — calm inline */}
           <div className="flex items-center gap-2 mb-4 px-1">
             <span className="size-1.5 rounded-full bg-amber-400/50" />
-            <span className="text-[10px] text-muted/40">
+            <span className="text-[10px] text-muted">
               Drafts open in your mail client when ready to send
             </span>
           </div>
@@ -284,7 +284,7 @@ export default function CommunicationsPage() {
               {regularDrafts.length > 0 && (
                 <div>
                   {handoffDrafts.length > 0 && (
-                    <SubsectionLabel label="In progress" count={regularDrafts.length} color="text-muted/50" lineColor="border-border/40" />
+                    <SubsectionLabel label="In progress" count={regularDrafts.length} color="text-muted/50" lineColor="border-border" />
                   )}
                   <div className="space-y-2">
                     {regularDrafts.map((d) => (
@@ -355,7 +355,7 @@ export default function CommunicationsPage() {
                 const meta = categoryMeta(cat);
                 return (
                   <div key={cat}>
-                    <SubsectionLabel label={meta.label} count={items.length} color={meta.text} lineColor="border-border/40" />
+                    <SubsectionLabel label={meta.label} count={items.length} color={meta.text} lineColor="border-border" />
                     <div className="space-y-2">
                       {items.map((t) => (
                         <TemplateCard
@@ -381,7 +381,7 @@ export default function CommunicationsPage() {
             title="Groups"
             count={groups.length}
             badge={`${totalRecipients} recipients`}
-            badgeColor="text-muted/40"
+            badgeColor="text-muted"
           />
 
           {groups.length === 0 ? (
@@ -437,22 +437,22 @@ function ZoneHeader({
         strokeWidth="1.4"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-muted/40"
+        className="text-muted"
       >
         {icon}
       </svg>
       <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/60">
         {title}
       </h2>
-      <span className="text-[10px] tabular-nums text-muted/35">
+      <span className="text-[10px] tabular-nums text-muted">
         {count}
       </span>
       {badge && (
-        <span className={`text-[10px] tabular-nums ${badgeColor ?? "text-muted/40"}`}>
+        <span className={`text-[10px] tabular-nums ${badgeColor ?? "text-muted"}`}>
           · {badge}
         </span>
       )}
-      <div className="flex-1 border-t border-border/40" />
+      <div className="flex-1 border-t border-border" />
     </div>
   );
 }
@@ -476,7 +476,7 @@ function SubsectionLabel({
       <span className={`text-[10px] font-semibold uppercase tracking-wider ${color}`}>
         {label}
       </span>
-      <span className="text-[10px] tabular-nums text-muted/35">
+      <span className="text-[10px] tabular-nums text-muted">
         {count}
       </span>
       <div className={`flex-1 border-t ${lineColor}`} />
@@ -486,12 +486,12 @@ function SubsectionLabel({
 
 function EmptyState({ icon, message, detail }: { icon: string; message: string; detail: string }) {
   return (
-    <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-8 text-center">
+    <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-8 text-center">
       <svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/20 mb-3">
         <path d={icon} />
       </svg>
       <p className="text-[13px] text-muted/50">{message}</p>
-      <p className="text-[11px] text-muted/30 mt-1">{detail}</p>
+      <p className="text-[11px] text-muted mt-1">{detail}</p>
     </div>
   );
 }
@@ -523,7 +523,7 @@ function TemplateCard({
   );
 
   return (
-    <div className="rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-5 py-4 transition-all hover:border-border-strong/50">
+    <div className="rounded-xl bg-surface backdrop-blur-sm border border-border px-5 py-4 transition-all hover:border-border-strong/50">
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2.5 mb-1.5">
@@ -538,7 +538,7 @@ function TemplateCard({
           </div>
           {t.subject && (
             <p className="text-[11px] text-foreground/50 mb-1">
-              <span className="text-muted/35">Subject:</span> {t.subject}
+              <span className="text-muted">Subject:</span> {t.subject}
             </p>
           )}
           <p className="text-[12px] text-muted/45 leading-relaxed whitespace-pre-line line-clamp-2">
@@ -548,19 +548,19 @@ function TemplateCard({
           {/* Linked groups + recipient count */}
           {linkedGroups.length > 0 && (
             <div className="flex items-center gap-1.5 mt-2.5">
-              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-muted/25 shrink-0">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-muted shrink-0">
                 <path d="M8 4l4 4-4 4M4 4l4 4-4 4" />
               </svg>
               {linkedGroups.map((g) => (
                 <span
                   key={g.id}
-                  className="inline-flex items-center rounded-full bg-white/5 border border-border/30 px-2 py-0 text-[9px] font-medium text-foreground/50"
+                  className="inline-flex items-center rounded-full bg-white/5 border border-border px-2 py-0 text-[9px] font-medium text-foreground/50"
                 >
                   {g.name}
                 </span>
               ))}
               {recipientCount > 0 && (
-                <span className="text-[9px] text-muted/35 ml-0.5">
+                <span className="text-[9px] text-muted ml-0.5">
                   → {recipientCount} recipient{recipientCount !== 1 ? "s" : ""}
                 </span>
               )}
@@ -580,7 +580,7 @@ function TemplateCard({
             fill={t.favorite ? "currentColor" : "none"}
             stroke="currentColor"
             strokeWidth="1.2"
-            className={t.favorite ? "text-amber-400" : "text-muted/30 hover:text-amber-300"}
+            className={t.favorite ? "text-amber-400" : "text-muted hover:text-amber-300"}
           >
             <path d="M8 1.5l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 12l-4.2 2.5.8-4.7L1.2 6.5l4.7-.7L8 1.5z" />
           </svg>
@@ -644,12 +644,12 @@ function DraftCard({
   const completedSteps = steps.filter((s) => s.done).length;
 
   return (
-    <div className={`rounded-xl bg-surface/50 backdrop-blur-sm border overflow-hidden transition-all ${
+    <div className={`rounded-xl bg-surface backdrop-blur-sm border overflow-hidden transition-all ${
       d.gmailStatus === "ready_for_gmail"
         ? "border-blue-400/20"
         : d.gmailStatus === "handed_off"
           ? "border-emerald-400/20"
-          : "border-border/50"
+          : "border-border"
     }`}>
       <button
         type="button"
@@ -662,7 +662,7 @@ function DraftCard({
             <span className="text-[13px] font-medium text-foreground/85">
               {d.subject || "Untitled draft"}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border/30 bg-white/5 px-2 py-0 text-[9px] font-medium text-muted/60">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white/5 px-2 py-0 text-[9px] font-medium text-muted/60">
               <span className={`inline-block size-1.5 rounded-full ${status.dot}`} />
               {status.label}
             </span>
@@ -688,7 +688,7 @@ function DraftCard({
                 {linkedTemplate.title}
               </span>
             ) : (
-              <span className="inline-flex items-center rounded-full bg-white/5 border border-dashed border-border/40 px-2 py-0 text-[9px] font-medium text-muted/30">
+              <span className="inline-flex items-center rounded-full bg-white/5 border border-dashed border-border px-2 py-0 text-[9px] font-medium text-muted">
                 No template
               </span>
             )}
@@ -700,7 +700,7 @@ function DraftCard({
                 {linkedGroup.name}
               </span>
             ) : (
-              <span className="inline-flex items-center rounded-full bg-white/5 border border-dashed border-border/40 px-2 py-0 text-[9px] font-medium text-muted/30">
+              <span className="inline-flex items-center rounded-full bg-white/5 border border-dashed border-border px-2 py-0 text-[9px] font-medium text-muted">
                 No group
               </span>
             )}
@@ -709,7 +709,7 @@ function DraftCard({
                 <svg width="8" height="8" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-muted/20 shrink-0">
                   <path d="M6 4l4 4-4 4" />
                 </svg>
-                <span className="text-[9px] text-muted/40 tabular-nums">
+                <span className="text-[9px] text-muted tabular-nums">
                   {emailRecipients.length} recipient{emailRecipients.length === 1 ? "" : "s"}
                 </span>
               </>
@@ -719,7 +719,7 @@ function DraftCard({
 
         {/* Pipeline progress + chevron */}
         <div className="flex items-center gap-2 shrink-0 mt-1.5">
-          <span className="text-[9px] text-muted/30 tabular-nums">
+          <span className="text-[9px] text-muted tabular-nums">
             {completedSteps}/{steps.length}
           </span>
           <svg
@@ -730,7 +730,7 @@ function DraftCard({
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
-            className={`text-muted/30 transition-transform ${expanded ? "rotate-180" : ""}`}
+            className={`text-muted transition-transform ${expanded ? "rotate-180" : ""}`}
           >
             <path d="M4 6l4 4 4-4" />
           </svg>
@@ -738,7 +738,7 @@ function DraftCard({
       </button>
 
       {expanded && (
-        <div className="border-t border-border/30 px-5 py-4 space-y-4">
+        <div className="border-t border-border px-5 py-4 space-y-4">
           {/* Pipeline step indicators */}
           <div className="flex items-center gap-1">
             {steps.map((step, i) => (
@@ -747,7 +747,7 @@ function DraftCard({
                 <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
                   step.done
                     ? "bg-accent/10 text-accent/70"
-                    : "bg-white/5 text-muted/30"
+                    : "bg-white/5 text-muted"
                 }`}>
                   {step.label}
                 </span>
@@ -766,38 +766,38 @@ function DraftCard({
 
           {/* Subject */}
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/40 mb-1.5">Subject</p>
+            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted mb-1.5">Subject</p>
             <p className="text-[13px] text-foreground/80">{d.subject || "—"}</p>
           </div>
 
           {/* Body */}
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/40 mb-1.5">Body</p>
+            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted mb-1.5">Body</p>
             <p className="text-[12px] text-foreground/60 leading-relaxed whitespace-pre-line">{d.body || "—"}</p>
           </div>
 
           {/* Recipients */}
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/40 mb-1.5">
+            <p className="text-[9px] font-semibold uppercase tracking-wider text-muted mb-1.5">
               Recipients{emailRecipients.length > 0 && <span className="font-normal ml-1 tabular-nums">({emailRecipients.length})</span>}
             </p>
             {recipients.length === 0 ? (
-              <p className="text-[11px] text-muted/30 italic">No recipients — assign a group to derive recipients</p>
+              <p className="text-[11px] text-muted italic">No recipients — assign a group to derive recipients</p>
             ) : (
               <div className="space-y-1">
                 {recipients.map((r) => (
                   <div key={r.id} className="flex items-center gap-2.5">
-                    <div className="size-5 rounded-full bg-white/8 border border-border/30 flex items-center justify-center shrink-0">
+                    <div className="size-5 rounded-full bg-white/8 border border-border flex items-center justify-center shrink-0">
                       <span className="text-[8px] font-medium text-muted/60">
                         {r.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <span className="text-[11px] font-medium text-foreground/70">{r.name}</span>
                     {r.role && (
-                      <span className="text-[9px] text-muted/30">{r.role}</span>
+                      <span className="text-[9px] text-muted">{r.role}</span>
                     )}
                     {r.email && (
-                      <span className="text-[10px] text-muted/35 ml-auto">{r.email}</span>
+                      <span className="text-[10px] text-muted ml-auto">{r.email}</span>
                     )}
                   </div>
                 ))}
@@ -808,7 +808,7 @@ function DraftCard({
           {/* Send */}
           <div className="border-t border-border/20 pt-3">
             <div className="flex items-center gap-3">
-              <p className="text-[9px] font-semibold uppercase tracking-wider text-muted/40">Send</p>
+              <p className="text-[9px] font-semibold uppercase tracking-wider text-muted">Send</p>
               <span className={`inline-flex items-center gap-1.5 text-[10px] ${gmail.color}`}>
                 <span className={`inline-block size-1.5 rounded-full ${gmail.dot}`} />
                 {gmail.label}
@@ -827,7 +827,7 @@ function DraftCard({
                 </button>
               )}
               {d.gmailStatus === "not_prepared" && !isAssembled && (
-                <span className="text-[10px] text-muted/30 italic">
+                <span className="text-[10px] text-muted italic">
                   Complete assembly first
                 </span>
               )}
@@ -839,7 +839,7 @@ function DraftCard({
                       e.stopPropagation();
                       onGmailStatus(d.id, "not_prepared");
                     }}
-                    className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border/30 rounded-lg px-3 py-1 hover:bg-white/8 transition-colors"
+                    className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border rounded-lg px-3 py-1 hover:bg-white/8 transition-colors"
                   >
                     Reset
                   </button>
@@ -868,7 +868,7 @@ function DraftCard({
                     e.stopPropagation();
                     onGmailStatus(d.id, "ready_for_gmail");
                   }}
-                  className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border/30 rounded-lg px-3 py-1 hover:bg-white/8 transition-colors"
+                  className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border rounded-lg px-3 py-1 hover:bg-white/8 transition-colors"
                 >
                   Re-open
                 </button>
@@ -909,7 +909,7 @@ function GroupCard({
   const emailCount = members.filter((m) => m.email).length;
 
   return (
-    <div className="rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 overflow-hidden transition-all hover:border-border-strong/50">
+    <div className="rounded-xl bg-surface backdrop-blur-sm border border-border overflow-hidden transition-all hover:border-border-strong/50">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
@@ -925,11 +925,11 @@ function GroupCard({
             >
               {style.label}
             </span>
-            <span className="text-[10px] text-muted/40 tabular-nums">
+            <span className="text-[10px] text-muted tabular-nums">
               {members.length} member{members.length === 1 ? "" : "s"}
             </span>
             {emailCount > 0 && emailCount < members.length && (
-              <span className="text-[9px] text-muted/30 tabular-nums">
+              <span className="text-[9px] text-muted tabular-nums">
                 ({emailCount} with email)
               </span>
             )}
@@ -967,24 +967,24 @@ function GroupCard({
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
-          className={`shrink-0 text-muted/30 transition-transform ${expanded ? "rotate-180" : ""}`}
+          className={`shrink-0 text-muted transition-transform ${expanded ? "rotate-180" : ""}`}
         >
           <path d="M4 6l4 4 4-4" />
         </svg>
       </button>
 
       {expanded && (
-        <div className="border-t border-border/30 px-5 py-3">
+        <div className="border-t border-border px-5 py-3">
           {group.description && (
             <p className="text-[11px] text-muted/45 mb-3">{group.description}</p>
           )}
           {members.length === 0 ? (
-            <p className="text-[11px] text-muted/35 italic">No members yet.</p>
+            <p className="text-[11px] text-muted italic">No members yet.</p>
           ) : (
             <div className="space-y-1.5">
               {members.map((m) => (
                 <div key={m.id} className="flex items-center gap-3">
-                  <div className="size-6 rounded-full bg-white/8 border border-border/30 flex items-center justify-center shrink-0">
+                  <div className="size-6 rounded-full bg-white/8 border border-border flex items-center justify-center shrink-0">
                     <span className="text-[9px] font-medium text-muted/60">
                       {m.name.charAt(0).toUpperCase()}
                     </span>
@@ -994,11 +994,11 @@ function GroupCard({
                       {m.name}
                     </span>
                     {m.role && (
-                      <span className="ml-2 text-[10px] text-muted/35">{m.role}</span>
+                      <span className="ml-2 text-[10px] text-muted">{m.role}</span>
                     )}
                   </div>
                   {m.email && (
-                    <span className="text-[10px] text-muted/35 truncate max-w-[180px]">
+                    <span className="text-[10px] text-muted truncate max-w-[180px]">
                       {m.email}
                     </span>
                   )}

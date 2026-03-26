@@ -76,7 +76,7 @@ export default function ProductOpsPage() {
       <div className="max-w-5xl px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading products…</span>
+          <span className="text-[13px] text-muted">Loading products…</span>
         </div>
       </div>
     );
@@ -99,7 +99,7 @@ export default function ProductOpsPage() {
         </p>
 
         {products.length > 0 && (
-          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted/40">
+          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted">
             <span className="tabular-nums">{products.length} product{products.length !== 1 ? "s" : ""}</span>
             {activeCount > 0 && (
               <span className="flex items-center gap-1.5 text-emerald-400/60">
@@ -118,10 +118,10 @@ export default function ProductOpsPage() {
 
         {/* Cross-links */}
         <div className="flex items-center gap-3 mt-3">
-          <Link href="/tools" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/tools" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Tools &rarr;
           </Link>
-          <Link href="/lesson-plans" className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors">
+          <Link href="/lesson-plans" className="text-[11px] text-muted hover:text-muted/60 transition-colors">
             Lesson Plans &rarr;
           </Link>
         </div>
@@ -194,7 +194,7 @@ export default function ProductOpsPage() {
               </>
             }
           />
-          <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-5">
+          <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-5">
             <div className="space-y-3">
               {/* Spark integration */}
               <div className="flex items-center justify-between">
@@ -208,13 +208,13 @@ export default function ProductOpsPage() {
                 <div className="flex items-center gap-2">
                   <Link
                     href="/tools"
-                    className="text-[10px] text-muted/40 hover:text-muted/60 transition-colors"
+                    className="text-[10px] text-muted hover:text-muted/60 transition-colors"
                   >
                     Launchpad
                   </Link>
                   <Link
                     href="/lesson-plans"
-                    className="text-[10px] text-muted/40 hover:text-muted/60 transition-colors"
+                    className="text-[10px] text-muted hover:text-muted/60 transition-colors"
                   >
                     Lessons
                   </Link>
@@ -225,18 +225,18 @@ export default function ProductOpsPage() {
                 <div className="flex items-center gap-2">
                   <span className="size-1.5 rounded-full bg-muted/25" />
                   <span className="text-[12px] text-muted/50">GitHub</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded font-medium bg-white/5 text-muted/40">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-medium bg-white/5 text-muted">
                     planned
                   </span>
                 </div>
-                <span className="text-[10px] text-muted/30">{withRepoCount} repo{withRepoCount !== 1 ? "s" : ""} linked</span>
+                <span className="text-[10px] text-muted">{withRepoCount} repo{withRepoCount !== 1 ? "s" : ""} linked</span>
               </div>
               {/* Sentry placeholder */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="size-1.5 rounded-full bg-muted/25" />
                   <span className="text-[12px] text-muted/50">Sentry</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded font-medium bg-white/5 text-muted/40">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-medium bg-white/5 text-muted">
                     planned
                   </span>
                 </div>
@@ -251,7 +251,7 @@ export default function ProductOpsPage() {
             title="Product Tasks"
             icon={<path d="M5.5 8l2 2 3-4" />}
           />
-          <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-6">
+          <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-6">
             <p className="text-[13px] text-muted/50">
               Product-related tasks will surface here once task tagging is connected.
             </p>
@@ -275,7 +275,7 @@ export default function ProductOpsPage() {
               </>
             }
           />
-          <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-6">
+          <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-6">
             <p className="text-[13px] text-muted/50">
               Product status notes and operational updates will live here.
             </p>
@@ -308,7 +308,7 @@ function ZoneHeader({
         strokeWidth="1.4"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-muted/40"
+        className="text-muted"
       >
         {icon}
       </svg>
@@ -316,18 +316,18 @@ function ZoneHeader({
         {title}
       </h2>
       {count !== undefined && (
-        <span className="text-[10px] text-muted/40 tabular-nums">{count}</span>
+        <span className="text-[10px] text-muted tabular-nums">{count}</span>
       )}
-      <div className="flex-1 border-t border-border/40" />
+      <div className="flex-1 border-t border-border" />
     </div>
   );
 }
 
 function EmptyCard({ message, detail }: { message: string; detail?: string }) {
   return (
-    <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
+    <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center">
       <p className="text-sm text-muted/60">{message}</p>
-      {detail && <p className="text-[12px] text-muted/35 mt-1">{detail}</p>}
+      {detail && <p className="text-[12px] text-muted mt-1">{detail}</p>}
     </div>
   );
 }
@@ -344,7 +344,7 @@ function ProductCard({ product, contextCount }: { product: Product; contextCount
       className={`group flex flex-col rounded-xl border p-5 transition-all hover:bg-surface-raised/30 ${
         isSpark
           ? "border-amber-500/20 bg-amber-500/[0.03] hover:border-amber-500/30"
-          : "border-border/50 bg-surface/50 backdrop-blur-sm hover:border-border-strong"
+          : "border-border bg-surface backdrop-blur-sm hover:border-border-strong"
       }`}
     >
       <div className="flex items-start justify-between mb-2">
@@ -366,7 +366,7 @@ function ProductCard({ product, contextCount }: { product: Product; contextCount
             href={product.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted/30 hover:text-muted/60 transition-colors"
+            className="text-muted hover:text-muted/60 transition-colors"
             aria-label={`Open ${product.name}`}
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -384,8 +384,8 @@ function ProductCard({ product, contextCount }: { product: Product; contextCount
       </p>
 
       {product.currentFocus && (
-        <div className="mt-auto pt-3 border-t border-border/30">
-          <p className="text-[11px] text-muted/40 mb-0.5">Current focus</p>
+        <div className="mt-auto pt-3 border-t border-border">
+          <p className="text-[11px] text-muted mb-0.5">Current focus</p>
           <p className="text-[12px] text-foreground/60 leading-relaxed">
             {product.currentFocus}
           </p>
@@ -399,7 +399,7 @@ function ProductCard({ product, contextCount }: { product: Product; contextCount
             href={product.repoUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[10px] text-muted/40 hover:text-muted/70 transition-colors"
+            className="inline-flex items-center gap-1 text-[10px] text-muted hover:text-muted/70 transition-colors"
           >
             <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 1C4.1 1 1 4.1 1 8c0 3.1 2 5.7 4.8 6.6.4.1.5-.2.5-.4v-1.3c-2 .4-2.4-1-2.4-1-.3-.8-.8-1-.8-1-.6-.4.1-.4.1-.4.7.1 1.1.7 1.1.7.6 1.1 1.6.8 2 .6.1-.4.2-.8.4-1-1.6-.2-3.2-.8-3.2-3.5 0-.8.3-1.4.7-1.9-.1-.2-.3-.9.1-1.9 0 0 .6-.2 1.9.7a6.5 6.5 0 013.4 0c1.3-.9 1.9-.7 1.9-.7.4 1 .2 1.7.1 1.9.4.5.7 1.1.7 1.9 0 2.7-1.6 3.3-3.2 3.5.2.2.4.6.4 1.2v1.8c0 .2.1.5.5.4A7 7 0 0015 8c0-3.9-3.1-7-7-7z" />
@@ -408,7 +408,7 @@ function ProductCard({ product, contextCount }: { product: Product; contextCount
           </a>
         )}
         {contextCount > 0 && (
-          <span className="text-[10px] text-muted/30 tabular-nums">
+          <span className="text-[10px] text-muted tabular-nums">
             {contextCount} context{contextCount !== 1 ? "s" : ""}
           </span>
         )}
@@ -446,7 +446,7 @@ function BuildContextCard({
   const meta = CTX_CATEGORY_META[ctx.category] ?? { bg: "bg-white/5", text: "text-muted", label: ctx.category };
 
   return (
-    <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-4 transition-all hover:border-border-strong">
+    <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-4 transition-all hover:border-border-strong">
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
@@ -466,7 +466,7 @@ function BuildContextCard({
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="shrink-0 p-1 text-muted/40 hover:text-muted/70 transition-colors"
+          className="shrink-0 p-1 text-muted hover:text-muted/70 transition-colors"
           aria-label={expanded ? "Collapse" : "Expand"}
         >
           <svg
@@ -485,7 +485,7 @@ function BuildContextCard({
         </button>
       </div>
       {expanded && (
-        <div className="mt-3 pt-3 border-t border-border/30">
+        <div className="mt-3 pt-3 border-t border-border">
           <p className="text-[12px] text-muted/70 leading-relaxed whitespace-pre-wrap">
             {ctx.body}
           </p>

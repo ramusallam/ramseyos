@@ -74,7 +74,7 @@ export default function ProjectDetailPage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
         <div className="flex items-center gap-3 py-16 justify-center">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading project…</span>
+          <span className="text-[13px] text-muted">Loading project…</span>
         </div>
       </div>
     );
@@ -89,12 +89,12 @@ export default function ProjectDetailPage() {
         >
           &larr; Projects
         </Link>
-        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center mt-8">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/25 mb-4">
+        <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center mt-8">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
             <path d="M2 5V4a1 1 0 011-1h3l1.5 2H13a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" />
           </svg>
           <p className="text-sm text-muted/60">Project not found</p>
-          <p className="text-[12px] text-muted/35 mt-1">
+          <p className="text-[12px] text-muted mt-1">
             It may have been archived or removed.
           </p>
         </div>
@@ -143,7 +143,7 @@ export default function ProjectDetailPage() {
             className={`text-[10px] px-2 py-0.5 rounded-md font-medium transition-colors ${
               project.pinned
                 ? "bg-violet-500/10 text-violet-400"
-                : "text-muted/30 hover:text-muted/60 hover:bg-surface-raised"
+                : "text-muted hover:text-muted/60 hover:bg-surface-raised"
             }`}
           >
             {project.pinned ? "pinned" : "pin"}
@@ -172,7 +172,7 @@ export default function ProjectDetailPage() {
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <span className="text-[10px] text-muted/40 tabular-nums">{progress}%</span>
+              <span className="text-[10px] text-muted tabular-nums">{progress}%</span>
             </div>
           )}
         </div>
@@ -214,30 +214,30 @@ export default function ProjectDetailPage() {
       )}
 
       {!hasFocusItems && incomplete.length > 0 && (
-        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-5 py-4 mb-6 flex items-center gap-3">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30 shrink-0">
+        <div className="rounded-xl border border-border bg-surface backdrop-blur-sm px-5 py-4 mb-6 flex items-center gap-3">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted shrink-0">
             <path d="M8 2a6 6 0 100 12A6 6 0 008 2zM8 5v3l2 1" />
           </svg>
-          <p className="text-[13px] text-muted/40">
+          <p className="text-[13px] text-muted">
             Mark tasks as &ldquo;today&rdquo; or set high priority to surface them in Focus.
           </p>
         </div>
       )}
 
       {/* Quick Add Task */}
-      <div className="rounded-xl border border-border/50 bg-surface/50 p-4 mb-6">
+      <div className="rounded-xl border border-border bg-surface p-4 mb-6">
         <QuickAddTask projectId={projectId} />
       </div>
 
       {/* Tasks */}
       {tasks.length === 0 ? (
-        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-10 text-center">
-          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/25 mb-4">
+        <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-10 text-center">
+          <svg width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted mb-4">
             <rect x="2" y="2" width="12" height="12" rx="3" />
             <path d="M5.5 8l2 2 3-4" />
           </svg>
           <p className="text-sm text-muted/60">No tasks yet</p>
-          <p className="text-[12px] text-muted/35 mt-1">
+          <p className="text-[12px] text-muted mt-1">
             Add one above to get started.
           </p>
         </div>
@@ -250,8 +250,8 @@ export default function ProjectDetailPage() {
                 <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                   Open tasks
                 </h2>
-                <span className="text-[10px] text-muted/40 tabular-nums">{incomplete.length}</span>
-                <div className="flex-1 border-t border-border/40 ml-2" />
+                <span className="text-[10px] text-muted tabular-nums">{incomplete.length}</span>
+                <div className="flex-1 border-t border-border ml-2" />
               </div>
               <ul className="space-y-1.5">
                 {incomplete.map((task) => (
@@ -269,14 +269,14 @@ export default function ProjectDetailPage() {
                 onClick={() => setShowCompleted(!showCompleted)}
                 className="flex items-center gap-2 mb-3 group w-full"
               >
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/30">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
                   <path d="M5.5 8l2 2 3-4" />
                 </svg>
-                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/40">
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
                   Completed
                 </h2>
-                <span className="text-[10px] text-muted/30 tabular-nums">{completed.length}</span>
-                <div className="flex-1 border-t border-border/30 ml-2" />
+                <span className="text-[10px] text-muted tabular-nums">{completed.length}</span>
+                <div className="flex-1 border-t border-border ml-2" />
                 <svg
                   width="10"
                   height="10"
@@ -286,7 +286,7 @@ export default function ProjectDetailPage() {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={`text-muted/30 transition-transform ${showCompleted ? "rotate-180" : ""}`}
+                  className={`text-muted transition-transform ${showCompleted ? "rotate-180" : ""}`}
                 >
                   <path d="M4 6l4 4 4-4" />
                 </svg>
@@ -304,22 +304,22 @@ export default function ProjectDetailPage() {
       )}
 
       {/* Cross-links */}
-      <div className="flex items-center gap-3 mt-10 pt-6 border-t border-border/30">
+      <div className="flex items-center gap-3 mt-10 pt-6 border-t border-border">
         <Link
           href="/tasks"
-          className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors"
+          className="text-[11px] text-muted hover:text-muted/60 transition-colors"
         >
           All tasks &rarr;
         </Link>
         <Link
           href="/projects"
-          className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors"
+          className="text-[11px] text-muted hover:text-muted/60 transition-colors"
         >
           Projects &rarr;
         </Link>
         <Link
           href="/inbox"
-          className="text-[11px] text-muted/35 hover:text-muted/60 transition-colors"
+          className="text-[11px] text-muted hover:text-muted/60 transition-colors"
         >
           Inbox &rarr;
         </Link>
@@ -378,7 +378,7 @@ function QuickAddTask({ projectId }: { projectId: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex items-center gap-3">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-muted/40 shrink-0">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-muted shrink-0">
         <path d="M8 3.5v9M3.5 8h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
       <input
@@ -387,7 +387,7 @@ function QuickAddTask({ projectId }: { projectId: string }) {
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Add a task to this project…"
-        className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted/40 outline-none"
+        className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted outline-none"
         disabled={saving}
       />
       {saved ? (
@@ -430,7 +430,7 @@ function TaskRow({ task }: { task: Task }) {
 
   return (
     <li
-      className={`flex items-center gap-3 rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-4 py-3 transition-all hover:bg-surface-raised/30 ${
+      className={`flex items-center gap-3 rounded-xl border border-border bg-surface backdrop-blur-sm px-4 py-3 transition-all hover:bg-surface-raised/30 ${
         task.completed ? "opacity-35" : ""
       }`}
     >
@@ -501,7 +501,7 @@ function TaskRow({ task }: { task: Task }) {
           className={`text-[10px] px-2 py-1 rounded-lg shrink-0 transition-colors ${
             task.chosenForToday
               ? "bg-accent-dim text-accent font-medium"
-              : "text-muted/30 hover:text-muted/60 hover:bg-surface-raised"
+              : "text-muted hover:text-muted/60 hover:bg-surface-raised"
           }`}
           aria-label={
             task.chosenForToday ? "Remove from today" : "Choose for today"

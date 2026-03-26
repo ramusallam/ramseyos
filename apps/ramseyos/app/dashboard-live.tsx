@@ -13,6 +13,8 @@ import {
 import { db } from "@/lib/firebase";
 import { getActiveTools, type ToolItem } from "@/lib/tools";
 import { getRecents, type RecentItem } from "@/lib/recents";
+import { getDrafts, type DraftItem } from "@/lib/drafts";
+import { getLessonPlans, type LessonPlan as LPItem } from "@/lib/lesson-plans";
 import { PRIORITY_STYLE } from "@/lib/shared";
 import Link from "next/link";
 
@@ -95,7 +97,7 @@ export function TodayFocus() {
         return (
           <li
             key={task.id}
-            className="flex items-center gap-3 rounded-xl bg-surface/50 border border-border/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
+            className="flex items-center gap-3 rounded-xl bg-surface border border-border backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
           >
             <span className="size-2 shrink-0 rounded-full bg-rose-500" />
             <span className="flex-1 text-[14px] text-foreground/80 truncate">
@@ -170,7 +172,7 @@ export function ChosenForToday() {
         return (
           <li
             key={task.id}
-            className="flex items-center gap-3 rounded-xl bg-surface/50 border border-border/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
+            className="flex items-center gap-3 rounded-xl bg-surface border border-border backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
           >
             <span className="size-2 shrink-0 rounded-full bg-accent" />
             <span className="flex-1 text-[14px] text-foreground/80 truncate">
@@ -250,7 +252,7 @@ export function InboxNeedsReview() {
           {unprocessed.map((item) => (
             <li
               key={item.id}
-              className="flex items-center gap-3 rounded-xl bg-surface/50 border border-border/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
+              className="flex items-center gap-3 rounded-xl bg-surface border border-border backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
             >
               <span className="size-1.5 shrink-0 rounded-full bg-gray-400" />
               <span className="flex-1 text-[14px] text-foreground/70 truncate">
@@ -382,7 +384,7 @@ export function ProjectFocus() {
                   {project.title}
                 </Link>
               ) : (
-                <p className="text-[10px] uppercase tracking-wider text-muted/40 font-medium">
+                <p className="text-[10px] uppercase tracking-wider text-muted font-medium">
                   Unassigned
                 </p>
               )}
@@ -391,7 +393,7 @@ export function ProjectFocus() {
               {groupTasks.map((task) => (
                 <li
                   key={task.id}
-                  className="flex items-center gap-3 rounded-xl bg-surface/50 border border-border/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
+                  className="flex items-center gap-3 rounded-xl bg-surface border border-border backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
                 >
                   <span
                     className={`size-2 shrink-0 rounded-full ${
@@ -485,7 +487,7 @@ export function TodaySchedule() {
       {events.map((event) => (
         <li
           key={event.id}
-          className="flex items-center gap-3 rounded-xl bg-surface/50 border border-border/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
+          className="flex items-center gap-3 rounded-xl bg-surface border border-border backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
         >
           <span className="text-[12px] text-muted tabular-nums shrink-0 w-16">
             {formatTime(event.startTime)}
@@ -540,7 +542,7 @@ export function DailyActions() {
       {items.map((item) => (
         <li
           key={item.id}
-          className="flex items-center gap-3 rounded-xl bg-surface/50 border border-border/50 backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
+          className="flex items-center gap-3 rounded-xl bg-surface border border-border backdrop-blur-sm px-4 py-3 transition-colors hover:bg-surface-raised/30"
         >
           <span className="size-1.5 shrink-0 rounded-full bg-accent/60" />
           <span className="text-[14px] text-foreground/80">{item.title}</span>
@@ -695,7 +697,7 @@ export function SuggestedTools() {
               className={`group block rounded-xl border p-4 transition-all hover:bg-surface-raised/30 ${
                 isSpark
                   ? "border-amber-500/20 bg-amber-500/[0.03] hover:border-amber-500/30"
-                  : "border-border/50 bg-surface/50 hover:border-border-strong"
+                  : "border-border bg-surface hover:border-border-strong"
               }`}
             >
               <div className="flex items-start justify-between mb-2">
@@ -714,7 +716,7 @@ export function SuggestedTools() {
                     height="12"
                     viewBox="0 0 12 12"
                     fill="none"
-                    className="text-muted/30 group-hover:text-muted/60 transition-colors shrink-0"
+                    className="text-muted group-hover:text-muted/60 transition-colors shrink-0"
                   >
                     <path
                       d="M4.5 2H10v5.5M10 2L3 9"
@@ -859,7 +861,7 @@ export function PinnedItems() {
         <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/60">
           Active Work
         </h2>
-        <span className="text-[10px] text-muted/40 tabular-nums">{total}</span>
+        <span className="text-[10px] text-muted tabular-nums">{total}</span>
       </div>
 
       <div className="space-y-1.5">
@@ -874,7 +876,7 @@ export function PinnedItems() {
               style={{ backgroundColor: p.color ?? "#f59e0b" }}
             />
             <span className="flex-1 truncate">{p.title}</span>
-            <span className="text-[9px] text-muted/30">project</span>
+            <span className="text-[9px] text-muted">project</span>
           </Link>
         ))}
 
@@ -903,7 +905,7 @@ export function PinnedItems() {
             <span className="size-2 rounded-full shrink-0 bg-violet-400" />
             <span className="flex-1 truncate">{l.title}</span>
             {l.course && (
-              <span className="text-[9px] text-muted/30 truncate max-w-[80px]">{l.course}</span>
+              <span className="text-[9px] text-muted truncate max-w-[80px]">{l.course}</span>
             )}
           </Link>
         ))}
@@ -951,7 +953,7 @@ export function RecentActivity() {
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
           <path d="M8 2a6 6 0 100 12A6 6 0 008 2zM8 5v3l2 1" />
         </svg>
         <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/60">
@@ -967,9 +969,106 @@ export function RecentActivity() {
           >
             <span className={`size-2 rounded-full shrink-0 ${RECENT_DOT[item.category] ?? "bg-muted/40"}`} />
             <span className="flex-1 truncate">{item.label}</span>
-            <span className="text-[9px] text-muted/30 shrink-0">
+            <span className="text-[9px] text-muted shrink-0">
               {relativeTime(item.timestamp)}
             </span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Drafts Ready ── */
+
+export function DraftsReady() {
+  const [drafts, setDrafts] = useState<DraftItem[]>([]);
+
+  useEffect(() => {
+    getDrafts().then((all) => {
+      setDrafts(all.filter((d) => d.status === "draft" || d.status === "ready").slice(0, 4));
+    });
+  }, []);
+
+  if (drafts.length === 0) return null;
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
+          <path d="M2 3h12a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4a1 1 0 011-1zM1.5 3.5l6.5 5 6.5-5" />
+        </svg>
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+          Drafts
+        </h2>
+        <span className="text-[10px] text-muted font-semibold tabular-nums">{drafts.length}</span>
+      </div>
+      <div className="space-y-0.5">
+        {drafts.map((d) => (
+          <Link
+            key={d.id}
+            href="/communications"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/70 hover:bg-surface-raised hover:text-foreground transition-colors"
+          >
+            <span className={`size-2 rounded-full shrink-0 ${d.status === "ready" ? "bg-success" : "bg-warning"}`} />
+            <span className="flex-1 truncate">{d.subject || "Untitled draft"}</span>
+            <span className="text-[9px] text-muted shrink-0">{d.status}</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Need to Buy ── */
+
+interface MaterialWithContext {
+  name: string;
+  quantity: string;
+  lessonTitle: string;
+  lessonId: string;
+}
+
+export function NeedToBuy() {
+  const [items, setItems] = useState<MaterialWithContext[]>([]);
+
+  useEffect(() => {
+    getLessonPlans().then((plans) => {
+      const needs: MaterialWithContext[] = [];
+      for (const p of plans) {
+        for (const m of p.materials) {
+          if (m.needToBuy) {
+            needs.push({ name: m.name, quantity: m.quantity, lessonTitle: p.title, lessonId: p.id });
+          }
+        }
+      }
+      setItems(needs.slice(0, 5));
+    });
+  }, []);
+
+  if (items.length === 0) return null;
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
+          <path d="M1 1h2.5l1.3 7.5a1 1 0 001 .8h6.4a1 1 0 001-.8L14.5 4H4" />
+        </svg>
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+          Need to Buy
+        </h2>
+        <span className="text-[10px] text-muted font-semibold tabular-nums">{items.length}</span>
+      </div>
+      <div className="space-y-0.5">
+        {items.map((item, i) => (
+          <Link
+            key={`${item.lessonId}-${item.name}-${i}`}
+            href="/materials"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/70 hover:bg-surface-raised hover:text-foreground transition-colors"
+          >
+            <span className="size-2 rounded-full shrink-0 bg-danger" />
+            <span className="flex-1 truncate">{item.name}</span>
+            {item.quantity && <span className="text-[9px] text-muted shrink-0">×{item.quantity}</span>}
           </Link>
         ))}
       </div>

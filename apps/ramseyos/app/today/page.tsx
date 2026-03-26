@@ -70,7 +70,7 @@ export default function MobileDailyCard() {
       <div className="min-h-dvh flex items-center justify-center">
         <div className="flex items-center gap-3">
           <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[13px] text-muted/40">Loading your day…</span>
+          <span className="text-[13px] text-muted">Loading your day…</span>
         </div>
       </div>
     );
@@ -100,7 +100,7 @@ export default function MobileDailyCard() {
               <button
                 type="button"
                 onClick={handleCopy}
-                className="p-2 rounded-lg text-muted/40 hover:text-foreground/70 hover:bg-surface-raised/50 transition-colors active:scale-95"
+                className="p-2 rounded-lg text-muted hover:text-foreground/70 hover:bg-surface-raised/50 transition-colors active:scale-95"
                 aria-label="Copy daily card"
               >
                 {copied ? (
@@ -117,7 +117,7 @@ export default function MobileDailyCard() {
               <button
                 type="button"
                 onClick={handleShare}
-                className="p-2 rounded-lg text-muted/40 hover:text-foreground/70 hover:bg-surface-raised/50 transition-colors active:scale-95"
+                className="p-2 rounded-lg text-muted hover:text-foreground/70 hover:bg-surface-raised/50 transition-colors active:scale-95"
                 aria-label="Share daily card"
               >
                 {shared ? (
@@ -141,7 +141,7 @@ export default function MobileDailyCard() {
             <span className={`text-[12px] font-medium ${mode.color}`}>
               {mode.label}
             </span>
-            <span className="text-[10px] text-muted/25 tabular-nums">
+            <span className="text-[10px] text-muted tabular-nums">
               · {plan.timeline.length} item{plan.timeline.length !== 1 ? "s" : ""}
             </span>
           </div>
@@ -187,13 +187,13 @@ export default function MobileDailyCard() {
               {dailyActions.map((item) => (
                 <li
                   key={item.id}
-                  className="flex items-center gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3.5"
+                  className="flex items-center gap-3 rounded-xl bg-surface backdrop-blur-sm border border-border px-4 py-3.5"
                 >
                   <span className="size-2 shrink-0 rounded-full bg-gray-400" />
                   <span className="flex-1 text-[14px] text-foreground/70">
                     {item.title}
                   </span>
-                  <span className="text-[9px] text-muted/30 shrink-0">routine</span>
+                  <span className="text-[9px] text-muted shrink-0">routine</span>
                 </li>
               ))}
             </ul>
@@ -215,7 +215,7 @@ export default function MobileDailyCard() {
         {/* Teach — lesson plans quick-access */}
         <Link
           href="/lesson-plans"
-          className="flex items-center gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3.5 transition-colors active:bg-surface-raised/40"
+          className="flex items-center gap-3 rounded-xl bg-surface backdrop-blur-sm border border-border px-4 py-3.5 transition-colors active:bg-surface-raised/40"
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400/60 shrink-0">
             <rect x="3" y="1" width="10" height="14" rx="1.5" />
@@ -224,7 +224,7 @@ export default function MobileDailyCard() {
           <span className="flex-1 text-[14px] text-foreground/60">
             Lesson Plans
           </span>
-          <span className="text-[10px] text-muted/35 shrink-0">
+          <span className="text-[10px] text-muted shrink-0">
             prep &amp; teach
           </span>
         </Link>
@@ -252,8 +252,8 @@ export default function MobileDailyCard() {
               <path d="M8 2a6 6 0 100 12A6 6 0 008 2z" />
               <path d="M8 5v3l2 1" />
             </svg>
-            <p className="text-[14px] text-muted/40">Nothing planned for today</p>
-            <p className="text-[12px] text-muted/25">Capture something to get started.</p>
+            <p className="text-[14px] text-muted">Nothing planned for today</p>
+            <p className="text-[12px] text-muted">Capture something to get started.</p>
           </div>
         )}
 
@@ -272,26 +272,26 @@ export default function MobileDailyCard() {
             <span className="text-muted/20">·</span>
             <Link
               href="/"
-              className="text-[12px] text-muted/40 hover:text-muted/70 transition-colors"
+              className="text-[12px] text-muted hover:text-muted/70 transition-colors"
             >
               Dashboard
             </Link>
             <span className="text-muted/20">·</span>
             <Link
               href="/inbox"
-              className="text-[12px] text-muted/40 hover:text-muted/70 transition-colors"
+              className="text-[12px] text-muted hover:text-muted/70 transition-colors"
             >
               Inbox
             </Link>
             <span className="text-muted/20">·</span>
             <Link
               href="/lesson-plans"
-              className="text-[12px] text-muted/40 hover:text-muted/70 transition-colors"
+              className="text-[12px] text-muted hover:text-muted/70 transition-colors"
             >
               Lessons
             </Link>
           </div>
-          <p className="text-[10px] text-muted/25 tracking-wide text-center">
+          <p className="text-[10px] text-muted tracking-wide text-center">
             RamseyOS · {new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
           </p>
         </footer>
@@ -325,9 +325,9 @@ function MobileQuickCapture() {
   }
 
   return (
-    <section className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-4">
+    <section className="rounded-xl border border-border bg-surface backdrop-blur-sm p-4">
       <form onSubmit={handleSubmit} className="flex items-center gap-3">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-muted/40 shrink-0">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-muted shrink-0">
           <path d="M8 3.5v9M3.5 8h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
         <input
@@ -336,7 +336,7 @@ function MobileQuickCapture() {
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Quick capture…"
-          className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted/40 outline-none"
+          className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-muted outline-none"
           disabled={saving}
         />
         {saved ? (
@@ -366,7 +366,7 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
       <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/60">
         {label}
       </h2>
-      <span className="text-[10px] text-muted/35 tabular-nums">{count}</span>
+      <span className="text-[10px] text-muted tabular-nums">{count}</span>
     </div>
   );
 }
@@ -399,7 +399,7 @@ function MobileNowCard({ item }: { item: TimelineItem }) {
           </span>
         )}
         {startsIn && (
-          <span className="text-[9px] font-medium text-muted/40">
+          <span className="text-[9px] font-medium text-muted">
             {startsIn}
           </span>
         )}
@@ -415,7 +415,7 @@ function MobileNowCard({ item }: { item: TimelineItem }) {
               ? `${fmtCardTime(item.startTime)} – ${fmtCardTime(item.endTime)}`
               : TYPE_LABEL[item.type]}
             {item.projectName && (
-              <span className="text-muted/35"> · {item.projectName}</span>
+              <span className="text-muted"> · {item.projectName}</span>
             )}
           </p>
         </div>
@@ -433,9 +433,9 @@ function MobileNextCard({ item }: { item: TimelineItem }) {
       : null;
 
   return (
-    <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-5 py-3.5">
+    <div className="rounded-xl border border-border bg-surface backdrop-blur-sm px-5 py-3.5">
       <div className="flex items-center gap-3">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted/40 shrink-0">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted shrink-0">
           Next
         </span>
         <span className={`size-2 shrink-0 rounded-full ${TYPE_DOT[item.type]}`} />
@@ -443,11 +443,11 @@ function MobileNextCard({ item }: { item: TimelineItem }) {
           {item.title}
         </p>
         {startsIn ? (
-          <span className="text-[10px] text-muted/40 tabular-nums shrink-0">
+          <span className="text-[10px] text-muted tabular-nums shrink-0">
             {startsIn}
           </span>
         ) : item.startTime && item.endTime ? (
-          <span className="text-[11px] text-muted/40 tabular-nums shrink-0">
+          <span className="text-[11px] text-muted tabular-nums shrink-0">
             {fmtCardTime(item.startTime)}
           </span>
         ) : null}
@@ -468,7 +468,7 @@ function ScheduleRow({ item }: { item: TimelineItem }) {
 
   return (
     <li
-      className={`flex items-center gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3.5 ${
+      className={`flex items-center gap-3 rounded-xl bg-surface backdrop-blur-sm border border-border px-4 py-3.5 ${
         isPast ? "opacity-30" : ""
       } ${isActive ? "border-emerald-500/20 bg-emerald-500/[0.04]" : ""}`}
     >
@@ -510,7 +510,7 @@ function TaskRow({ item }: { item: TimelineItem }) {
   }
 
   return (
-    <li className={`flex items-center gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3.5 transition-all ${done ? "opacity-30" : ""}`}>
+    <li className={`flex items-center gap-3 rounded-xl bg-surface backdrop-blur-sm border border-border px-4 py-3.5 transition-all ${done ? "opacity-30" : ""}`}>
       <button
         type="button"
         onClick={handleComplete}
@@ -527,11 +527,11 @@ function TaskRow({ item }: { item: TimelineItem }) {
           </svg>
         )}
       </button>
-      <span className={`flex-1 text-[14px] truncate ${done ? "text-muted/40 line-through" : "text-foreground/80"}`}>
+      <span className={`flex-1 text-[14px] truncate ${done ? "text-muted line-through" : "text-foreground/80"}`}>
         {item.title}
       </span>
       {item.projectName && !done && (
-        <span className="text-[10px] text-muted/40 shrink-0 truncate max-w-[80px]">
+        <span className="text-[10px] text-muted shrink-0 truncate max-w-[80px]">
           {item.projectName}
         </span>
       )}
@@ -552,7 +552,7 @@ function TaskRow({ item }: { item: TimelineItem }) {
 
 function LifeRow({ item }: { item: LifeContextItem }) {
   return (
-    <li className="flex items-center gap-3 rounded-xl bg-surface/50 backdrop-blur-sm border border-border/50 px-4 py-3.5">
+    <li className="flex items-center gap-3 rounded-xl bg-surface backdrop-blur-sm border border-border px-4 py-3.5">
       <span
         className={`size-2 shrink-0 rounded-full ${LIFE_CAT_DOT[item.category] ?? "bg-gray-400"}`}
       />

@@ -62,7 +62,7 @@ export function DailyControllerSection({ sidebar }: Props) {
     return (
       <div className="flex items-center gap-3 py-16 justify-center">
         <span className="size-1.5 rounded-full bg-accent animate-pulse" />
-        <span className="text-[13px] text-muted/40">Loading your day…</span>
+        <span className="text-[13px] text-muted">Loading your day…</span>
       </div>
     );
   }
@@ -83,13 +83,13 @@ export function DailyControllerSection({ sidebar }: Props) {
         <span className={`text-[11px] font-medium ${mode.color}`}>
           {mode.label}
         </span>
-        <span className="text-[10px] text-muted/25 tabular-nums">
+        <span className="text-[10px] text-muted tabular-nums">
           · {plan.timeline.length} item{plan.timeline.length !== 1 ? "s" : ""}
         </span>
         <div className="flex-1" />
         {totalTasks > 0 && (
           <div className="flex items-center gap-2">
-            <span className={`text-[10px] tabular-nums font-medium ${completedToday > 0 ? "text-emerald-400/50" : "text-muted/30"}`}>
+            <span className={`text-[10px] tabular-nums font-medium ${completedToday > 0 ? "text-emerald-400/50" : "text-muted"}`}>
               {completedToday}/{totalTasks} done
             </span>
             <div className="w-16 h-1 rounded-full bg-border/30 overflow-hidden">
@@ -110,7 +110,7 @@ export function DailyControllerSection({ sidebar }: Props) {
       {/* ── Daily Card + Sidebar ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <div className="lg:col-span-2">
-          <div className="bg-surface/50 rounded-xl border border-border/50 p-5 backdrop-blur-sm">
+          <div className="bg-surface rounded-xl border border-border p-5 backdrop-blur-sm">
             <DailyCard plan={plan} adminActive={adminActive} />
           </div>
         </div>
