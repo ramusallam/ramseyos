@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import {
   getActiveTemplates,
   seedTemplates,
@@ -88,46 +88,80 @@ export default function CommunicationsPage() {
 
   const toggleFavorite = useCallback(
     async (id: string) => {
-      const t = templates.find((x) => x.id === id);
-      if (!t) return;
-      const next = !t.favorite;
+      let next = false;
       setTemplates((prev) =>
-        prev.map((x) => (x.id === id ? { ...x, favorite: next } : x))
+        prev.map((x) => {
+          if (x.id !== id) return x;
+          next = !x.favorite;
+          return { ...x, favorite: next };
+        })
       );
       await updateTemplateFavorite(id, next);
     },
-    [templates]
+    []
   );
 
   /* ── Derived ── */
 
-  const favorites = templates.filter((t) => t.favorite);
-  const nonFavorites = templates.filter((t) => !t.favorite);
+  const {
+    favorites,
+    sortedCategories,
+    handoffDrafts,
+    regularDrafts,
+    readyCount,
+    handedOffCount,
+    totalRecipients,
+  } = useMemo(() => {
+    const favs: TemplateItem[] = [];
+    const nonFavs: TemplateItem[] = [];
+    for (const t of templates) {
+      if (t.favorite) favs.push(t);
+      else nonFavs.push(t);
+    }
 
-  const grouped = new Map<string, TemplateItem[]>();
-  for (const t of nonFavorites) {
-    const key = t.category || "other";
-    const arr = grouped.get(key) ?? [];
-    arr.push(t);
-    grouped.set(key, arr);
-  }
-  const categoryOrder = ["school", "professional", "personal"];
-  const sortedCategories = Array.from(grouped.entries()).sort(
-    ([a], [b]) =>
-      (categoryOrder.indexOf(a) === -1 ? 99 : categoryOrder.indexOf(a)) -
-      (categoryOrder.indexOf(b) === -1 ? 99 : categoryOrder.indexOf(b))
-  );
+    const grouped = new Map<string, TemplateItem[]>();
+    for (const t of nonFavs) {
+      const key = t.category || "other";
+      const arr = grouped.get(key);
+      if (arr) arr.push(t);
+      else grouped.set(key, [t]);
+    }
+    const categoryOrder = ["school", "professional", "personal"];
+    const sorted = Array.from(grouped.entries()).sort(
+      ([a], [b]) =>
+        (categoryOrder.indexOf(a) === -1 ? 99 : categoryOrder.indexOf(a)) -
+        (categoryOrder.indexOf(b) === -1 ? 99 : categoryOrder.indexOf(b))
+    );
 
-  const handoffDrafts = drafts.filter(
-    (d) => d.gmailStatus === "ready_for_gmail" || d.gmailStatus === "handed_off"
-  );
-  const regularDrafts = drafts.filter(
-    (d) => d.gmailStatus === "not_prepared"
-  );
+    const handoff: DraftItem[] = [];
+    const regular: DraftItem[] = [];
+    let ready = 0;
+    let handedOff = 0;
+    for (const d of drafts) {
+      if (d.gmailStatus === "ready_for_gmail" || d.gmailStatus === "handed_off") {
+        handoff.push(d);
+      } else {
+        regular.push(d);
+      }
+      if (d.gmailStatus === "ready_for_gmail") ready++;
+      if (d.gmailStatus === "handed_off") handedOff++;
+    }
 
-  const readyCount = drafts.filter((d) => d.gmailStatus === "ready_for_gmail").length;
-  const handedOffCount = drafts.filter((d) => d.gmailStatus === "handed_off").length;
-  const totalRecipients = new Set(members.map((m) => m.email).filter(Boolean)).size;
+    const emails = new Set<string>();
+    for (const m of members) {
+      if (m.email) emails.add(m.email);
+    }
+
+    return {
+      favorites: favs,
+      sortedCategories: sorted,
+      handoffDrafts: handoff,
+      regularDrafts: regular,
+      readyCount: ready,
+      handedOffCount: handedOff,
+      totalRecipients: emails.size,
+    };
+  }, [templates, drafts, members]);
 
   if (loading) {
     return (
@@ -150,7 +184,7 @@ export default function CommunicationsPage() {
         >
           &larr; Today
         </Link>
-        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
+        <h1 className="text-[20px] font-semibold text-foreground tracking-tight mt-2">
           Communications
         </h1>
         <p className="text-[13px] text-muted/50 mt-1">

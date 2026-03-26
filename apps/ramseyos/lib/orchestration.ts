@@ -103,13 +103,13 @@ export async function generateDailyPlan(): Promise<DailyPlan> {
   // Partition schedule by time relevance
   const now = new Date();
   const activeEvents = schedule.filter(
-    (e) => e.startTime.toDate() <= now && e.endTime.toDate() > now
+    (e) => e.startTime?.toDate() <= now && e.endTime?.toDate() > now
   );
   const upcomingEvents = schedule.filter(
-    (e) => e.startTime.toDate() > now
+    (e) => e.startTime?.toDate() > now
   );
   const pastEvents = schedule.filter(
-    (e) => e.endTime.toDate() <= now
+    (e) => e.endTime?.toDate() <= now
   );
 
   // Ordered schedule: active → upcoming → past

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getLessonPlans, type LessonPlan, type MaterialItem } from "@/lib/lesson-plans";
 import { getActiveVendors, type VendorItem } from "@/lib/vendors";
 import Link from "next/link";
@@ -37,10 +37,29 @@ export default function MaterialsPage() {
     );
   }, []);
 
-  const needToBuy = allMaterials.filter((m) => m.needToBuy);
-  const favorites = allMaterials.filter((m) => m.favorite && !m.needToBuy);
-  const recurring = allMaterials.filter((m) => m.recurring && !m.needToBuy && !m.favorite);
-  const rest = allMaterials.filter((m) => !m.needToBuy && !m.favorite && !m.recurring);
+  const { needToBuy, favorites, recurring, rest, vendorCount } = useMemo(() => {
+    const ntb: MaterialWithContext[] = [];
+    const favs: MaterialWithContext[] = [];
+    const rec: MaterialWithContext[] = [];
+    const other: MaterialWithContext[] = [];
+    const vendorIds = new Set<string>();
+
+    for (const m of allMaterials) {
+      if (m.needToBuy) ntb.push(m);
+      else if (m.favorite) favs.push(m);
+      else if (m.recurring) rec.push(m);
+      else other.push(m);
+      if (m.vendorId) vendorIds.add(m.vendorId);
+    }
+
+    return {
+      needToBuy: ntb,
+      favorites: favs,
+      recurring: rec,
+      rest: other,
+      vendorCount: vendorIds.size,
+    };
+  }, [allMaterials]);
 
   function resolveSource(mat: MaterialWithContext) {
     if (mat.vendorId) {
@@ -50,9 +69,6 @@ export default function MaterialsPage() {
     if (mat.sourceName) return { name: mat.sourceName, url: mat.sourceUrl, isVendor: false };
     return null;
   }
-
-  // Count unique vendors referenced
-  const vendorCount = new Set(allMaterials.filter((m) => m.vendorId).map((m) => m.vendorId)).size;
 
   if (loading) {
     return (
@@ -74,7 +90,7 @@ export default function MaterialsPage() {
         >
           &larr; Today
         </Link>
-        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
+        <h1 className="text-[20px] font-semibold text-foreground tracking-tight mt-2">
           Materials
         </h1>
         <p className="text-[13px] text-muted/50 mt-1">

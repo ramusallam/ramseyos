@@ -66,17 +66,22 @@ async function updateCapture(id: string, fields: Partial<Capture>) {
 }
 
 async function convertToTask(capture: Capture) {
-  await createTask({
-    title: capture.text,
-    priority: capture.priority,
-    sourceCaptureId: capture.id,
-    projectId: capture.projectId,
-  });
-  await updateCapture(capture.id, {
-    type: "task",
-    processed: true,
-    status: "processed",
-  });
+  try {
+    await createTask({
+      title: capture.text,
+      priority: capture.priority,
+      sourceCaptureId: capture.id,
+      projectId: capture.projectId,
+    });
+    await updateCapture(capture.id, {
+      type: "task",
+      processed: true,
+      status: "processed",
+    });
+  } catch (err) {
+    console.error("Failed to convert capture to task:", err);
+    throw err;
+  }
 }
 
 /* ── Page ── */
@@ -89,15 +94,22 @@ export default function InboxPage() {
 
   useEffect(() => {
     const q = query(collection(db, "captures"), orderBy("createdAt", "desc"));
-    const unsub = onSnapshot(q, (snap) => {
-      setItems(
-        snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })) as Capture[]
-      );
-      setLoading(false);
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        setItems(
+          snap.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          })) as Capture[]
+        );
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Captures listener error:", err);
+        setLoading(false);
+      }
+    );
     return unsub;
   }, []);
 
@@ -107,11 +119,15 @@ export default function InboxPage() {
       where("archived", "==", false),
       orderBy("createdAt", "desc")
     );
-    const unsub = onSnapshot(q, (snap) => {
-      setProjects(
-        snap.docs.map((d) => ({ id: d.id, title: d.data().title }))
-      );
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        setProjects(
+          snap.docs.map((d) => ({ id: d.id, title: d.data().title ?? "Untitled" }))
+        );
+      },
+      (err) => console.error("Projects listener error:", err)
+    );
     return unsub;
   }, []);
 
@@ -161,7 +177,7 @@ export default function InboxPage() {
           </Link>
         </div>
 
-        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
+        <h1 className="text-[20px] font-semibold text-foreground tracking-tight mt-2">
           Inbox
         </h1>
         <p className="text-[13px] text-muted/50 mt-1">

@@ -114,12 +114,12 @@ export default function ToolsPage() {
       <header className="mb-10">
         <Link
           href="/"
-          className="text-[11px] tracking-wide text-muted hover:text-foreground/60 transition-colors"
+          className="text-[11px] tracking-wide text-muted/50 hover:text-foreground/60 transition-colors"
         >
           &larr; Today
         </Link>
         <div className="flex items-baseline gap-4 mt-2">
-          <h1 className="text-xl font-normal text-foreground">
+          <h1 className="text-[20px] font-semibold text-foreground">
             Tools &amp; Resources
           </h1>
           {!loading && totalCount > 0 && (

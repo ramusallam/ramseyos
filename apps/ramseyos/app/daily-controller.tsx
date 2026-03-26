@@ -47,10 +47,15 @@ export function DailyControllerSection({ sidebar }: Props) {
   const completedToday = useCompletedTodayCount();
 
   useEffect(() => {
-    generateDailyPlan().then(setPlan);
-    getActiveAdminItems().then((items) =>
-      setAdminActive(items.filter((i) => i.status === "in_progress").slice(0, 3))
-    );
+    let cancelled = false;
+    generateDailyPlan().then((p) => {
+      if (!cancelled) setPlan(p);
+    });
+    getActiveAdminItems().then((items) => {
+      if (!cancelled)
+        setAdminActive(items.filter((i) => i.status === "in_progress").slice(0, 3));
+    });
+    return () => { cancelled = true; };
   }, []);
 
   if (!plan) {

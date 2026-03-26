@@ -156,7 +156,7 @@ export default function PurchasingPage() {
           <span className="text-muted/30">/</span>
           <span className="text-muted/70">Purchasing</span>
         </div>
-        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
+        <h1 className="text-[20px] font-semibold text-foreground tracking-tight mt-2">
           Purchasing
         </h1>
         <p className="text-[13px] text-muted/50 mt-1">
@@ -231,7 +231,7 @@ export default function PurchasingPage() {
 
           {/* Recurring to Buy */}
           {summary.recurringToBuy.length > 0 && (
-            <div className="rounded-xl border border-blue-400/15 bg-blue-500/4 backdrop-blur-sm p-5">
+            <div className="rounded-xl border border-blue-400/15 bg-blue-500/[0.04] backdrop-blur-sm p-5">
               <div className="flex items-center gap-2 mb-3">
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-blue-400/70">
                   <path d="M12.5 6.5A5 5 0 003.5 8M3.5 9.5A5 5 0 0012.5 8" />

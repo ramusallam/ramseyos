@@ -56,13 +56,18 @@ function CalendarContent() {
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
-    const [statusRes, evts] = await Promise.all([
-      fetch("/api/calendar/status").then((r) => r.json()),
-      getCalendarEvents(new Date()),
-    ]);
-    setStatus(statusRes);
-    setEvents(evts);
-    setLoading(false);
+    try {
+      const [statusRes, evts] = await Promise.all([
+        fetch("/api/calendar/status").then((r) => r.json()),
+        getCalendarEvents(new Date()),
+      ]);
+      setStatus(statusRes);
+      setEvents(evts);
+    } catch (err) {
+      console.error("Failed to load calendar data:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -146,7 +151,7 @@ function CalendarContent() {
         >
           &larr; Today
         </Link>
-        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
+        <h1 className="text-[20px] font-semibold text-foreground tracking-tight mt-2">
           Calendar
         </h1>
         <p className="text-[13px] text-muted/50 mt-1">

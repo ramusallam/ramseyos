@@ -74,7 +74,7 @@ export default function VendorsPage() {
           <span className="text-muted/30">/</span>
           <span className="text-muted/70">Sources</span>
         </div>
-        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
+        <h1 className="text-[20px] font-semibold text-foreground tracking-tight mt-2">
           Sources
         </h1>
         <p className="text-[13px] text-muted/50 mt-1">

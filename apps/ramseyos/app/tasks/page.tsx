@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   collection,
   query,
@@ -40,12 +40,19 @@ export default function TasksPage() {
 
   useEffect(() => {
     const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
-    const unsub = onSnapshot(q, (snap) => {
-      setTasks(
-        snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Task[]
-      );
-      setLoading(false);
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        setTasks(
+          snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Task[]
+        );
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Tasks listener error:", err);
+        setLoading(false);
+      }
+    );
     return unsub;
   }, []);
 
@@ -55,41 +62,60 @@ export default function TasksPage() {
       where("archived", "==", false),
       orderBy("createdAt", "desc")
     );
-    const unsub = onSnapshot(q, (snap) => {
-      setProjects(
-        snap.docs.map((d) => ({
-          id: d.id,
-          title: d.data().title,
-          color: d.data().color,
-        }))
-      );
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        setProjects(
+          snap.docs.map((d) => ({
+            id: d.id,
+            title: d.data().title ?? "Untitled",
+            color: d.data().color ?? null,
+          }))
+        );
+      },
+      (err) => console.error("Projects listener error:", err)
+    );
     return unsub;
   }, []);
 
-  const incomplete = tasks.filter((t) => !t.completed);
-  const completed = tasks.filter((t) => t.completed);
-  const chosenCount = incomplete.filter((t) => t.chosenForToday).length;
-  const fromInboxCount = tasks.filter((t) => t.sourceCaptureId).length;
+  const { incomplete, completed, chosenCount, fromInboxCount, grouped } =
+    useMemo(() => {
+      const inc: Task[] = [];
+      const comp: Task[] = [];
+      let chosen = 0;
+      let fromInbox = 0;
 
-  const projectMap = new Map<string, Project>();
-  for (const p of projects) projectMap.set(p.id, p);
+      for (const t of tasks) {
+        if (t.completed) comp.push(t);
+        else inc.push(t);
+        if (!t.completed && t.chosenForToday) chosen++;
+        if (t.sourceCaptureId) fromInbox++;
+      }
 
-  const grouped: { project: Project | null; tasks: Task[] }[] = [];
-  const byProjectId = new Map<string | null, Task[]>();
+      const byProjectId = new Map<string | null, Task[]>();
+      for (const task of inc) {
+        const key = task.projectId ?? null;
+        const arr = byProjectId.get(key);
+        if (arr) arr.push(task);
+        else byProjectId.set(key, [task]);
+      }
 
-  for (const task of incomplete) {
-    const key = task.projectId ?? null;
-    if (!byProjectId.has(key)) byProjectId.set(key, []);
-    byProjectId.get(key)!.push(task);
-  }
+      const grp: { project: Project | null; tasks: Task[] }[] = [];
+      for (const p of projects) {
+        const projectTasks = byProjectId.get(p.id);
+        if (projectTasks) grp.push({ project: p, tasks: projectTasks });
+      }
+      const unassigned = byProjectId.get(null);
+      if (unassigned) grp.push({ project: null, tasks: unassigned });
 
-  for (const p of projects) {
-    const projectTasks = byProjectId.get(p.id);
-    if (projectTasks) grouped.push({ project: p, tasks: projectTasks });
-  }
-  const unassigned = byProjectId.get(null);
-  if (unassigned) grouped.push({ project: null, tasks: unassigned });
+      return {
+        incomplete: inc,
+        completed: comp,
+        chosenCount: chosen,
+        fromInboxCount: fromInbox,
+        grouped: grp,
+      };
+    }, [tasks, projects]);
 
   if (loading) {
     return (
@@ -112,7 +138,7 @@ export default function TasksPage() {
         >
           &larr; Today
         </Link>
-        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
+        <h1 className="text-[20px] font-semibold text-foreground tracking-tight mt-2">
           Tasks
         </h1>
         <p className="text-[13px] text-muted/50 mt-1">

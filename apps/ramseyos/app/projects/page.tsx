@@ -39,32 +39,43 @@ export default function ProjectsPage() {
       where("archived", "==", false),
       orderBy("createdAt", "desc")
     );
-    const unsub = onSnapshot(q, (snap) => {
-      setProjects(
-        snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Project[]
-      );
-      setLoading(false);
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        setProjects(
+          snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Project[]
+        );
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Projects listener error:", err);
+        setLoading(false);
+      }
+    );
     return unsub;
   }, []);
 
   useEffect(() => {
     const q = query(collection(db, "tasks"));
-    const unsub = onSnapshot(q, (snap) => {
-      const counts = new Map<string, TaskCount>();
-      for (const d of snap.docs) {
-        const data = d.data();
-        const pid = data.projectId as string | null;
-        if (!pid) continue;
-        if (!counts.has(pid)) {
-          counts.set(pid, { projectId: pid, total: 0, completed: 0 });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const counts = new Map<string, TaskCount>();
+        for (const d of snap.docs) {
+          const data = d.data();
+          const pid = data.projectId as string | null;
+          if (!pid) continue;
+          if (!counts.has(pid)) {
+            counts.set(pid, { projectId: pid, total: 0, completed: 0 });
+          }
+          const entry = counts.get(pid)!;
+          entry.total++;
+          if (data.completed) entry.completed++;
         }
-        const entry = counts.get(pid)!;
-        entry.total++;
-        if (data.completed) entry.completed++;
-      }
-      setTaskCounts(counts);
-    });
+        setTaskCounts(counts);
+      },
+      (err) => console.error("Task counts listener error:", err)
+    );
     return unsub;
   }, []);
 
@@ -77,7 +88,7 @@ export default function ProjectsPage() {
         >
           &larr; Today
         </Link>
-        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
+        <h1 className="text-[20px] font-semibold text-foreground tracking-tight mt-2">
           Projects
         </h1>
         <p className="text-[13px] text-muted/50 mt-1">

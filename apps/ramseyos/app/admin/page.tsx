@@ -108,7 +108,7 @@ export default function AdminPage() {
         >
           &larr; Today
         </Link>
-        <h1 className="text-xl font-normal text-foreground tracking-tight mt-2">
+        <h1 className="text-[20px] font-semibold text-foreground tracking-tight mt-2">
           Admin
         </h1>
         <p className="text-[13px] text-muted/50 mt-1">

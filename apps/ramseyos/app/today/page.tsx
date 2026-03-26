@@ -96,7 +96,11 @@ export default function MobileDailyCard() {
   const [shared, setShared] = useState(false);
 
   useEffect(() => {
-    generateDailyPlan().then(setPlan);
+    let cancelled = false;
+    generateDailyPlan().then((p) => {
+      if (!cancelled) setPlan(p);
+    });
+    return () => { cancelled = true; };
   }, []);
 
   async function handleCopy() {
