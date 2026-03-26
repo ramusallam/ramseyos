@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   collection,
   query,
@@ -10,7 +10,7 @@ import {
   type Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { updateTaskProject, toggleChosenForToday, toggleTaskCompleted, toggleTaskPinned } from "@/lib/tasks";
+import { updateTaskProject, updateTaskTitle, toggleChosenForToday, toggleTaskCompleted, toggleTaskPinned } from "@/lib/tasks";
 import { type Priority, PRIORITY_STYLE } from "@/lib/shared";
 import Link from "next/link";
 
@@ -301,6 +301,25 @@ function TaskItem({
   task: Task;
   projects: Project[];
 }) {
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState(task.title);
+  const editRef = useRef<HTMLInputElement>(null);
+
+  function startEditing() {
+    if (task.completed) return;
+    setEditText(task.title);
+    setEditing(true);
+    setTimeout(() => editRef.current?.focus(), 0);
+  }
+
+  async function commitEdit() {
+    setEditing(false);
+    const trimmed = editText.trim();
+    if (trimmed && trimmed !== task.title) {
+      await updateTaskTitle(task.id, trimmed);
+    }
+  }
+
   return (
     <li
       className={`rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-4 py-3 transition-all hover:bg-surface-raised/30 ${
@@ -332,13 +351,31 @@ function TaskItem({
           )}
         </button>
 
-        <span
-          className={`flex-1 text-[14px] truncate ${
-            task.completed ? "text-muted/50 line-through" : "text-foreground/85"
-          }`}
-        >
-          {task.title}
-        </span>
+        {editing ? (
+          <input
+            ref={editRef}
+            type="text"
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitEdit();
+              if (e.key === "Escape") setEditing(false);
+            }}
+            aria-label="Edit task title"
+            className="flex-1 text-[14px] text-foreground/85 bg-transparent outline-none border-b border-accent/30 py-0"
+          />
+        ) : (
+          <span
+            className={`flex-1 text-[14px] truncate ${
+              task.completed ? "text-muted/50 line-through" : "text-foreground/85 cursor-text"
+            }`}
+            onDoubleClick={startEditing}
+            title={task.completed ? undefined : "Double-click to edit"}
+          >
+            {task.title}
+          </span>
+        )}
 
         {/* Inbox origin indicator */}
         {task.sourceCaptureId && !task.completed && (

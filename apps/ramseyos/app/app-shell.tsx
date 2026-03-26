@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth, type AuthStatus } from "@/lib/auth";
+import { trackRecent } from "@/lib/recents";
 import { CommandPalette } from "./command-palette";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -197,6 +198,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Track page visits for recent activity
+  useEffect(() => {
+    if (pathname === "/") return; // Don't track the dashboard itself
+    const label =
+      NAV_GROUPS.flatMap((g) => g.items).find((n) => n.href === pathname)?.label;
+    if (label) {
+      trackRecent({ id: `page-${pathname}`, label, href: pathname, category: "page" });
+    } else if (pathname.startsWith("/projects/")) {
+      trackRecent({ id: `nav-${pathname}`, label: "Project", href: pathname, category: "project", detail: pathname.split("/").pop() });
+    } else if (pathname.startsWith("/lesson-plans/")) {
+      trackRecent({ id: `nav-${pathname}`, label: "Lesson Plan", href: pathname, category: "lesson", detail: pathname.split("/").pop() });
+    }
+  }, [pathname]);
 
   // Auth gate — show login/loading before anything else
   if (status !== "ready") {

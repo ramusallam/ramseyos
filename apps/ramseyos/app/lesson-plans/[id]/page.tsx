@@ -12,6 +12,7 @@ import {
 import { Timestamp } from "firebase/firestore";
 import { getActiveTools, type ToolItem } from "@/lib/tools";
 import { getActiveVendors, type VendorItem } from "@/lib/vendors";
+import { trackRecent } from "@/lib/recents";
 import Link from "next/link";
 
 const SPARK_STATUS_META: Record<SparkStatus, { label: string; color: string; bg: string; ring: string }> = {
@@ -63,6 +64,7 @@ export default function LessonPlanEditorPage() {
           return;
         }
         setPlan(p);
+        trackRecent({ id: `lesson-${p.id}`, label: p.title, href: `/lesson-plans/${p.id}`, category: "lesson", detail: p.course });
         setTitle(p.title);
         setCourse(p.course);
         setDescription(p.description);

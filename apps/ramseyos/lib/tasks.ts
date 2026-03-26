@@ -77,3 +77,10 @@ export async function toggleTaskPinned(
     pinned: !current,
   });
 }
+
+export async function updateTaskTitle(
+  taskId: string,
+  title: string
+): Promise<void> {
+  await updateDoc(doc(db, COLLECTION, taskId), { title });
+}

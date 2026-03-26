@@ -30,13 +30,13 @@ const COLLECTION = "projects";
 
 export async function createProject(fields: {
   title: string;
-  description: string;
+  description?: string;
   workspaceId?: string | null;
   color?: string | null;
 }): Promise<string> {
   const ref = await addDoc(collection(db, COLLECTION), {
     title: fields.title,
-    description: fields.description,
+    description: fields.description ?? "",
     status: "active" as ProjectStatus,
     workspaceId: fields.workspaceId ?? null,
     archived: false,

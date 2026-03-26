@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getActiveTools, type ToolItem } from "@/lib/tools";
+import { getRecents, type RecentItem } from "@/lib/recents";
 import { PRIORITY_STYLE } from "@/lib/shared";
 import Link from "next/link";
 
@@ -904,6 +905,71 @@ export function PinnedItems() {
             {l.course && (
               <span className="text-[9px] text-muted/30 truncate max-w-[80px]">{l.course}</span>
             )}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Recent Activity ── */
+
+const RECENT_ICON: Record<string, string> = {
+  project: "M2 5V4a1 1 0 011-1h3l1.5 2H13a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V5z",
+  task: "M2 2h12a3 3 0 010 0v12a3 3 0 010 0H2a3 3 0 010 0V2zM5.5 8l2 2 3-4",
+  lesson: "M3 2.5h10a1 1 0 011 1v9a1 1 0 01-1 1H3a1 1 0 01-1-1v-9a1 1 0 011-1zM5 6h6M5 8.5h4",
+  page: "M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M8 4.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z",
+};
+
+const RECENT_DOT: Record<string, string> = {
+  project: "bg-sky-400",
+  task: "bg-accent",
+  lesson: "bg-violet-400",
+  page: "bg-muted/40",
+};
+
+export function RecentActivity() {
+  const [items, setItems] = useState<RecentItem[]>([]);
+
+  useEffect(() => {
+    setItems(getRecents(6));
+  }, []);
+
+  if (items.length === 0) return null;
+
+  function relativeTime(ts: number) {
+    const diff = Date.now() - ts;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
+  }
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted/40">
+          <path d="M8 2a6 6 0 100 12A6 6 0 008 2zM8 5v3l2 1" />
+        </svg>
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/60">
+          Recent
+        </h2>
+      </div>
+      <div className="space-y-0.5">
+        {items.map((item) => (
+          <Link
+            key={item.id}
+            href={item.href}
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/70 hover:bg-surface-raised hover:text-foreground transition-colors group"
+          >
+            <span className={`size-2 rounded-full shrink-0 ${RECENT_DOT[item.category] ?? "bg-muted/40"}`} />
+            <span className="flex-1 truncate">{item.label}</span>
+            <span className="text-[9px] text-muted/30 shrink-0">
+              {relativeTime(item.timestamp)}
+            </span>
           </Link>
         ))}
       </div>

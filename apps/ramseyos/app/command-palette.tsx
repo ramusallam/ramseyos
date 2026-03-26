@@ -13,6 +13,7 @@ import {
 import { db } from "@/lib/firebase";
 import { createCapture } from "@/lib/captures";
 import { createTask } from "@/lib/tasks";
+import { getRecents, type RecentItem } from "@/lib/recents";
 
 /* ── Types ── */
 
@@ -20,7 +21,7 @@ interface PaletteItem {
   id: string;
   label: string;
   detail?: string;
-  category: "navigate" | "task" | "project" | "lesson" | "action";
+  category: "navigate" | "task" | "project" | "lesson" | "action" | "recent";
   href?: string;
   action?: () => void | Promise<void>;
   icon: string;
@@ -164,13 +165,14 @@ function PaletteIcon({ name }: { name: string }) {
 
 const CATEGORY_LABEL: Record<string, string> = {
   action: "Quick Actions",
+  recent: "Recent",
   navigate: "Navigate",
   task: "Tasks",
   project: "Projects",
   lesson: "Lessons",
 };
 
-const CATEGORY_ORDER = ["action", "navigate", "task", "project", "lesson"];
+const CATEGORY_ORDER = ["action", "recent", "navigate", "task", "project", "lesson"];
 
 /* ── Main Component ── */
 
@@ -184,16 +186,31 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
   const [dynamic, setDynamic] = useState<DynamicItems | null>(null);
+  const [recentItems, setRecentItems] = useState<PaletteItem[]>([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
-  // Fetch dynamic items when palette opens
+  // Fetch dynamic items + recents when palette opens
   useEffect(() => {
     if (open) {
       setSearch("");
       setSelectedIdx(0);
       setActionFeedback(null);
       fetchDynamicItems().then(setDynamic);
+
+      // Load recent items from localStorage
+      const recents = getRecents(6);
+      setRecentItems(
+        recents.map((r) => ({
+          id: `recent-${r.id}`,
+          label: r.label,
+          detail: r.detail,
+          category: "recent" as const,
+          href: r.href,
+          icon: r.category === "project" ? "folder" : r.category === "lesson" ? "lesson" : r.category === "task" ? "check" : "sun",
+        }))
+      );
+
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [open]);
@@ -244,7 +261,10 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
       ...(dynamic?.lessons ?? []),
     ];
 
-    if (!q) return all.filter((i) => i.category === "navigate");
+    if (!q) {
+      // Show recents (if any) + navigation when search is empty
+      return [...recentItems, ...all.filter((i) => i.category === "navigate")];
+    }
 
     return all.filter(
       (i) =>
@@ -252,7 +272,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
         (i.detail && i.detail.toLowerCase().includes(q)) ||
         (i.category === "action" && q.length > 0)
     );
-  }, [search, dynamic, actionItems]);
+  }, [search, dynamic, actionItems, recentItems]);
 
   // Group by category
   const grouped = useMemo(() => {

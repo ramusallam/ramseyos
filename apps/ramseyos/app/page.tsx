@@ -1,4 +1,4 @@
-import { ProjectFocus, SuggestedTools, PinnedItems } from "./dashboard-live";
+import { ProjectFocus, SuggestedTools, PinnedItems, RecentActivity } from "./dashboard-live";
 import { DailyControllerSection } from "./daily-controller";
 import { PlaybookSidebar } from "./playbook-sidebar";
 import { getQuickLaunchWorkflows } from "@/lib/workflows";
@@ -44,6 +44,10 @@ export default function TodayDashboard() {
           <>
             <DashboardCard variant="sidebar">
               <PinnedItems />
+            </DashboardCard>
+
+            <DashboardCard variant="sidebar">
+              <RecentActivity />
             </DashboardCard>
 
             <DashboardCard variant="sidebar">

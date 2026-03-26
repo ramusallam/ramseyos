@@ -11,8 +11,9 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { createTask, toggleChosenForToday, toggleTaskCompleted } from "@/lib/tasks";
+import { createTask, toggleChosenForToday, toggleTaskCompleted, updateTaskTitle } from "@/lib/tasks";
 import { toggleProjectPinned } from "@/lib/projects";
+import { trackRecent } from "@/lib/recents";
 import { PRIORITY_STYLE, STATUS_STYLE } from "@/lib/shared";
 import Link from "next/link";
 import { useRef } from "react";
@@ -47,7 +48,9 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "projects", projectId), (snap) => {
       if (snap.exists()) {
-        setProject({ id: snap.id, ...snap.data() } as Project);
+        const proj = { id: snap.id, ...snap.data() } as Project;
+        setProject(proj);
+        trackRecent({ id: `project-${proj.id}`, label: proj.title, href: `/projects/${proj.id}`, category: "project" });
       }
       setLoading(false);
     });
@@ -406,6 +409,25 @@ function QuickAddTask({ projectId }: { projectId: string }) {
 }
 
 function TaskRow({ task }: { task: Task }) {
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState(task.title);
+  const editRef = useRef<HTMLInputElement>(null);
+
+  function startEditing() {
+    if (task.completed) return;
+    setEditText(task.title);
+    setEditing(true);
+    setTimeout(() => editRef.current?.focus(), 0);
+  }
+
+  async function commitEdit() {
+    setEditing(false);
+    const trimmed = editText.trim();
+    if (trimmed && trimmed !== task.title) {
+      await updateTaskTitle(task.id, trimmed);
+    }
+  }
+
   return (
     <li
       className={`flex items-center gap-3 rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-4 py-3 transition-all hover:bg-surface-raised/30 ${
@@ -436,15 +458,31 @@ function TaskRow({ task }: { task: Task }) {
         )}
       </button>
 
-      <span
-        className={`flex-1 text-[14px] truncate ${
-          task.completed
-            ? "text-muted/50 line-through"
-            : "text-foreground/85"
-        }`}
-      >
-        {task.title}
-      </span>
+      {editing ? (
+        <input
+          ref={editRef}
+          type="text"
+          value={editText}
+          onChange={(e) => setEditText(e.target.value)}
+          onBlur={commitEdit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commitEdit();
+            if (e.key === "Escape") setEditing(false);
+          }}
+          aria-label="Edit task title"
+          className="flex-1 text-[14px] text-foreground/85 bg-transparent outline-none border-b border-accent/30 py-0"
+        />
+      ) : (
+        <span
+          className={`flex-1 text-[14px] truncate ${
+            task.completed ? "text-muted/50 line-through" : "text-foreground/85 cursor-text"
+          }`}
+          onDoubleClick={startEditing}
+          title={task.completed ? undefined : "Double-click to edit"}
+        >
+          {task.title}
+        </span>
+      )}
 
       {task.priority && !task.completed && (
         <span
