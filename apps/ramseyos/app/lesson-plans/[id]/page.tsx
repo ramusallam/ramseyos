@@ -389,7 +389,7 @@ export default function LessonPlanEditorPage() {
             <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/35">
               Teaching Studio
             </span>
-            <div className="flex-1 border-t border-border/30" />
+            <div className="flex-1 border-t border-border/50" />
           </div>
           {/* ── Spark Inquiry Studio — companion panel ── */}
           <section className="rounded-xl border border-amber-400/15 bg-amber-500/[0.02] p-5 backdrop-blur-sm">
@@ -482,7 +482,7 @@ export default function LessonPlanEditorPage() {
                   return (
                     <div
                       key={rid}
-                      className="group flex items-center gap-2 rounded-md bg-white/[0.03] border border-border/30 px-3 py-2"
+                      className="group flex items-center gap-2 rounded-md bg-white/[0.03] border border-border/40 px-3 py-2"
                     >
                       <a
                         href={tool.url}
@@ -521,7 +521,7 @@ export default function LessonPlanEditorPage() {
                 + Link a resource
               </button>
             ) : (
-              <div className="rounded-md border border-border/30 bg-white/[0.03] p-2 space-y-0.5">
+              <div className="rounded-md border border-border/40 bg-white/[0.03] p-2 space-y-0.5">
                 <div className="flex items-center justify-between mb-1 px-1">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted/60">
                     Select
@@ -681,7 +681,7 @@ function MaterialRow({
     : null;
 
   return (
-    <div className="flex items-start gap-3 rounded-lg bg-white/[0.03] border border-border/30 px-3 py-2.5">
+    <div className="flex items-start gap-3 rounded-lg bg-white/[0.03] border border-border/40 px-3 py-2.5">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[12px] font-medium text-foreground/80">
@@ -786,7 +786,7 @@ function MaterialForm({
   onCancel: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-border/30 bg-white/[0.03] p-3 space-y-2.5">
+    <div className="rounded-lg border border-border/40 bg-white/[0.03] p-3 space-y-2.5">
       <input
         type="text"
         value={matName}

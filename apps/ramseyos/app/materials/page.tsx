@@ -179,7 +179,7 @@ export default function MaterialsPage() {
               title="All Materials"
               count={rest.length}
               color="text-muted"
-              ruleColor="border-border/40"
+              ruleColor="border-border/50"
               icon={
                 <>
                   <rect x="2" y="2" width="12" height="12" rx="2" />

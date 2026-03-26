@@ -315,7 +315,7 @@ function TaskItem({
 
         {/* Inbox origin indicator */}
         {task.sourceCaptureId && !task.completed && (
-          <span className="text-[9px] text-muted/25 shrink-0">inbox</span>
+          <span className="text-[10px] text-muted/40 shrink-0">inbox</span>
         )}
 
         {task.priority && !task.completed && (

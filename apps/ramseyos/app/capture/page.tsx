@@ -37,7 +37,7 @@ export default function CapturePage() {
       setText("");
       setTypeHint("capture");
       setSaved(true);
-      setTimeout(() => setSaved(false), 2400);
+      setTimeout(() => setSaved(false), 2000);
       inputRef.current?.focus();
     } finally {
       setSaving(false);
@@ -85,7 +85,7 @@ export default function CapturePage() {
             }}
             placeholder="What's on your mind?"
             rows={4}
-            className="w-full flex-1 min-h-[120px] max-h-[50vh] resize-none bg-surface/50 rounded-2xl border border-border/50 px-5 py-4 text-[16px] leading-relaxed text-foreground placeholder:text-muted/35 outline-none focus:border-accent/30 transition-colors backdrop-blur-sm"
+            className="w-full flex-1 min-h-[120px] max-h-[50vh] resize-none bg-surface/50 rounded-xl border border-border/50 px-5 py-4 text-[16px] leading-relaxed text-foreground placeholder:text-muted/35 outline-none focus:border-accent/30 transition-colors backdrop-blur-sm"
             disabled={saving}
           />
 
@@ -113,7 +113,7 @@ export default function CapturePage() {
           <button
             type="submit"
             disabled={!text.trim() || saving}
-            className="flex-1 py-3.5 rounded-2xl text-[15px] font-medium transition-all disabled:opacity-30 bg-accent text-white hover:bg-accent/90 active:scale-[0.98]"
+            className="flex-1 py-3.5 rounded-xl text-[15px] font-medium transition-all disabled:opacity-30 bg-accent text-white hover:bg-accent/90 active:scale-[0.98]"
           >
             {saving ? "Saving…" : "Capture"}
           </button>

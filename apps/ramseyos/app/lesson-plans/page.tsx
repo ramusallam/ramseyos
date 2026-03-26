@@ -178,7 +178,7 @@ export default function LessonPlansPage() {
                       {courseMaterialsCount} mat.
                     </span>
                   )}
-                  <div className="flex-1 border-t border-border/40" />
+                  <div className="flex-1 border-t border-border/50" />
                 </div>
 
                 {/* Lesson cards grid */}

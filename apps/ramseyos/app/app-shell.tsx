@@ -315,7 +315,7 @@ function AuthGate({
           <p className="text-[11px] tracking-widest uppercase text-accent/60 mb-6">
             RamseyOS
           </p>
-          <div className="rounded-2xl border border-border/50 bg-surface/50 p-8">
+          <div className="rounded-xl border border-border/50 bg-surface/50 p-8">
             <svg
               width="32"
               height="32"
@@ -357,7 +357,7 @@ function AuthGate({
         <p className="text-[11px] tracking-widest uppercase text-accent/60 mb-6">
           RamseyOS
         </p>
-        <div className="rounded-2xl border border-border/50 bg-surface/50 p-8">
+        <div className="rounded-xl border border-border/50 bg-surface/50 p-8">
           <p className="text-[20px] text-foreground font-semibold mb-1">
             Welcome back
           </p>

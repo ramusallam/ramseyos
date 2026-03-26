@@ -33,7 +33,7 @@ export const DAY_MODE_META: Record<
 
 export const TYPE_DOT: Record<TimelineItemType, string> = {
   schedule: "bg-sky-500",
-  chosen: "bg-indigo-500",
+  chosen: "bg-accent",
   focus: "bg-rose-500",
   "daily-action": "bg-gray-400",
 };
@@ -45,11 +45,33 @@ export const TYPE_LABEL: Record<TimelineItemType, string> = {
   "daily-action": "daily",
 };
 
+/** Longer labels for NowNext focus cards. */
+export const NOWNEXT_TYPE_LABEL: Record<TimelineItemType, string> = {
+  schedule: "Scheduled",
+  chosen: "Selected task",
+  focus: "Priority task",
+  "daily-action": "Daily routine",
+};
+
 export const LIFE_CAT_DOT: Record<string, string> = {
   family: "bg-rose-400",
   home: "bg-amber-400",
   reminder: "bg-blue-400",
   "life-admin": "bg-slate-400",
+};
+
+export const ADMIN_CAT_DOT: Record<string, string> = {
+  "follow-up": "bg-blue-400",
+  tracking: "bg-violet-400",
+  reminder: "bg-amber-400",
+  operations: "bg-emerald-400",
+};
+
+export const ADMIN_CAT_LABEL: Record<string, string> = {
+  "follow-up": "follow-up",
+  tracking: "tracking",
+  reminder: "reminder",
+  operations: "ops",
 };
 
 export function fmtCardTime(ts: { toDate: () => Date }): string {

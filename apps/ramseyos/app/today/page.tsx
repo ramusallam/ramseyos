@@ -352,7 +352,7 @@ function MobileQuickCapture() {
       await createCapture({ text: trimmed, source: "mobile" });
       setText("");
       setSaved(true);
-      setTimeout(() => setSaved(false), 1800);
+      setTimeout(() => setSaved(false), 2000);
     } finally {
       setSaving(false);
     }
@@ -422,7 +422,7 @@ function MobileNowCard({ item }: { item: TimelineItem }) {
       : null;
 
   return (
-    <div className="rounded-2xl border border-accent/20 bg-surface/70 backdrop-blur-sm p-5 shadow-[var(--glow-accent)]">
+    <div className="rounded-xl border border-accent/20 bg-surface/70 backdrop-blur-sm p-5 shadow-[var(--glow-accent)]">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-[10px] font-bold uppercase tracking-widest text-accent/70">
           Now
@@ -467,7 +467,7 @@ function MobileNextCard({ item }: { item: TimelineItem }) {
       : null;
 
   return (
-    <div className="rounded-2xl border border-border/50 bg-surface/50 backdrop-blur-sm px-5 py-3.5">
+    <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm px-5 py-3.5">
       <div className="flex items-center gap-3">
         <span className="text-[10px] font-semibold uppercase tracking-widest text-muted/40 shrink-0">
           Next

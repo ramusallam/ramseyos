@@ -18,7 +18,7 @@ import {
   type CaptureType,
   SOURCE_META,
 } from "@/lib/captures";
-import { type Priority, formatTimestamp } from "@/lib/shared";
+import { type Priority, formatTimestamp, PRIORITY_STYLE } from "@/lib/shared";
 import Link from "next/link";
 
 /* ── Types ── */
@@ -418,13 +418,9 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
                   onClick={() => updateCapture(item.id, { priority: value })}
                   className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
                     isActive
-                      ? value === "high"
-                        ? "bg-rose-500/15 text-rose-400"
-                        : value === "medium"
-                          ? "bg-amber-500/15 text-amber-400"
-                          : value === "low"
-                            ? "bg-sky-500/15 text-sky-400"
-                            : "bg-surface-raised text-muted/60"
+                      ? value
+                        ? PRIORITY_STYLE[value] ?? "bg-surface-raised text-muted/60"
+                        : "bg-surface-raised text-muted/60"
                       : "text-muted/30 hover:text-muted/60"
                   }`}
                 >

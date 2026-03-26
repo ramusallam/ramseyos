@@ -101,7 +101,7 @@ export default function ProjectsPage() {
           <span className="text-[13px] text-muted/40">Loading projects…</span>
         </div>
       ) : projects.length === 0 ? (
-        <div className="rounded-2xl border border-border/50 bg-surface/50 backdrop-blur-sm p-12 text-center">
+        <div className="rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm p-12 text-center">
           <svg width="36" height="36" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-muted/20 mb-5">
             <path d="M2 5V4a1 1 0 011-1h3l1.5 2H13a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" />
           </svg>
@@ -131,7 +131,7 @@ export default function ProjectsPage() {
                   <div className="pt-1.5 shrink-0">
                     <span
                       className="block size-3 rounded-full"
-                      style={{ backgroundColor: project.color ?? "#6366f1" }}
+                      style={{ backgroundColor: project.color ?? "#f59e0b" }}
                     />
                   </div>
 

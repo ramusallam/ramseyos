@@ -3,31 +3,13 @@
 import {
   type DailyPlan,
   type TimelineItem,
-  type TimelineItemType,
 } from "@/lib/orchestration";
-import { type Timestamp } from "firebase/firestore";
+import {
+  TYPE_DOT,
+  NOWNEXT_TYPE_LABEL,
+  fmtCardTime,
+} from "@/lib/daily-card-constants";
 import Link from "next/link";
-
-const TYPE_LABEL: Record<TimelineItemType, string> = {
-  schedule: "Scheduled",
-  chosen: "Selected task",
-  focus: "Priority task",
-  "daily-action": "Daily routine",
-};
-
-const TYPE_DOT: Record<TimelineItemType, string> = {
-  schedule: "bg-sky-500",
-  chosen: "bg-accent",
-  focus: "bg-rose-500",
-  "daily-action": "bg-gray-400",
-};
-
-function formatTime(ts: Timestamp): string {
-  return ts.toDate().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
 
 /* ── Action resolution ── */
 
@@ -232,8 +214,8 @@ function FocusCard({
           </p>
           <p className="text-[11px] text-muted/50 mt-1">
             {item.startTime && item.endTime
-              ? `${formatTime(item.startTime)} – ${formatTime(item.endTime)}`
-              : TYPE_LABEL[item.type]}
+              ? `${fmtCardTime(item.startTime)} – ${fmtCardTime(item.endTime)}`
+              : NOWNEXT_TYPE_LABEL[item.type]}
             {item.projectName && (
               <span className="text-muted/35"> · {item.projectName}</span>
             )}

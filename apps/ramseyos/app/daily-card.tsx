@@ -15,6 +15,8 @@ import {
   TYPE_DOT,
   TYPE_LABEL,
   LIFE_CAT_DOT,
+  ADMIN_CAT_DOT,
+  ADMIN_CAT_LABEL,
   fmtCardTime,
   fmtCardDate,
 } from "@/lib/daily-card-constants";
@@ -448,20 +450,6 @@ function LifeContextRow({ item }: { item: LifeContextItem }) {
 }
 
 /* ── Admin Context row ── */
-
-const ADMIN_CAT_DOT: Record<string, string> = {
-  "follow-up": "bg-blue-400",
-  tracking: "bg-violet-400",
-  reminder: "bg-amber-400",
-  operations: "bg-emerald-400",
-};
-
-const ADMIN_CAT_LABEL: Record<string, string> = {
-  "follow-up": "follow-up",
-  tracking: "tracking",
-  reminder: "reminder",
-  operations: "ops",
-};
 
 function AdminContextRow({ item }: { item: AdminItem }) {
   return (

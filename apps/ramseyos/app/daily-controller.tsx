@@ -82,19 +82,17 @@ export function DailyControllerSection({ sidebar }: Props) {
           · {plan.timeline.length} item{plan.timeline.length !== 1 ? "s" : ""}
         </span>
         <div className="flex-1" />
-        {completedToday > 0 && (
+        {totalTasks > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-emerald-400/50 tabular-nums font-medium">
-              {completedToday} done today
+            <span className={`text-[10px] tabular-nums font-medium ${completedToday > 0 ? "text-emerald-400/50" : "text-muted/30"}`}>
+              {completedToday}/{totalTasks} done
             </span>
-            {totalTasks > 0 && (
-              <div className="w-12 h-1 rounded-full bg-border/30 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-emerald-400/40 transition-all"
-                  style={{ width: `${Math.round((completedToday / totalTasks) * 100)}%` }}
-                />
-              </div>
-            )}
+            <div className="w-16 h-1 rounded-full bg-border/30 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${completedToday > 0 ? "bg-emerald-400/40" : "bg-border/20"}`}
+                style={{ width: `${Math.round((completedToday / totalTasks) * 100)}%` }}
+              />
+            </div>
           </div>
         )}
       </div>

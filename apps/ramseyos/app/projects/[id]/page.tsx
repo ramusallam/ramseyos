@@ -124,7 +124,7 @@ export default function ProjectDetailPage() {
         <div className="flex items-center gap-3 mb-2">
           <span
             className="size-3.5 shrink-0 rounded-full"
-            style={{ backgroundColor: project.color ?? "#6366f1" }}
+            style={{ backgroundColor: project.color ?? "#f59e0b" }}
           />
           <h1 className="text-2xl font-semibold text-foreground">
             {project.title}
