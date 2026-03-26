@@ -5,6 +5,11 @@ import {
   type TimelineItem,
 } from "@/lib/orchestration";
 import {
+  resolveNowItem,
+  resolveNextItem,
+  getRelativeTime,
+} from "@/lib/now-next";
+import {
   TYPE_DOT,
   NOWNEXT_TYPE_LABEL,
   fmtCardTime,
@@ -51,68 +56,6 @@ function resolveAction(item: TimelineItem): ActionTarget {
   };
 }
 
-/* ── Smarter item selection ── */
-
-const NEAR_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
-
-function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
-  const now = new Date();
-
-  const active = timeline.find(
-    (item) =>
-      item.type === "schedule" &&
-      item.startTime &&
-      item.endTime &&
-      item.startTime.toDate() <= now &&
-      item.endTime.toDate() > now
-  );
-  if (active) return active;
-
-  const nearUpcoming = timeline.find(
-    (item) =>
-      item.type === "schedule" &&
-      item.startTime &&
-      item.startTime.toDate() > now &&
-      item.startTime.toDate().getTime() - now.getTime() <= NEAR_THRESHOLD_MS
-  );
-  if (nearUpcoming) return nearUpcoming;
-
-  const task = timeline.find(
-    (item) => item.type === "chosen" || item.type === "focus"
-  );
-  if (task) return task;
-
-  const upcoming = timeline.find(
-    (item) =>
-      item.type === "schedule" &&
-      item.startTime &&
-      item.startTime.toDate() > now
-  );
-  if (upcoming) return upcoming;
-
-  return timeline.find((item) => item.type === "daily-action") ?? null;
-}
-
-function getNextItem(
-  timeline: TimelineItem[],
-  currentId: string
-): TimelineItem | null {
-  const now = new Date();
-  const idx = timeline.findIndex(
-    (item) => `${item.type}-${item.id}` === currentId
-  );
-  if (idx === -1) return null;
-
-  for (let i = idx + 1; i < timeline.length; i++) {
-    const item = timeline[i];
-    if (item.type === "schedule" && item.endTime && item.endTime.toDate() <= now) {
-      continue;
-    }
-    return item;
-  }
-  return null;
-}
-
 /* ── Component ── */
 
 interface NowNextProps {
@@ -120,9 +63,8 @@ interface NowNextProps {
 }
 
 export function NowNext({ plan }: NowNextProps) {
-  const now = getActiveItem(plan.timeline);
-  const nowKey = now ? `${now.type}-${now.id}` : "";
-  const next = now ? getNextItem(plan.timeline, nowKey) : null;
+  const now = resolveNowItem(plan.timeline);
+  const next = now ? resolveNextItem(plan.timeline, now) : null;
 
   const hasInbox = plan.inboxItems.length > 0;
 
@@ -302,14 +244,3 @@ function InboxCard({
   );
 }
 
-function getRelativeTime(date: Date): string {
-  const diffMs = date.getTime() - Date.now();
-  if (diffMs < 0) return "";
-  const mins = Math.round(diffMs / 60000);
-  if (mins < 1) return "starting now";
-  if (mins < 60) return `in ${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  const remaining = mins % 60;
-  if (remaining === 0) return `in ${hrs}h`;
-  return `in ${hrs}h ${remaining}m`;
-}

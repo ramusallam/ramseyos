@@ -4,6 +4,7 @@ import {
   type TimelineItem,
   type LifeContextItem,
 } from "./orchestration";
+import { resolveNowItem, resolveNextItem } from "./now-next";
 import { type Timestamp } from "firebase/firestore";
 
 const DAY_MODE_LABEL: Record<DayMode, string> = {
@@ -47,10 +48,10 @@ export function formatDailyCardText(plan: DailyPlan): string {
   lines.push("");
 
   // Now / Next
-  const nowItem = resolveNow(plan.timeline);
+  const nowItem = resolveNowItem(plan.timeline);
   if (nowItem) {
     lines.push(`▸ NOW  ${itemLine(nowItem)}`);
-    const nextItem = resolveNext(plan.timeline, nowItem);
+    const nextItem = resolveNextItem(plan.timeline, nowItem);
     if (nextItem) {
       lines.push(`▹ NEXT ${itemLine(nextItem)}`);
     }
@@ -139,8 +140,8 @@ export interface DailyCardSummary {
 }
 
 export function buildDailyCardSummary(plan: DailyPlan): DailyCardSummary {
-  const nowItem = resolveNow(plan.timeline);
-  const nextItem = nowItem ? resolveNext(plan.timeline, nowItem) : null;
+  const nowItem = resolveNowItem(plan.timeline);
+  const nextItem = nowItem ? resolveNextItem(plan.timeline, nowItem) : null;
 
   return {
     date: fmtDate(),
@@ -195,58 +196,3 @@ function itemDetail(item: TimelineItem): string {
   return TYPE_PREFIX[item.type] ?? item.type;
 }
 
-const NEAR_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
-
-function resolveNow(timeline: TimelineItem[]): TimelineItem | null {
-  const now = new Date();
-
-  const active = timeline.find(
-    (i) =>
-      i.type === "schedule" &&
-      i.startTime &&
-      i.endTime &&
-      i.startTime.toDate() <= now &&
-      i.endTime.toDate() > now
-  );
-  if (active) return active;
-
-  const nearUpcoming = timeline.find(
-    (i) =>
-      i.type === "schedule" &&
-      i.startTime &&
-      i.startTime.toDate() > now &&
-      i.startTime.toDate().getTime() - now.getTime() <= NEAR_THRESHOLD_MS
-  );
-  if (nearUpcoming) return nearUpcoming;
-
-  const task = timeline.find(
-    (i) => i.type === "chosen" || i.type === "focus"
-  );
-  if (task) return task;
-
-  const upcoming = timeline.find(
-    (i) => i.type === "schedule" && i.startTime && i.startTime.toDate() > now
-  );
-  if (upcoming) return upcoming;
-
-  return timeline.find((i) => i.type === "daily-action") ?? null;
-}
-
-function resolveNext(
-  timeline: TimelineItem[],
-  current: TimelineItem
-): TimelineItem | null {
-  const now = new Date();
-  const key = `${current.type}-${current.id}`;
-  const idx = timeline.findIndex((i) => `${i.type}-${i.id}` === key);
-  if (idx === -1) return null;
-
-  for (let i = idx + 1; i < timeline.length; i++) {
-    const item = timeline[i];
-    if (item.type === "schedule" && item.endTime && item.endTime.toDate() <= now) {
-      continue;
-    }
-    return item;
-  }
-  return null;
-}

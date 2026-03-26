@@ -8,6 +8,11 @@ import {
   type LifeContextItem,
 } from "@/lib/orchestration";
 import { formatDailyCardText } from "@/lib/daily-card-format";
+import {
+  resolveNowItem,
+  resolveNextItem,
+  getRelativeTime,
+} from "@/lib/now-next";
 import { createCapture } from "@/lib/captures";
 import { PRIORITY_STYLE } from "@/lib/shared";
 import { shareOrCopy, copyToClipboard } from "@/lib/platform";
@@ -21,72 +26,6 @@ import {
   fmtCardDate,
 } from "@/lib/daily-card-constants";
 import Link from "next/link";
-
-/* ── Now/Next selection — matches desktop logic ── */
-
-const NEAR_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
-
-function getActiveItem(timeline: TimelineItem[]): TimelineItem | null {
-  const now = new Date();
-
-  const active = timeline.find(
-    (i) =>
-      i.type === "schedule" &&
-      i.startTime &&
-      i.endTime &&
-      i.startTime.toDate() <= now &&
-      i.endTime.toDate() > now
-  );
-  if (active) return active;
-
-  const nearUpcoming = timeline.find(
-    (i) =>
-      i.type === "schedule" &&
-      i.startTime &&
-      i.startTime.toDate() > now &&
-      i.startTime.toDate().getTime() - now.getTime() <= NEAR_THRESHOLD_MS
-  );
-  if (nearUpcoming) return nearUpcoming;
-
-  const task = timeline.find(
-    (i) => i.type === "chosen" || i.type === "focus"
-  );
-  if (task) return task;
-
-  const upcoming = timeline.find(
-    (i) => i.type === "schedule" && i.startTime && i.startTime.toDate() > now
-  );
-  if (upcoming) return upcoming;
-
-  return timeline.find((i) => i.type === "daily-action") ?? null;
-}
-
-function getNextItem(timeline: TimelineItem[], currentId: string): TimelineItem | null {
-  const now = new Date();
-  const idx = timeline.findIndex((i) => `${i.type}-${i.id}` === currentId);
-  if (idx === -1) return null;
-
-  for (let i = idx + 1; i < timeline.length; i++) {
-    const item = timeline[i];
-    if (item.type === "schedule" && item.endTime && item.endTime.toDate() <= now) {
-      continue;
-    }
-    return item;
-  }
-  return null;
-}
-
-function getRelativeTime(date: Date): string {
-  const diffMs = date.getTime() - Date.now();
-  if (diffMs < 0) return "";
-  const mins = Math.round(diffMs / 60000);
-  if (mins < 1) return "starting now";
-  if (mins < 60) return `in ${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  const remaining = mins % 60;
-  if (remaining === 0) return `in ${hrs}h`;
-  return `in ${hrs}h ${remaining}m`;
-}
 
 /* ── Page ── */
 
@@ -138,9 +77,8 @@ export default function MobileDailyCard() {
   }
 
   const mode = DAY_MODE_META[plan.dayMode];
-  const nowItem = getActiveItem(plan.timeline);
-  const nowKey = nowItem ? `${nowItem.type}-${nowItem.id}` : "";
-  const nextItem = nowItem ? getNextItem(plan.timeline, nowKey) : null;
+  const nowItem = resolveNowItem(plan.timeline);
+  const nextItem = nowItem ? resolveNextItem(plan.timeline, nowItem) : null;
 
   const scheduleItems = plan.timeline.filter((i) => i.type === "schedule");
   const taskItems = plan.timeline.filter(

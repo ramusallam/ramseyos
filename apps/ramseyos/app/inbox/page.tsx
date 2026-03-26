@@ -334,6 +334,7 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
   const isProcessed = item.processed ?? false;
   const isTask = item.type === "task";
   const [converting, setConverting] = useState(false);
+  const [converted, setConverted] = useState(false);
   const typeMeta = TYPE_META[item.type ?? "capture"];
   const sourceMeta = SOURCE_META[item.source ?? "manual"];
 
@@ -342,6 +343,8 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
     setConverting(true);
     try {
       await convertToTask(item);
+      setConverted(true);
+      setTimeout(() => setConverted(false), 2000);
     } finally {
       setConverting(false);
     }
@@ -467,23 +470,32 @@ function InboxItem({ item, projects }: { item: Capture; projects: Project[] }) {
 
           {/* Convert action */}
           <div className="flex-1" />
-          <button
-            type="button"
-            onClick={handleConvert}
-            disabled={converting}
-            className="flex items-center gap-1.5 text-[11px] font-medium text-accent/80 hover:text-accent transition-colors disabled:opacity-40 px-3 py-1.5 rounded-lg hover:bg-accent-dim"
-          >
-            {converting ? (
-              "Converting…"
-            ) : (
-              <>
-                <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 8h10M9 4l4 4-4 4" />
-                </svg>
-                Task
-              </>
-            )}
-          </button>
+          {converted ? (
+            <span className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-400/80 px-3 py-1.5">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 8.5l3 3 5-6" />
+              </svg>
+              Converted
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={handleConvert}
+              disabled={converting}
+              className="flex items-center gap-1.5 text-[11px] font-medium text-accent/80 hover:text-accent transition-colors disabled:opacity-40 px-3 py-1.5 rounded-lg hover:bg-accent-dim"
+            >
+              {converting ? (
+                "Converting…"
+              ) : (
+                <>
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 8h10M9 4l4 4-4 4" />
+                  </svg>
+                  Task
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
 

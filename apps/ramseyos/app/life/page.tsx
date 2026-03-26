@@ -451,7 +451,7 @@ function QuickAddForm({
             value={frequency}
             onChange={(e) => setFrequency(e.target.value as LifeItemFrequency)}
             aria-label="Frequency"
-            className="bg-surface border border-border/30 rounded-md px-2 py-0.5 text-[10px] text-muted/60 outline-none"
+            className="bg-surface-raised/50 border border-border/40 rounded-lg px-2 py-0.5 text-[10px] text-muted/60 outline-none"
           >
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>

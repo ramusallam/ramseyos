@@ -62,24 +62,6 @@ export default function TodayDashboard() {
 
             <DashboardCard variant="sidebar">
               <CardHeader
-                icon="M5.5 8l2 2 3-4"
-                label="Approvals"
-                count={2}
-              />
-              <div className="space-y-1">
-                <Approval
-                  title="Lesson Plan: Atomic Structure"
-                  meta="Lesson Planning · Sonoma"
-                />
-                <Approval
-                  title="Discussion Response: Week 4"
-                  meta="Discussion Board · Concordia"
-                />
-              </div>
-            </DashboardCard>
-
-            <DashboardCard variant="sidebar">
-              <CardHeader
                 icon="M3 2h10v12H3zM6 5h4M6 7.5h4M6 10h2"
                 label="Playbooks"
               />
@@ -198,11 +180,3 @@ function WorkflowLaunchButton({
   );
 }
 
-function Approval({ title, meta }: { title: string; meta: string }) {
-  return (
-    <div className="rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-raised cursor-pointer">
-      <p className="text-[13px] text-foreground/80 truncate">{title}</p>
-      <p className="text-[10px] text-muted/50 mt-0.5">{meta}</p>
-    </div>
-  );
-}
