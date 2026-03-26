@@ -1,5 +1,6 @@
 import { ProjectFocus, SuggestedTools, PinnedItems, RecentActivity, DraftsReady, NeedToBuy, CarryForward } from "./dashboard-live";
 import { DailyControllerSection } from "./daily-controller";
+import { QuickCaptureBar } from "./quick-capture-bar";
 import { PlaybookSidebar } from "./playbook-sidebar";
 import { getQuickLaunchWorkflows } from "@/lib/workflows";
 import Link from "next/link";
@@ -40,6 +41,11 @@ export default function TodayDashboard() {
           </Link>
         </p>
       </header>
+
+      {/* ── Quick Capture ── */}
+      <div className="mb-6">
+        <QuickCaptureBar />
+      </div>
 
       {/* ── Primary Controller — NowNext + DailyCard + Sidebar ── */}
       <DailyControllerSection

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   collection,
   query,
@@ -13,7 +13,7 @@ import { useAuth, type AuthStatus } from "@/lib/auth";
 import { trackRecent } from "@/lib/recents";
 import { CommandPalette } from "./command-palette";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 interface ShellCounts {
   inbox: number;
@@ -186,20 +186,62 @@ const SHELL_HIDDEN_ROUTES = ["/today", "/capture"];
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { status, user, error: authError, signingIn, signIn, signInRedirect, signOut } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const counts = useShellCounts();
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const gPending = useRef(false);
+  const gTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Global Cmd+K / Ctrl+K listener
+  // Global keyboard shortcuts
   useEffect(() => {
+    const GO_MAP: Record<string, string> = {
+      h: "/",
+      w: "/week",
+      i: "/inbox",
+      t: "/tasks",
+      p: "/projects",
+      c: "/calendar",
+      l: "/lesson-plans",
+      a: "/admin",
+      s: "/settings",
+    };
+
     function handleKeyDown(e: KeyboardEvent) {
+      // Ignore when typing in inputs
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if ((e.target as HTMLElement)?.isContentEditable) return;
+
+      // Cmd+K / Ctrl+K → command palette
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setPaletteOpen((prev) => !prev);
+        return;
+      }
+
+      // "g" prefix navigation: press g, then a letter
+      if (!e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (e.key === "g" && !gPending.current) {
+          gPending.current = true;
+          if (gTimer.current) clearTimeout(gTimer.current);
+          gTimer.current = setTimeout(() => { gPending.current = false; }, 800);
+          return;
+        }
+
+        if (gPending.current) {
+          gPending.current = false;
+          if (gTimer.current) clearTimeout(gTimer.current);
+          const dest = GO_MAP[e.key];
+          if (dest) {
+            e.preventDefault();
+            router.push(dest);
+          }
+        }
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [router]);
 
   // Track page visits for recent activity
   useEffect(() => {

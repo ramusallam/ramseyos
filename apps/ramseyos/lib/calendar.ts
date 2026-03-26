@@ -76,3 +76,17 @@ export async function getCalendarEvents(date: Date): Promise<CalendarEvent[]> {
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as CalendarEvent[];
 }
+
+export async function getCalendarEventsRange(
+  start: Date,
+  end: Date
+): Promise<CalendarEvent[]> {
+  const q = query(
+    collection(db, COLLECTION),
+    where("startTime", ">=", start),
+    where("startTime", "<=", end),
+    orderBy("startTime", "asc")
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as CalendarEvent[];
+}

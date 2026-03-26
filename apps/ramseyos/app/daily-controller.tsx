@@ -72,35 +72,62 @@ export function DailyControllerSection({ sidebar }: Props) {
     (i) => i.type === "chosen" || i.type === "focus"
   );
   const totalTasks = taskItems.length + completedToday;
+  const allDone = totalTasks > 0 && completedToday >= totalTasks;
+  const progress = totalTasks > 0 ? Math.round((completedToday / totalTasks) * 100) : 0;
 
   return (
     <>
       {/* ── Day mode signal + progress ── */}
       <div className="flex items-center gap-2 mb-5">
-        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={mode.color}>
-          <path d={mode.icon} />
-        </svg>
-        <span className={`text-[11px] font-medium ${mode.color}`}>
-          {mode.label}
-        </span>
+        {allDone ? (
+          <>
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500">
+              <path d="M4.5 8.5L7 11l4.5-5" />
+            </svg>
+            <span className="text-[11px] font-medium text-emerald-500">
+              All done
+            </span>
+          </>
+        ) : (
+          <>
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={mode.color}>
+              <path d={mode.icon} />
+            </svg>
+            <span className={`text-[11px] font-medium ${mode.color}`}>
+              {mode.label}
+            </span>
+          </>
+        )}
         <span className="text-[10px] text-muted tabular-nums">
           · {plan.timeline.length} item{plan.timeline.length !== 1 ? "s" : ""}
         </span>
         <div className="flex-1" />
         {totalTasks > 0 && (
           <div className="flex items-center gap-2">
-            <span className={`text-[10px] tabular-nums font-medium ${completedToday > 0 ? "text-emerald-400/50" : "text-muted"}`}>
+            <span className={`text-[10px] tabular-nums font-medium ${allDone ? "text-emerald-500" : completedToday > 0 ? "text-emerald-500/60" : "text-muted"}`}>
               {completedToday}/{totalTasks} done
             </span>
-            <div className="w-16 h-1 rounded-full bg-border/30 overflow-hidden">
+            <div className="w-16 h-1 rounded-full bg-border overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all ${completedToday > 0 ? "bg-emerald-400/40" : "bg-border/20"}`}
-                style={{ width: `${Math.round((completedToday / totalTasks) * 100)}%` }}
+                className={`h-full rounded-full transition-all duration-500 ${allDone ? "bg-emerald-500" : completedToday > 0 ? "bg-emerald-400" : "bg-border"}`}
+                style={{ width: `${progress}%` }}
               />
             </div>
           </div>
         )}
       </div>
+
+      {/* ── Completion celebration ── */}
+      {allDone && (
+        <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50/50 p-5 text-center">
+          <p className="text-[15px] font-medium text-emerald-700">
+            Great day, Ramsey.
+          </p>
+          <p className="text-[13px] text-emerald-600/70 mt-1">
+            All {totalTasks} task{totalTasks !== 1 ? "s" : ""} complete. Take a breath.
+          </p>
+        </div>
+      )}
 
       {/* ── Now / Next — primary controller surface ── */}
       <div className="mb-6">
