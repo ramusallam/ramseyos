@@ -108,6 +108,7 @@ type NavKey =
   | "productOps"
   | "admin"
   | "life"
+  | "weeklyReview"
   | "settings";
 
 interface NavItem {
@@ -155,6 +156,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Ops",
     items: [
+      { href: "/weekly-review", label: "Weekly Review", icon: WeeklyReviewIcon, key: "weeklyReview" },
       { href: "/product-ops", label: "Product Ops", icon: ProductOpsIcon, key: "productOps" },
       { href: "/admin", label: "Admin", icon: AdminIcon, key: "admin" },
       { href: "/life", label: "Life", icon: LifeIcon, key: "life" },
@@ -210,6 +212,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       l: "/lesson-plans",
       r: "/rubrics",
       g: "/grading",
+      v: "/weekly-review",
       a: "/admin",
       s: "/settings",
     };
@@ -759,6 +762,34 @@ function GradingIcon({ active }: { active: boolean }) {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function WeeklyReviewIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <rect
+        x="2"
+        y="2"
+        width="12"
+        height="12"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M5 6h6M5 8.5h4M5 11h2"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
       />
     </svg>
   );

@@ -19,6 +19,9 @@ import {
   getDrafts,
   seedDrafts,
   updateDraftGmailStatus,
+  createDraftFromTemplate,
+  updateDraft,
+  deleteDraft,
   type DraftItem,
   type DraftStatus,
   type GmailHandoffStatus,
@@ -84,6 +87,86 @@ export default function CommunicationsPage() {
       await updateDraftGmailStatus(id, gmailStatus);
     },
     []
+  );
+
+  /* ── Compose panel state ── */
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeTemplateId, setComposeTemplateId] = useState("");
+  const [composeGroupId, setComposeGroupId] = useState("");
+  const [composeSubject, setComposeSubject] = useState("");
+  const [composeBody, setComposeBody] = useState("");
+  const [composeSaving, setComposeSaving] = useState(false);
+
+  const refreshDrafts = useCallback(async () => {
+    const d = await getDrafts();
+    setDrafts(d);
+  }, []);
+
+  const resetCompose = useCallback(() => {
+    setComposeOpen(false);
+    setComposeTemplateId("");
+    setComposeGroupId("");
+    setComposeSubject("");
+    setComposeBody("");
+  }, []);
+
+  const handleComposeTemplateChange = useCallback(
+    (templateId: string) => {
+      setComposeTemplateId(templateId);
+      const tpl = templates.find((t) => t.id === templateId);
+      if (tpl) {
+        setComposeSubject(tpl.subject || tpl.title);
+        const groupName = groups.find((g) => g.id === composeGroupId)?.name;
+        setComposeBody(
+          groupName
+            ? tpl.body.replace(/\{\{group\}\}/g, groupName)
+            : tpl.body
+        );
+      }
+    },
+    [templates, groups, composeGroupId]
+  );
+
+  const handleComposeGroupChange = useCallback(
+    (groupId: string) => {
+      setComposeGroupId(groupId);
+      const tpl = templates.find((t) => t.id === composeTemplateId);
+      const groupName = groups.find((g) => g.id === groupId)?.name;
+      if (tpl && groupName) {
+        setComposeBody(tpl.body.replace(/\{\{group\}\}/g, groupName));
+      }
+    },
+    [templates, groups, composeTemplateId]
+  );
+
+  const handleComposeSave = useCallback(async () => {
+    if (!composeSubject.trim()) return;
+    setComposeSaving(true);
+    await createDraftFromTemplate({
+      templateId: composeTemplateId,
+      groupId: composeGroupId,
+      subject: composeSubject,
+      body: composeBody,
+    });
+    await refreshDrafts();
+    resetCompose();
+    setComposeSaving(false);
+  }, [composeTemplateId, composeGroupId, composeSubject, composeBody, refreshDrafts, resetCompose]);
+
+  const handleUpdateDraft = useCallback(
+    async (id: string, fields: Parameters<typeof updateDraft>[1]) => {
+      await updateDraft(id, fields);
+      await refreshDrafts();
+    },
+    [refreshDrafts]
+  );
+
+  const handleDeleteDraft = useCallback(
+    async (id: string) => {
+      await deleteDraft(id);
+      await refreshDrafts();
+    },
+    [refreshDrafts]
   );
 
   const toggleFavorite = useCallback(
@@ -184,9 +267,19 @@ export default function CommunicationsPage() {
         >
           &larr; Today
         </Link>
-        <h1 className="text-[20px] font-semibold text-foreground tracking-tight mt-2">
-          Communications
-        </h1>
+        <div className="flex items-center gap-3 mt-2">
+          <h1 className="text-[20px] font-semibold text-foreground tracking-tight">
+            Communications
+          </h1>
+          <button
+            type="button"
+            onClick={() => setComposeOpen(true)}
+            aria-label="Compose new draft"
+            className="text-[11px] font-medium text-accent/80 bg-accent/10 border border-accent/15 rounded-lg px-3 py-1 hover:bg-accent/15 transition-colors"
+          >
+            + Compose
+          </button>
+        </div>
         <p className="text-[13px] text-muted/50 mt-1">
           Templates, groups, and drafts for students, parents, and outbound communication.
         </p>
@@ -232,6 +325,116 @@ export default function CommunicationsPage() {
         </div>
       </header>
 
+      {/* ═══ Compose Panel ═══ */}
+      {composeOpen && (
+        <div className="rounded-xl border border-accent/20 bg-surface backdrop-blur-sm p-5 mb-10 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[13px] font-semibold text-foreground/85">New Draft</h2>
+            <button
+              type="button"
+              onClick={resetCompose}
+              aria-label="Cancel compose"
+              className="text-[10px] text-muted/50 hover:text-foreground/60 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Template selector */}
+            <div>
+              <label htmlFor="compose-template" className="block text-[9px] font-semibold uppercase tracking-wider text-muted mb-1.5">
+                Template
+              </label>
+              <select
+                id="compose-template"
+                aria-label="Select template"
+                value={composeTemplateId}
+                onChange={(e) => handleComposeTemplateChange(e.target.value)}
+                className="w-full rounded-lg border border-border bg-surface-raised/50 px-3 py-2 text-[12px] text-foreground/80 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              >
+                <option value="">Choose a template…</option>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>{t.title}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Group selector */}
+            <div>
+              <label htmlFor="compose-group" className="block text-[9px] font-semibold uppercase tracking-wider text-muted mb-1.5">
+                Group
+              </label>
+              <select
+                id="compose-group"
+                aria-label="Select group"
+                value={composeGroupId}
+                onChange={(e) => handleComposeGroupChange(e.target.value)}
+                className="w-full rounded-lg border border-border bg-surface-raised/50 px-3 py-2 text-[12px] text-foreground/80 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              >
+                <option value="">Choose a group…</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Subject */}
+          <div>
+            <label htmlFor="compose-subject" className="block text-[9px] font-semibold uppercase tracking-wider text-muted mb-1.5">
+              Subject
+            </label>
+            <input
+              id="compose-subject"
+              type="text"
+              aria-label="Draft subject"
+              value={composeSubject}
+              onChange={(e) => setComposeSubject(e.target.value)}
+              placeholder="Email subject…"
+              className="w-full rounded-lg border border-border bg-surface-raised/50 px-3 py-2 text-[13px] text-foreground/80 placeholder:text-muted/30 focus:outline-none focus:ring-1 focus:ring-accent/30"
+            />
+          </div>
+
+          {/* Body */}
+          <div>
+            <label htmlFor="compose-body" className="block text-[9px] font-semibold uppercase tracking-wider text-muted mb-1.5">
+              Body
+            </label>
+            <textarea
+              id="compose-body"
+              aria-label="Draft body"
+              value={composeBody}
+              onChange={(e) => setComposeBody(e.target.value)}
+              placeholder="Write your message…"
+              rows={6}
+              className="w-full rounded-lg border border-border bg-surface-raised/50 px-3 py-2 text-[12px] text-foreground/70 leading-relaxed placeholder:text-muted/30 focus:outline-none focus:ring-1 focus:ring-accent/30 resize-y"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              type="button"
+              onClick={handleComposeSave}
+              disabled={composeSaving || !composeSubject.trim()}
+              aria-label="Save as draft"
+              className="text-[11px] font-medium text-white bg-accent border border-accent/30 rounded-lg px-4 py-1.5 hover:bg-accent/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {composeSaving ? "Saving…" : "Save as draft"}
+            </button>
+            <button
+              type="button"
+              onClick={resetCompose}
+              aria-label="Cancel compose"
+              className="text-[11px] font-medium text-muted/60 bg-white/5 border border-border rounded-lg px-4 py-1.5 hover:bg-white/8 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ═══ Workflow zones ═══ */}
       <div className="space-y-10">
 
@@ -274,6 +477,8 @@ export default function CommunicationsPage() {
                         templates={templates}
                         members={members}
                         onGmailStatus={setGmailStatus}
+                        onUpdate={handleUpdateDraft}
+                        onDelete={handleDeleteDraft}
                       />
                     ))}
                   </div>
@@ -295,6 +500,8 @@ export default function CommunicationsPage() {
                         templates={templates}
                         members={members}
                         onGmailStatus={setGmailStatus}
+                        onUpdate={handleUpdateDraft}
+                        onDelete={handleDeleteDraft}
                       />
                     ))}
                   </div>
@@ -610,14 +817,23 @@ function DraftCard({
   templates,
   members,
   onGmailStatus,
+  onUpdate,
+  onDelete,
 }: {
   draft: DraftItem;
   groups: GroupItem[];
   templates: TemplateItem[];
   members: GroupMember[];
   onGmailStatus: (id: string, status: GmailHandoffStatus) => void;
+  onUpdate: (id: string, fields: Partial<Pick<DraftItem, "subject" | "body" | "status" | "templateId" | "groupId">>) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editSubject, setEditSubject] = useState(d.subject);
+  const [editBody, setEditBody] = useState(d.body);
+  const [editSaving, setEditSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const status = DRAFT_STATUS_META[d.status] ?? DRAFT_STATUS_META.draft;
   const gmail = GMAIL_STATUS_META[d.gmailStatus] ?? GMAIL_STATUS_META.not_prepared;
   const linkedTemplate = d.templateId
@@ -767,13 +983,124 @@ function DraftCard({
           {/* Subject */}
           <div>
             <p className="text-[9px] font-semibold uppercase tracking-wider text-muted mb-1.5">Subject</p>
-            <p className="text-[13px] text-foreground/80">{d.subject || "—"}</p>
+            {editing ? (
+              <input
+                type="text"
+                aria-label="Edit subject"
+                value={editSubject}
+                onChange={(e) => setEditSubject(e.target.value)}
+                className="w-full rounded-lg border border-border bg-surface-raised/50 px-3 py-2 text-[13px] text-foreground/80 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            ) : (
+              <p className="text-[13px] text-foreground/80">{d.subject || "—"}</p>
+            )}
           </div>
 
           {/* Body */}
           <div>
             <p className="text-[9px] font-semibold uppercase tracking-wider text-muted mb-1.5">Body</p>
-            <p className="text-[12px] text-foreground/60 leading-relaxed whitespace-pre-line">{d.body || "—"}</p>
+            {editing ? (
+              <textarea
+                aria-label="Edit body"
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+                rows={6}
+                className="w-full rounded-lg border border-border bg-surface-raised/50 px-3 py-2 text-[12px] text-foreground/70 leading-relaxed focus:outline-none focus:ring-1 focus:ring-accent/30 resize-y"
+              />
+            ) : (
+              <p className="text-[12px] text-foreground/60 leading-relaxed whitespace-pre-line">{d.body || "—"}</p>
+            )}
+          </div>
+
+          {/* Edit / Delete actions */}
+          <div className="flex items-center gap-2">
+            {editing ? (
+              <>
+                <button
+                  type="button"
+                  disabled={editSaving}
+                  aria-label="Save draft edits"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    setEditSaving(true);
+                    await onUpdate(d.id, { subject: editSubject, body: editBody });
+                    setEditing(false);
+                    setEditSaving(false);
+                  }}
+                  className="text-[10px] font-medium text-white bg-accent border border-accent/30 rounded-lg px-3 py-1 hover:bg-accent/90 transition-colors disabled:opacity-40"
+                >
+                  {editSaving ? "Saving…" : "Save"}
+                </button>
+                <button
+                  type="button"
+                  aria-label="Cancel editing"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditSubject(d.subject);
+                    setEditBody(d.body);
+                    setEditing(false);
+                  }}
+                  className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border rounded-lg px-3 py-1 hover:bg-white/8 transition-colors"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  aria-label="Edit draft"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditSubject(d.subject);
+                    setEditBody(d.body);
+                    setEditing(true);
+                  }}
+                  className="text-[10px] font-medium text-accent/70 bg-accent/10 border border-accent/15 rounded-lg px-3 py-1 hover:bg-accent/15 transition-colors"
+                >
+                  Edit
+                </button>
+                {confirmDelete ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-red-400/70">Delete this draft?</span>
+                    <button
+                      type="button"
+                      aria-label="Confirm delete"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        await onDelete(d.id);
+                      }}
+                      className="text-[10px] font-medium text-white bg-red-500 border border-red-600/30 rounded-lg px-3 py-1 hover:bg-red-600 transition-colors"
+                    >
+                      Yes, delete
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Cancel delete"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setConfirmDelete(false);
+                      }}
+                      className="text-[10px] font-medium text-muted/50 bg-white/5 border border-border rounded-lg px-3 py-1 hover:bg-white/8 transition-colors"
+                    >
+                      No
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label="Delete draft"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setConfirmDelete(true);
+                    }}
+                    className="text-[10px] font-medium text-red-400/60 bg-red-500/10 border border-red-400/15 rounded-lg px-3 py-1 hover:bg-red-500/15 transition-colors"
+                  >
+                    Delete
+                  </button>
+                )}
+              </>
+            )}
           </div>
 
           {/* Recipients */}

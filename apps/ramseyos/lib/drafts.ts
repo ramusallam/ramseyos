@@ -67,6 +67,36 @@ export async function updateDraftGmailStatus(
   await updateDoc(doc(db, "communicationDrafts", id), { gmailStatus });
 }
 
+export async function updateDraft(
+  id: string,
+  fields: Partial<Pick<DraftItem, "subject" | "body" | "status" | "templateId" | "groupId">>
+): Promise<void> {
+  await updateDoc(doc(db, "communicationDrafts", id), fields);
+}
+
+export async function createDraftFromTemplate(fields: {
+  templateId: string;
+  groupId: string;
+  subject: string;
+  body: string;
+}): Promise<string> {
+  const ref = await addDoc(collection(db, "communicationDrafts"), {
+    templateId: fields.templateId,
+    groupId: fields.groupId,
+    subject: fields.subject,
+    body: fields.body,
+    status: "draft" as DraftStatus,
+    gmailStatus: "not_prepared" as GmailHandoffStatus,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function deleteDraft(id: string): Promise<void> {
+  const { deleteDoc } = await import("firebase/firestore");
+  await deleteDoc(doc(db, "communicationDrafts", id));
+}
+
 export async function seedDrafts(): Promise<number> {
   const existing = await getDocs(collection(db, "communicationDrafts"));
   if (existing.size > 0) return 0;
