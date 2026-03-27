@@ -14,6 +14,7 @@ import {
   NOWNEXT_TYPE_LABEL,
   fmtCardTime,
 } from "@/lib/daily-card-constants";
+import { FocusTimerStartButton, useFocusTimer } from "./focus-timer";
 import Link from "next/link";
 
 /* ── Action resolution ── */
@@ -63,6 +64,7 @@ interface NowNextProps {
 }
 
 export function NowNext({ plan }: NowNextProps) {
+  const focusTimer = useFocusTimer();
   const now = resolveNowItem(plan.timeline);
   const next = now ? resolveNextItem(plan.timeline, now) : null;
 
@@ -76,7 +78,7 @@ export function NowNext({ plan }: NowNextProps) {
     <div className={`grid grid-cols-1 gap-4 ${hasNext ? "sm:grid-cols-2" : ""}`}>
       {/* Now */}
       {now ? (
-        <FocusCard item={now} label="Now" isPrimary />
+        <FocusCard item={now} label="Now" isPrimary focusTimer={focusTimer} />
       ) : hasInbox ? (
         <InboxCard count={plan.inboxItems.length} label="Now" isPrimary />
       ) : null}
@@ -99,10 +101,12 @@ function FocusCard({
   item,
   label,
   isPrimary,
+  focusTimer,
 }: {
   item: TimelineItem;
   label: string;
   isPrimary: boolean;
+  focusTimer?: ReturnType<typeof useFocusTimer>;
 }) {
   const action = resolveAction(item);
   const isInProgress =
@@ -166,22 +170,31 @@ function FocusCard({
       </div>
 
       {/* Action */}
-      <Link
-        href={action.href}
-        className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-colors ${
-          isPrimary
-            ? "border-accent/20 bg-accent/[0.06] text-foreground/70 hover:bg-accent/[0.12] hover:text-foreground/90"
-            : "border-border bg-surface-raised/30 text-foreground/50 hover:bg-surface-raised hover:text-foreground/70"
-        }`}
-      >
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={isPrimary ? "text-accent/70" : "text-accent/50"}>
-          <path d={action.icon} />
-        </svg>
-        {action.label}
-        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
-          <path d="M6 4l4 4-4 4" />
-        </svg>
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link
+          href={action.href}
+          className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-colors ${
+            isPrimary
+              ? "border-accent/20 bg-accent/[0.06] text-foreground/70 hover:bg-accent/[0.12] hover:text-foreground/90"
+              : "border-border bg-surface-raised/30 text-foreground/50 hover:bg-surface-raised hover:text-foreground/70"
+          }`}
+        >
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className={isPrimary ? "text-accent/70" : "text-accent/50"}>
+            <path d={action.icon} />
+          </svg>
+          {action.label}
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
+            <path d="M6 4l4 4-4 4" />
+          </svg>
+        </Link>
+        {focusTimer && isPrimary && (
+          <FocusTimerStartButton
+            label={item.title}
+            onStart={focusTimer.start}
+            isActive={focusTimer.isActive}
+          />
+        )}
+      </div>
     </div>
   );
 }

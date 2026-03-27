@@ -1160,3 +1160,129 @@ export function CarryForward() {
     </div>
   );
 }
+
+/* ── Productivity Pulse — 7-day completion mini chart ── */
+
+export function ProductivityPulse() {
+  const [dailyCounts, setDailyCounts] = useState<{ day: string; count: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const now = new Date();
+    const days: { day: string; start: Date; end: Date }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const start = new Date(d);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(d);
+      end.setHours(23, 59, 59, 999);
+      days.push({
+        day: d.toLocaleDateString("en-US", { weekday: "short" }),
+        start,
+        end,
+      });
+    }
+
+    // Query completed tasks with completedAt or just completed + createdAt as proxy
+    // Since we don't have completedAt, we'll use a single query for all completed tasks
+    // and filter client-side by chosenForToday as a reasonable proxy
+    const q = query(
+      collection(db, "tasks"),
+      where("completed", "==", true),
+      orderBy("createdAt", "desc"),
+      limit(200)
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      const tasks = snap.docs.map((d) => {
+        const data = d.data();
+        const created = data.createdAt?.toDate?.() ?? null;
+        return { created };
+      });
+
+      const counts = days.map(({ day, start, end }) => {
+        const count = tasks.filter((t) => t.created && t.created >= start && t.created <= end).length;
+        return { day, count };
+      });
+
+      setDailyCounts(counts);
+      setLoading(false);
+    });
+
+    return unsub;
+  }, []);
+
+  if (loading) return null;
+
+  const max = Math.max(...dailyCounts.map((d) => d.count), 1);
+  const total = dailyCounts.reduce((sum, d) => sum + d.count, 0);
+  const todayCount = dailyCounts[dailyCounts.length - 1]?.count ?? 0;
+
+  // Streak: count consecutive days (from today backward) with > 0
+  let streak = 0;
+  for (let i = dailyCounts.length - 1; i >= 0; i--) {
+    if (dailyCounts[i].count > 0) streak++;
+    else break;
+  }
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
+          <path d="M2 14V8M5 14V5M8 14V2M11 14V6M14 14V4" />
+        </svg>
+        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+          Pulse
+        </h2>
+        {streak >= 2 && (
+          <span className="text-[10px] font-medium text-amber-500">
+            {streak}-day streak
+          </span>
+        )}
+      </div>
+
+      {/* Mini bar chart */}
+      <div className="flex items-end gap-1 h-12 mb-2">
+        {dailyCounts.map((d, i) => {
+          const height = d.count > 0 ? Math.max(15, (d.count / max) * 100) : 6;
+          const isToday = i === dailyCounts.length - 1;
+          return (
+            <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
+              <div
+                className={`w-full rounded-sm transition-all ${
+                  d.count === 0
+                    ? "bg-border"
+                    : isToday
+                    ? "bg-accent"
+                    : "bg-accent/40"
+                }`}
+                style={{ height: `${height}%` }}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Day labels */}
+      <div className="flex gap-1 mb-3">
+        {dailyCounts.map((d, i) => (
+          <span
+            key={d.day}
+            className={`flex-1 text-center text-[9px] ${
+              i === dailyCounts.length - 1 ? "text-accent font-medium" : "text-muted/60"
+            }`}
+          >
+            {d.day}
+          </span>
+        ))}
+      </div>
+
+      {/* Summary */}
+      <div className="flex items-center justify-between text-[10px] text-muted">
+        <span>{total} completed this week</span>
+        <span className="tabular-nums">{todayCount} today</span>
+      </div>
+    </div>
+  );
+}

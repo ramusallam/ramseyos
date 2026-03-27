@@ -13,15 +13,20 @@ import {
   type WeeklyScheduleDay,
 } from "@/lib/weekly";
 import { toggleTaskCompleted, toggleChosenForToday } from "@/lib/tasks";
+import { getRecentReflections, type Reflection } from "@/lib/reflections";
 import Link from "next/link";
 
 export default function WeekPage() {
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
+  const [reflections, setReflections] = useState<Reflection[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    generateWeeklyPlan()
-      .then(setPlan)
+    Promise.all([
+      generateWeeklyPlan(),
+      getRecentReflections(7),
+    ])
+      .then(([p, r]) => { setPlan(p); setReflections(r); })
       .catch((err) => console.error("Weekly plan error:", err))
       .finally(() => setLoading(false));
   }, []);
@@ -201,6 +206,37 @@ export default function WeekPage() {
             </ul>
           )}
         </WeekSection>
+
+        {/* ── Reflections ── */}
+        {reflections.length > 0 && (
+          <WeekSection icon="M8 2v1M8 13v1M3 8H2M14 8h-1" label="Recent reflections">
+            <div className="space-y-2">
+              {reflections.map((r) => {
+                const dayLabel = new Date(r.date + "T12:00:00").toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                });
+                const moodLabel = r.mood === "great" ? "Great" : r.mood === "good" ? "Good" : r.mood === "okay" ? "Okay" : "Rough";
+                return (
+                  <div key={r.id} className="rounded-lg border border-border bg-surface px-4 py-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[12px] font-medium text-foreground/70">{dayLabel}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                        r.mood === "great" ? "bg-emerald-50 text-emerald-600" :
+                        r.mood === "good" ? "bg-sky-50 text-sky-600" :
+                        r.mood === "okay" ? "bg-amber-50 text-amber-600" :
+                        "bg-rose-50 text-rose-600"
+                      }`}>{moodLabel}</span>
+                    </div>
+                    {r.wins && <p className="text-[12px] text-foreground/70">{r.wins}</p>}
+                    {r.tomorrow && <p className="text-[11px] text-muted mt-1">Tomorrow: {r.tomorrow}</p>}
+                  </div>
+                );
+              })}
+            </div>
+          </WeekSection>
+        )}
 
         {/* ── Weekly Review Prompt ── */}
         <div className="rounded-xl border border-border bg-surface p-6 shadow-card">

@@ -12,6 +12,7 @@ import { db } from "@/lib/firebase";
 import { useAuth, type AuthStatus } from "@/lib/auth";
 import { trackRecent } from "@/lib/recents";
 import { CommandPalette } from "./command-palette";
+import { useFocusTimer, FocusTimerIndicator } from "./focus-timer";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -189,6 +190,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const counts = useShellCounts();
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const focusTimer = useFocusTimer();
   const gPending = useRef(false);
   const gTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -219,6 +221,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // "f" to toggle focus timer
+      if (!e.metaKey && !e.ctrlKey && !e.altKey && e.key === "f" && !gPending.current) {
+        if (focusTimer.isRunning) focusTimer.pause();
+        else if (focusTimer.isActive) focusTimer.resume();
+        else focusTimer.start();
+        return;
+      }
+
       // "g" prefix navigation: press g, then a letter
       if (!e.metaKey && !e.ctrlKey && !e.altKey) {
         if (e.key === "g" && !gPending.current) {
@@ -241,7 +251,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [router]);
+  }, [router, focusTimer]);
 
   // Track page visits for recent activity
   useEffect(() => {
@@ -326,6 +336,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           ))}
         </nav>
+
+        {/* Focus Timer */}
+        <FocusTimerIndicator
+          isActive={focusTimer.isActive}
+          isRunning={focusTimer.isRunning}
+          label={focusTimer.label}
+          displayMs={focusTimer.displayMs}
+          onPause={focusTimer.pause}
+          onResume={focusTimer.resume}
+          onStop={focusTimer.stop}
+        />
 
         {/* Command Palette Trigger */}
         <div className="px-3 py-3 border-t border-border">

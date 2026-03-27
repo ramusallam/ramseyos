@@ -84,3 +84,10 @@ export async function updateTaskTitle(
 ): Promise<void> {
   await updateDoc(doc(db, COLLECTION, taskId), { title });
 }
+
+export async function updateTaskNotes(
+  taskId: string,
+  notes: string | null
+): Promise<void> {
+  await updateDoc(doc(db, COLLECTION, taskId), { notes });
+}

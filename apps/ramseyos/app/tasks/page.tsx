@@ -10,7 +10,7 @@ import {
   type Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { updateTaskProject, updateTaskTitle, toggleChosenForToday, toggleTaskCompleted, toggleTaskPinned } from "@/lib/tasks";
+import { updateTaskProject, updateTaskTitle, updateTaskNotes, toggleChosenForToday, toggleTaskCompleted, toggleTaskPinned } from "@/lib/tasks";
 import { type Priority, PRIORITY_STYLE } from "@/lib/shared";
 import Link from "next/link";
 
@@ -303,7 +303,11 @@ function TaskItem({
 }) {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(task.title);
+  const [expanded, setExpanded] = useState(false);
+  const [notesText, setNotesText] = useState(task.notes ?? "");
+  const [notesSaving, setNotesSaving] = useState(false);
   const editRef = useRef<HTMLInputElement>(null);
+  const notesRef = useRef<HTMLTextAreaElement>(null);
 
   function startEditing() {
     if (task.completed) return;
@@ -426,9 +430,9 @@ function TaskItem({
         )}
       </div>
 
-      {/* Project selector — only show for incomplete tasks */}
+      {/* Project selector + notes toggle — only show for incomplete tasks */}
       {!task.completed && (
-        <div className="mt-2 ml-8">
+        <div className="mt-2 ml-8 flex items-center gap-3">
           <select
             aria-label="Assign project"
             value={task.projectId ?? ""}
@@ -446,7 +450,56 @@ function TaskItem({
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            onClick={() => {
+              setExpanded(!expanded);
+              if (!expanded) setTimeout(() => notesRef.current?.focus(), 0);
+            }}
+            className="text-[10px] text-muted hover:text-foreground/60 transition-colors flex items-center gap-1"
+          >
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 2h10v12H3zM6 5h4M6 7.5h4M6 10h2" />
+            </svg>
+            {task.notes ? "notes" : "+ notes"}
+          </button>
         </div>
+      )}
+
+      {/* Notes area */}
+      {expanded && !task.completed && (
+        <div className="mt-2 ml-8">
+          <textarea
+            ref={notesRef}
+            value={notesText}
+            onChange={(e) => setNotesText(e.target.value)}
+            onBlur={async () => {
+              const trimmed = notesText.trim() || null;
+              if (trimmed !== (task.notes ?? null)) {
+                setNotesSaving(true);
+                await updateTaskNotes(task.id, trimmed);
+                setNotesSaving(false);
+              }
+            }}
+            placeholder="Add notes..."
+            rows={3}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-[12px] text-foreground/80 placeholder:text-muted/40 focus:outline-none focus:border-accent/30 resize-none"
+          />
+          {notesSaving && (
+            <span className="text-[10px] text-muted">Saving...</span>
+          )}
+        </div>
+      )}
+
+      {/* Show notes preview when collapsed */}
+      {!expanded && task.notes && !task.completed && (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="mt-1 ml-8 text-[11px] text-muted/50 truncate block text-left hover:text-muted transition-colors max-w-md"
+        >
+          {task.notes}
+        </button>
       )}
     </li>
   );

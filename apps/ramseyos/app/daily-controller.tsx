@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   collection,
   query,
@@ -16,6 +16,7 @@ import {
   getActiveAdminItems,
   type AdminItem,
 } from "@/lib/admin-templates";
+import { formatDailyCardText } from "@/lib/daily-card-format";
 import { DAY_MODE_META } from "@/lib/daily-card-constants";
 import { NowNext } from "./now-next";
 import { DailyCard } from "./daily-card";
@@ -44,7 +45,17 @@ function useCompletedTodayCount(): number {
 export function DailyControllerSection({ sidebar }: Props) {
   const [plan, setPlan] = useState<DailyPlan | null>(null);
   const [adminActive, setAdminActive] = useState<AdminItem[]>([]);
+  const [copied, setCopied] = useState(false);
   const completedToday = useCompletedTodayCount();
+
+  const copyBriefing = useCallback(() => {
+    if (!plan) return;
+    const text = formatDailyCardText(plan);
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [plan]);
 
   useEffect(() => {
     let cancelled = false;
@@ -102,6 +113,17 @@ export function DailyControllerSection({ sidebar }: Props) {
           · {plan.timeline.length} item{plan.timeline.length !== 1 ? "s" : ""}
         </span>
         <div className="flex-1" />
+        <button
+          type="button"
+          onClick={copyBriefing}
+          className="text-[10px] text-muted hover:text-accent transition-colors flex items-center gap-1"
+        >
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="5" y="5" width="8" height="8" rx="1" />
+            <path d="M3 11V3a1 1 0 011-1h8" />
+          </svg>
+          {copied ? "Copied!" : "Copy briefing"}
+        </button>
         {totalTasks > 0 && (
           <div className="flex items-center gap-2">
             <span className={`text-[10px] tabular-nums font-medium ${allDone ? "text-emerald-500" : completedToday > 0 ? "text-emerald-500/60" : "text-muted"}`}>
