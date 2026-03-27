@@ -87,10 +87,10 @@ export const WORKFLOWS: Workflow[] = [
     description: "Grade student work using a structured rubric. Requires desktop for webcam.",
     category: "teach",
     icon: "M2 2h12v12H2zM5 5.5h6M5 8h6M5 10.5h4",
-    entryRoute: "/tools",
+    entryRoute: "/grading",
     steps: [
-      { label: "Select rubric" },
-      { label: "Capture work" },
+      { label: "Select rubric", route: "/rubrics" },
+      { label: "Capture work", route: "/grading" },
       { label: "Score" },
       { label: "Record grade" },
     ],

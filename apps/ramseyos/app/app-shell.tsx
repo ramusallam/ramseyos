@@ -99,6 +99,8 @@ type NavKey =
   | "calendar"
   | "tools"
   | "lessonPlans"
+  | "rubrics"
+  | "grading"
   | "materials"
   | "purchasing"
   | "vendors"
@@ -141,6 +143,8 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Teach",
     items: [
       { href: "/lesson-plans", label: "Lesson Plans", icon: LessonPlanIcon, key: "lessonPlans" },
+      { href: "/rubrics", label: "Rubrics", icon: RubricIcon, key: "rubrics" },
+      { href: "/grading", label: "Grading", icon: GradingIcon, key: "grading" },
       { href: "/materials", label: "Materials", icon: MaterialsIcon, key: "materials" },
       { href: "/purchasing", label: "Purchasing", icon: PurchasingIcon, key: "purchasing" },
       { href: "/vendors", label: "Sources", icon: VendorIcon, key: "vendors" },
@@ -204,6 +208,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       p: "/projects",
       c: "/calendar",
       l: "/lesson-plans",
+      r: "/rubrics",
+      g: "/grading",
       a: "/admin",
       s: "/settings",
     };
@@ -700,6 +706,59 @@ function LessonPlanIcon({ active }: { active: boolean }) {
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function RubricIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <rect
+        x="2"
+        y="2"
+        width="12"
+        height="12"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M5 5.5h6M5 8h6M5 10.5h4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function GradingIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <path
+        d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M5.5 8l2 2 3-4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );

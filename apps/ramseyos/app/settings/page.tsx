@@ -224,6 +224,8 @@ export default function SettingsPage() {
               <ShortcutRow keys="G then P" label="Go to Projects" />
               <ShortcutRow keys="G then C" label="Go to Calendar" />
               <ShortcutRow keys="G then L" label="Go to Lesson Plans" />
+              <ShortcutRow keys="G then R" label="Go to Rubrics" />
+              <ShortcutRow keys="G then G" label="Go to Grading" />
               <ShortcutRow keys="F" label="Focus timer start/pause" />
             </div>
           </div>
