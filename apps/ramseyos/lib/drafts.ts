@@ -48,30 +48,45 @@ export async function createDraft(fields: {
   subject: string;
   body?: string;
 }): Promise<string> {
-  const ref = await addDoc(collection(db, "communicationDrafts"), {
-    templateId: "",
-    groupId: "",
-    subject: fields.subject,
-    body: fields.body ?? "",
-    status: "draft" as DraftStatus,
-    gmailStatus: "not_prepared" as GmailHandoffStatus,
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
+  try {
+    const ref = await addDoc(collection(db, "communicationDrafts"), {
+      templateId: "",
+      groupId: "",
+      subject: fields.subject,
+      body: fields.body ?? "",
+      status: "draft" as DraftStatus,
+      gmailStatus: "not_prepared" as GmailHandoffStatus,
+      createdAt: serverTimestamp(),
+    });
+    return ref.id;
+  } catch (err) {
+    console.error("[createDraft]", err);
+    throw err;
+  }
 }
 
 export async function updateDraftGmailStatus(
   id: string,
   gmailStatus: GmailHandoffStatus
 ): Promise<void> {
-  await updateDoc(doc(db, "communicationDrafts", id), { gmailStatus });
+  try {
+    await updateDoc(doc(db, "communicationDrafts", id), { gmailStatus });
+  } catch (err) {
+    console.error("[updateDraftGmailStatus]", err);
+    throw err;
+  }
 }
 
 export async function updateDraft(
   id: string,
   fields: Partial<Pick<DraftItem, "subject" | "body" | "status" | "templateId" | "groupId">>
 ): Promise<void> {
-  await updateDoc(doc(db, "communicationDrafts", id), fields);
+  try {
+    await updateDoc(doc(db, "communicationDrafts", id), fields);
+  } catch (err) {
+    console.error("[updateDraft]", err);
+    throw err;
+  }
 }
 
 export async function createDraftFromTemplate(fields: {
@@ -80,21 +95,31 @@ export async function createDraftFromTemplate(fields: {
   subject: string;
   body: string;
 }): Promise<string> {
-  const ref = await addDoc(collection(db, "communicationDrafts"), {
-    templateId: fields.templateId,
-    groupId: fields.groupId,
-    subject: fields.subject,
-    body: fields.body,
-    status: "draft" as DraftStatus,
-    gmailStatus: "not_prepared" as GmailHandoffStatus,
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
+  try {
+    const ref = await addDoc(collection(db, "communicationDrafts"), {
+      templateId: fields.templateId,
+      groupId: fields.groupId,
+      subject: fields.subject,
+      body: fields.body,
+      status: "draft" as DraftStatus,
+      gmailStatus: "not_prepared" as GmailHandoffStatus,
+      createdAt: serverTimestamp(),
+    });
+    return ref.id;
+  } catch (err) {
+    console.error("[createDraftFromTemplate]", err);
+    throw err;
+  }
 }
 
 export async function deleteDraft(id: string): Promise<void> {
-  const { deleteDoc } = await import("firebase/firestore");
-  await deleteDoc(doc(db, "communicationDrafts", id));
+  try {
+    const { deleteDoc } = await import("firebase/firestore");
+    await deleteDoc(doc(db, "communicationDrafts", id));
+  } catch (err) {
+    console.error("[deleteDraft]", err);
+    throw err;
+  }
 }
 
 export async function seedDrafts(): Promise<number> {

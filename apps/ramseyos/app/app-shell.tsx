@@ -97,6 +97,7 @@ type NavKey =
   | "tasks"
   | "projects"
   | "calendar"
+  | "workspaces"
   | "tools"
   | "lessonPlans"
   | "rubrics"
@@ -137,6 +138,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/inbox", label: "Inbox", icon: InboxIcon, key: "inbox" },
       { href: "/tasks", label: "Tasks", icon: CheckIcon, key: "tasks" },
       { href: "/projects", label: "Projects", icon: FolderIcon, key: "projects" },
+      { href: "/workspaces", label: "Workspaces", icon: WorkspacesIcon, key: "workspaces" },
       { href: "/calendar", label: "Calendar", icon: CalendarIcon, key: "calendar" },
     ],
   },
@@ -655,6 +657,55 @@ function FolderIcon({ active }: { active: boolean }) {
     >
       <path
         d="M2 5V4a1 1 0 011-1h3l1.5 2H13a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V5z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
+function WorkspacesIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <rect
+        x="2"
+        y="2"
+        width="5"
+        height="5"
+        rx="1"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <rect
+        x="9"
+        y="2"
+        width="5"
+        height="5"
+        rx="1"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <rect
+        x="2"
+        y="9"
+        width="5"
+        height="5"
+        rx="1"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <rect
+        x="9"
+        y="9"
+        width="5"
+        height="5"
+        rx="1"
         stroke="currentColor"
         strokeWidth="1.5"
       />

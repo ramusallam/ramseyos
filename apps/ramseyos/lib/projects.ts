@@ -34,19 +34,24 @@ export async function createProject(fields: {
   workspaceId?: string | null;
   color?: string | null;
 }): Promise<string> {
-  const ref = await addDoc(collection(db, COLLECTION), {
-    title: fields.title,
-    description: fields.description ?? "",
-    status: "active" as ProjectStatus,
-    workspaceId: fields.workspaceId ?? null,
-    archived: false,
-    color: fields.color ?? null,
-    owner: null,
-    tags: [],
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-  return ref.id;
+  try {
+    const ref = await addDoc(collection(db, COLLECTION), {
+      title: fields.title,
+      description: fields.description ?? "",
+      status: "active" as ProjectStatus,
+      workspaceId: fields.workspaceId ?? null,
+      archived: false,
+      color: fields.color ?? null,
+      owner: null,
+      tags: [],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return ref.id;
+  } catch (err) {
+    console.error("[createProject]", err);
+    throw err;
+  }
 }
 
 export async function getProjects(opts?: {
@@ -70,19 +75,29 @@ export async function getProject(id: string): Promise<Project | null> {
 }
 
 export async function archiveProject(id: string): Promise<void> {
-  await updateDoc(doc(db, COLLECTION, id), {
-    archived: true,
-    status: "archived" as ProjectStatus,
-    updatedAt: serverTimestamp(),
-  });
+  try {
+    await updateDoc(doc(db, COLLECTION, id), {
+      archived: true,
+      status: "archived" as ProjectStatus,
+      updatedAt: serverTimestamp(),
+    });
+  } catch (err) {
+    console.error("[archiveProject]", err);
+    throw err;
+  }
 }
 
 export async function toggleProjectPinned(
   id: string,
   current: boolean
 ): Promise<void> {
-  await updateDoc(doc(db, COLLECTION, id), {
-    pinned: !current,
-    updatedAt: serverTimestamp(),
-  });
+  try {
+    await updateDoc(doc(db, COLLECTION, id), {
+      pinned: !current,
+      updatedAt: serverTimestamp(),
+    });
+  } catch (err) {
+    console.error("[toggleProjectPinned]", err);
+    throw err;
+  }
 }

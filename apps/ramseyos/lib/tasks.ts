@@ -31,63 +31,98 @@ export async function createTask(fields: {
   sourceCaptureId?: string | null;
   notes?: string | null;
 }): Promise<string> {
-  const ref = await addDoc(collection(db, COLLECTION), {
-    title: fields.title,
-    completed: false,
-    priority: fields.priority ?? null,
-    projectId: fields.projectId ?? null,
-    sourceCaptureId: fields.sourceCaptureId ?? null,
-    notes: fields.notes ?? null,
-    chosenForToday: false,
-    createdAt: serverTimestamp(),
-  });
-  return ref.id;
+  try {
+    const ref = await addDoc(collection(db, COLLECTION), {
+      title: fields.title,
+      completed: false,
+      priority: fields.priority ?? null,
+      projectId: fields.projectId ?? null,
+      sourceCaptureId: fields.sourceCaptureId ?? null,
+      notes: fields.notes ?? null,
+      chosenForToday: false,
+      createdAt: serverTimestamp(),
+    });
+    return ref.id;
+  } catch (err) {
+    console.error("[createTask]", err);
+    throw err;
+  }
 }
 
 export async function updateTaskProject(
   taskId: string,
   projectId: string | null
 ): Promise<void> {
-  await updateDoc(doc(db, COLLECTION, taskId), { projectId });
+  try {
+    await updateDoc(doc(db, COLLECTION, taskId), { projectId });
+  } catch (err) {
+    console.error("[updateTaskProject]", err);
+    throw err;
+  }
 }
 
 export async function toggleTaskCompleted(
   taskId: string,
   current: boolean
 ): Promise<void> {
-  await updateDoc(doc(db, COLLECTION, taskId), {
-    completed: !current,
-  });
+  try {
+    await updateDoc(doc(db, COLLECTION, taskId), {
+      completed: !current,
+    });
+  } catch (err) {
+    console.error("[toggleTaskCompleted]", err);
+    throw err;
+  }
 }
 
 export async function toggleChosenForToday(
   taskId: string,
   current: boolean
 ): Promise<void> {
-  await updateDoc(doc(db, COLLECTION, taskId), {
-    chosenForToday: !current,
-  });
+  try {
+    await updateDoc(doc(db, COLLECTION, taskId), {
+      chosenForToday: !current,
+    });
+  } catch (err) {
+    console.error("[toggleChosenForToday]", err);
+    throw err;
+  }
 }
 
 export async function toggleTaskPinned(
   taskId: string,
   current: boolean
 ): Promise<void> {
-  await updateDoc(doc(db, COLLECTION, taskId), {
-    pinned: !current,
-  });
+  try {
+    await updateDoc(doc(db, COLLECTION, taskId), {
+      pinned: !current,
+    });
+  } catch (err) {
+    console.error("[toggleTaskPinned]", err);
+    throw err;
+  }
 }
 
 export async function updateTaskTitle(
   taskId: string,
   title: string
 ): Promise<void> {
-  await updateDoc(doc(db, COLLECTION, taskId), { title });
+  try {
+    await updateDoc(doc(db, COLLECTION, taskId), { title });
+  } catch (err) {
+    console.error("[updateTaskTitle]", err);
+    throw err;
+  }
 }
 
 export async function updateTaskNotes(
   taskId: string,
   notes: string | null
 ): Promise<void> {
-  await updateDoc(doc(db, COLLECTION, taskId), { notes });
+  try {
+    await updateDoc(doc(db, COLLECTION, taskId), { notes });
+  } catch (err) {
+    console.error("[updateTaskNotes]", err);
+    throw err;
+  }
 }

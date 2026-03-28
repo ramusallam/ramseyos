@@ -39,16 +39,21 @@ export interface CaptureInput {
 }
 
 export async function createCapture(input: CaptureInput): Promise<string> {
-  const ref = await addDoc(collection(db, "captures"), {
-    text: input.text,
-    source: input.source ?? "manual",
-    type: input.type ?? "capture",
-    priority: input.priority ?? null,
-    projectId: input.projectId ?? null,
-    processed: false,
-    status: "unprocessed",
-    createdAt: serverTimestamp(),
-    tags: [],
-  });
-  return ref.id;
+  try {
+    const ref = await addDoc(collection(db, "captures"), {
+      text: input.text,
+      source: input.source ?? "manual",
+      type: input.type ?? "capture",
+      priority: input.priority ?? null,
+      projectId: input.projectId ?? null,
+      processed: false,
+      status: "unprocessed",
+      createdAt: serverTimestamp(),
+      tags: [],
+    });
+    return ref.id;
+  } catch (err) {
+    console.error("[createCapture]", err);
+    throw err;
+  }
 }

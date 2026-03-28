@@ -33,6 +33,7 @@ interface PaletteItem {
 /* ── Static navigation items ── */
 
 const NAV_ITEMS: PaletteItem[] = [
+  { id: "nav-search", label: "Search", detail: "Search everything", category: "navigate", href: "/search", icon: "search" },
   { id: "nav-today", label: "Today", category: "navigate", href: "/", icon: "sun" },
   { id: "nav-week", label: "This Week", detail: "Weekly planning & review", category: "navigate", href: "/week", icon: "calendar" },
   { id: "nav-inbox", label: "Inbox", category: "navigate", href: "/inbox", icon: "inbox" },
@@ -144,6 +145,7 @@ const ICON_PATHS: Record<string, string> = {
   plus: "M8 3.5v9M3.5 8h9",
   capture: "M8 3.5v9M3.5 8h9",
   task: "M5.5 8l2 2 3-4",
+  search: "M7 3a4 4 0 100 8 4 4 0 000-8zM10.5 10.5L14 14",
 };
 
 function PaletteIcon({ name }: { name: string }) {
@@ -296,11 +298,28 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     [search, onClose, router]
   );
 
+  // "Search all..." action — navigates to dedicated search page with query
+  const searchAllItem: PaletteItem = useMemo(
+    () => ({
+      id: "action-search-all",
+      label: "Search all...",
+      detail: search.trim() ? `"${search.trim()}"` : undefined,
+      category: "action",
+      icon: "search",
+      action: () => {
+        const q = search.trim();
+        router.push(q ? `/search?q=${encodeURIComponent(q)}` : "/search");
+        onClose();
+      },
+    }),
+    [search, router, onClose]
+  );
+
   // Build filtered results
   const results = useMemo(() => {
     const q = search.toLowerCase().trim();
     const all: PaletteItem[] = [
-      ...(q.length > 0 ? actionItems : []),
+      ...(q.length > 0 ? [searchAllItem, ...actionItems] : []),
       ...NAV_ITEMS,
       ...(dynamic?.tasks ?? []),
       ...(dynamic?.projects ?? []),
@@ -318,7 +337,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
         (i.detail && i.detail.toLowerCase().includes(q)) ||
         (i.category === "action" && q.length > 0)
     );
-  }, [search, dynamic, actionItems, recentItems]);
+  }, [search, dynamic, actionItems, searchAllItem, recentItems]);
 
   // Group by category
   const grouped = useMemo(() => {

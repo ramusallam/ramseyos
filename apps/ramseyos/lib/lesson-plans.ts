@@ -115,35 +115,40 @@ export async function createLessonPlan(fields: {
   unitId?: string | null;
   status?: LessonStatus;
 }): Promise<string> {
-  const ref = await addDoc(collection(db, COL), {
-    title: fields.title,
-    course: fields.course ?? "",
-    unitId: fields.unitId ?? null,
-    status: fields.status ?? "draft",
-    objective: "",
-    warmUp: "",
-    activities: "",
-    assessment: "",
-    keyQuestions: [],
-    differentiation: "",
-    closingNotes: "",
-    description: "",
-    tags: [],
-    reflection: "",
-    linkedResourceIds: [],
-    rubricIds: [],
-    standardIds: [],
-    materials: [],
-    sparkLink: "",
-    sparkStatus: "not-started" as SparkStatus,
-    sparkExportedAt: null,
-    taughtDates: [],
-    lastTaughtAt: null,
-    pinned: false,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-  return ref.id;
+  try {
+    const ref = await addDoc(collection(db, COL), {
+      title: fields.title,
+      course: fields.course ?? "",
+      unitId: fields.unitId ?? null,
+      status: fields.status ?? "draft",
+      objective: "",
+      warmUp: "",
+      activities: "",
+      assessment: "",
+      keyQuestions: [],
+      differentiation: "",
+      closingNotes: "",
+      description: "",
+      tags: [],
+      reflection: "",
+      linkedResourceIds: [],
+      rubricIds: [],
+      standardIds: [],
+      materials: [],
+      sparkLink: "",
+      sparkStatus: "not-started" as SparkStatus,
+      sparkExportedAt: null,
+      taughtDates: [],
+      lastTaughtAt: null,
+      pinned: false,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return ref.id;
+  } catch (err) {
+    console.error("[createLessonPlan]", err);
+    throw err;
+  }
 }
 
 export async function getLessonPlans(): Promise<LessonPlan[]> {
@@ -198,56 +203,71 @@ export async function updateLessonPlan(
   id: string,
   data: LessonPlanUpdate
 ): Promise<void> {
-  await updateDoc(doc(db, COL, id), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
+  try {
+    await updateDoc(doc(db, COL, id), {
+      ...data,
+      updatedAt: serverTimestamp(),
+    });
+  } catch (err) {
+    console.error("[updateLessonPlan]", err);
+    throw err;
+  }
 }
 
 /* ── Duplicate ── */
 
 export async function duplicateLessonPlan(id: string): Promise<string | null> {
-  const original = await getLessonPlan(id);
-  if (!original) return null;
+  try {
+    const original = await getLessonPlan(id);
+    if (!original) return null;
 
-  const ref = await addDoc(collection(db, COL), {
-    title: `${original.title} (copy)`,
-    course: original.course,
-    unitId: original.unitId,
-    status: "draft" as LessonStatus,
-    objective: original.objective,
-    warmUp: original.warmUp,
-    activities: original.activities,
-    assessment: original.assessment,
-    keyQuestions: original.keyQuestions,
-    differentiation: original.differentiation,
-    closingNotes: original.closingNotes,
-    description: original.description,
-    tags: original.tags,
-    reflection: "",
-    linkedResourceIds: original.linkedResourceIds,
-    rubricIds: original.rubricIds,
-    standardIds: original.standardIds,
-    materials: original.materials,
-    sparkLink: "",
-    sparkStatus: "not-started" as SparkStatus,
-    sparkExportedAt: null,
-    taughtDates: [],
-    lastTaughtAt: null,
-    pinned: false,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-  return ref.id;
+    const ref = await addDoc(collection(db, COL), {
+      title: `${original.title} (copy)`,
+      course: original.course,
+      unitId: original.unitId,
+      status: "draft" as LessonStatus,
+      objective: original.objective,
+      warmUp: original.warmUp,
+      activities: original.activities,
+      assessment: original.assessment,
+      keyQuestions: original.keyQuestions,
+      differentiation: original.differentiation,
+      closingNotes: original.closingNotes,
+      description: original.description,
+      tags: original.tags,
+      reflection: "",
+      linkedResourceIds: original.linkedResourceIds,
+      rubricIds: original.rubricIds,
+      standardIds: original.standardIds,
+      materials: original.materials,
+      sparkLink: "",
+      sparkStatus: "not-started" as SparkStatus,
+      sparkExportedAt: null,
+      taughtDates: [],
+      lastTaughtAt: null,
+      pinned: false,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return ref.id;
+  } catch (err) {
+    console.error("[duplicateLessonPlan]", err);
+    throw err;
+  }
 }
 
 /* ── Archive ── */
 
 export async function archiveLessonPlan(id: string): Promise<void> {
-  await updateDoc(doc(db, COL, id), {
-    status: "archived" as LessonStatus,
-    updatedAt: serverTimestamp(),
-  });
+  try {
+    await updateDoc(doc(db, COL, id), {
+      status: "archived" as LessonStatus,
+      updatedAt: serverTimestamp(),
+    });
+  } catch (err) {
+    console.error("[archiveLessonPlan]", err);
+    throw err;
+  }
 }
 
 export async function unarchiveLessonPlan(id: string): Promise<void> {
