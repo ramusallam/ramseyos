@@ -26,6 +26,7 @@ import {
   type DraftStatus,
   type GmailHandoffStatus,
 } from "@/lib/drafts";
+import { requestAI } from "@/lib/ai/client";
 import Link from "next/link";
 
 /* ── Style maps ── */
@@ -96,6 +97,8 @@ export default function CommunicationsPage() {
   const [composeSubject, setComposeSubject] = useState("");
   const [composeBody, setComposeBody] = useState("");
   const [composeSaving, setComposeSaving] = useState(false);
+  const [aiAssistLoading, setAiAssistLoading] = useState(false);
+  const [aiAssistNotice, setAiAssistNotice] = useState(false);
 
   const refreshDrafts = useCallback(async () => {
     const d = await getDrafts();
@@ -108,7 +111,31 @@ export default function CommunicationsPage() {
     setComposeGroupId("");
     setComposeSubject("");
     setComposeBody("");
+    setAiAssistNotice(false);
   }, []);
+
+  const handleAiAssist = useCallback(async () => {
+    if (!composeBody.trim()) return;
+    setAiAssistLoading(true);
+    setAiAssistNotice(false);
+    try {
+      const groupName = groups.find((g) => g.id === composeGroupId)?.name || "recipients";
+      const response = await requestAI({
+        templateId: "communication-draft",
+        variables: {
+          groupName,
+          templateBody: composeBody,
+          context: composeSubject || "General communication",
+        },
+      });
+      setComposeBody(response.text);
+      setAiAssistNotice(true);
+    } catch (err) {
+      console.error("AI assist error:", err);
+    } finally {
+      setAiAssistLoading(false);
+    }
+  }, [composeBody, composeSubject, composeGroupId, groups]);
 
   const handleComposeTemplateChange = useCallback(
     (templateId: string) => {
@@ -398,18 +425,44 @@ export default function CommunicationsPage() {
 
           {/* Body */}
           <div>
-            <label htmlFor="compose-body" className="block text-[9px] font-semibold uppercase tracking-wider text-muted mb-1.5">
-              Body
-            </label>
+            <div className="flex items-center gap-2 mb-1.5">
+              <label htmlFor="compose-body" className="text-[9px] font-semibold uppercase tracking-wider text-muted">
+                Body
+              </label>
+              <button
+                type="button"
+                onClick={handleAiAssist}
+                disabled={aiAssistLoading || !composeBody.trim()}
+                aria-label="AI Assist — refine draft body"
+                className="text-[9px] font-medium text-violet-400/80 bg-violet-500/10 border border-violet-400/15 rounded-md px-2 py-0.5 hover:bg-violet-500/15 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                {aiAssistLoading ? (
+                  <>
+                    <span className="size-1.5 rounded-full bg-violet-400 animate-pulse" />
+                    Generating…
+                  </>
+                ) : (
+                  "AI Assist"
+                )}
+              </button>
+            </div>
             <textarea
               id="compose-body"
               aria-label="Draft body"
               value={composeBody}
-              onChange={(e) => setComposeBody(e.target.value)}
+              onChange={(e) => { setComposeBody(e.target.value); setAiAssistNotice(false); }}
               placeholder="Write your message…"
               rows={6}
               className="w-full rounded-lg border border-border bg-surface-raised/50 px-3 py-2 text-[12px] text-foreground/70 leading-relaxed placeholder:text-muted/30 focus:outline-none focus:ring-1 focus:ring-accent/30 resize-y"
             />
+            {aiAssistNotice && (
+              <div className="mt-1.5 flex items-center gap-1.5 rounded-md border border-violet-400/15 bg-violet-500/[0.06] px-2.5 py-1.5">
+                <span className="size-1.5 rounded-full bg-violet-400/60 shrink-0" />
+                <span className="text-[10px] text-violet-400/70">
+                  AI-generated draft — review before sending
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Actions */}

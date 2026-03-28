@@ -17,6 +17,7 @@ import {
   formatWeekLabel,
   type WeeklyReview,
 } from "@/lib/weekly-review";
+import { requestAI } from "@/lib/ai/client";
 import Link from "next/link";
 
 /* ── Types ── */
@@ -44,6 +45,9 @@ export default function WeeklyReviewPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [pastExpanded, setPastExpanded] = useState(false);
+  const [aiInsights, setAiInsights] = useState<string | null>(null);
+  const [aiInsightsLoading, setAiInsightsLoading] = useState(false);
+  const [aiInsightsExpanded, setAiInsightsExpanded] = useState(true);
 
   const weekMonday = getCurrentWeekMonday();
   const weekLabel = formatWeekLabel(weekMonday);
@@ -120,6 +124,48 @@ export default function WeeklyReviewPage() {
     setReview((prev) => (prev ? { ...prev, [key]: value } : prev));
   }
 
+  const handleAiInsights = useCallback(async () => {
+    if (!stats) return;
+    setAiInsightsLoading(true);
+    setAiInsights(null);
+    try {
+      const response = await requestAI({
+        templateId: "weekly-reflection-assist",
+        variables: {
+          tasksCompleted: String(stats.tasksDone),
+          lessonsTaught: String(stats.lessonsTaught),
+          gradingCompleted: String(stats.gradingApproved),
+          dailyReflections: "Not yet available",
+          energyTrend: "Not yet tracked",
+          currentPriorities: "Not yet specified",
+        },
+      });
+      // Try to parse JSON response into readable text
+      let displayText = response.text;
+      try {
+        const jsonMatch = response.text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          const parts: string[] = [];
+          if (parsed.summary) parts.push(parsed.summary);
+          if (parsed.patterns?.length) parts.push("\nPatterns:\n" + parsed.patterns.map((p: string) => `  - ${p}`).join("\n"));
+          if (parsed.reflectionPrompts?.length) parts.push("\nReflection prompts:\n" + parsed.reflectionPrompts.map((p: string) => `  - ${p}`).join("\n"));
+          if (parsed.suggestedFocus) parts.push("\nSuggested focus: " + parsed.suggestedFocus);
+          if (parts.length > 0) displayText = parts.join("\n");
+        }
+      } catch {
+        // Use raw text if JSON parsing fails
+      }
+      setAiInsights(displayText);
+      setAiInsightsExpanded(true);
+    } catch (err) {
+      console.error("AI insights error:", err);
+      setAiInsights("Unable to generate insights right now. Try again later.");
+    } finally {
+      setAiInsightsLoading(false);
+    }
+  }, [stats]);
+
   /* ── Loading ── */
   if (loading) {
     return (
@@ -193,6 +239,82 @@ export default function WeeklyReviewPage() {
               <StatCard label="Captures" value={stats.capturesTotal} color="bg-amber-500" />
             </div>
           </ReviewSection>
+        )}
+
+        {/* ── AI Insights ── */}
+        {stats && (
+          <section>
+            <div className="flex items-center gap-2 mb-3">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-violet-400/60"
+              >
+                <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.5 1.5M11 11l1.5 1.5M3.5 12.5l1.5-1.5M11 5l1.5-1.5" />
+              </svg>
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                AI Insights
+              </h2>
+              <button
+                type="button"
+                onClick={handleAiInsights}
+                disabled={aiInsightsLoading}
+                aria-label="Generate AI insights from week stats"
+                className="text-[9px] font-medium text-violet-400/80 bg-violet-500/10 border border-violet-400/15 rounded-md px-2 py-0.5 hover:bg-violet-500/15 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                {aiInsightsLoading ? (
+                  <>
+                    <span className="size-1.5 rounded-full bg-violet-400 animate-pulse" />
+                    Thinking...
+                  </>
+                ) : (
+                  "Generate"
+                )}
+              </button>
+              <div className="flex-1 border-t border-border" />
+            </div>
+
+            {aiInsights && (
+              <div className="rounded-xl border border-violet-400/15 bg-violet-500/[0.04] overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setAiInsightsExpanded(!aiInsightsExpanded)}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-left hover:bg-violet-500/[0.06] transition-colors"
+                  aria-label={aiInsightsExpanded ? "Collapse AI insights" : "Expand AI insights"}
+                >
+                  <span className="size-1.5 rounded-full bg-violet-400/60 shrink-0" />
+                  <span className="text-[10px] font-medium text-violet-400/70 flex-1">
+                    AI-generated suggestions
+                  </span>
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    className={`text-muted transition-transform ${aiInsightsExpanded ? "rotate-180" : ""}`}
+                  >
+                    <path d="M4 6l4 4 4-4" />
+                  </svg>
+                </button>
+                {aiInsightsExpanded && (
+                  <div className="px-4 pb-4 pt-1">
+                    <p className="text-[12px] text-foreground/65 leading-relaxed whitespace-pre-line">
+                      {aiInsights}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
         )}
 
         {/* ── Stale Alerts ── */}

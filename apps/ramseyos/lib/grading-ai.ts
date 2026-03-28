@@ -1,13 +1,13 @@
 /**
- * AI grading pipeline — prompt builder + stub.
+ * AI grading pipeline — prompt builder + real AI backbone integration.
  *
- * Builds real prompts for rubric-aligned grading. The actual model call
- * is a stub that returns mock analysis. When the Model Router is built,
- * replace `callModel()` with a real call.
+ * Builds rubric-aligned prompts and routes them through the AI backbone.
+ * Falls back to mock analysis if the AI response can't be parsed.
  */
 
 import type { RubricCriterion } from "./rubrics";
 import type { AIGradingAnalysis, CriterionScore } from "./grading-jobs";
+import { requestAI } from "@/lib/ai/client";
 
 /* ── Prompt builder ── */
 
@@ -48,27 +48,10 @@ Then provide:
 - Confidence level (high/medium/low) based on how clearly the work maps to criteria`;
 }
 
-/* ── Stub model call ── */
+/* ── Mock fallback ── */
 
-async function callModel(_prompt: string): Promise<string> {
-  // Stub — returns empty string. Replace with real Model Router call.
-  return "";
-}
-
-/* ── Run grading analysis ── */
-
-export async function runGradingAnalysis(params: {
-  assignmentName: string;
-  studentWork: string;
-  criteria: RubricCriterion[];
-}): Promise<AIGradingAnalysis> {
-  const prompt = buildGradingPrompt(params);
-
-  // Attempt real call (currently a stub)
-  await callModel(prompt);
-
-  // Return mock analysis until model router is live
-  const criterionScores: CriterionScore[] = params.criteria.map((c) => {
+function buildMockAnalysis(criteria: RubricCriterion[]): AIGradingAnalysis {
+  const criterionScores: CriterionScore[] = criteria.map((c) => {
     const midLevel = c.levels[Math.floor(c.levels.length / 2)] ?? c.levels[0];
     return {
       criterionId: c.id,
@@ -93,4 +76,54 @@ export async function runGradingAnalysis(params: {
     improvements: ["Placeholder — real improvement suggestions pending"],
     confidence: "low",
   };
+}
+
+/* ── Run grading analysis ── */
+
+export async function runGradingAnalysis(params: {
+  assignmentName: string;
+  studentWork: string;
+  criteria: RubricCriterion[];
+}): Promise<AIGradingAnalysis> {
+  const criteriaBlock = params.criteria
+    .map(
+      (c) =>
+        `Criterion: ${c.label} (${c.maxPoints} pts)\n` +
+        `Description: ${c.description}\n` +
+        `Levels:\n` +
+        c.levels.map((l) => `  - ${l.label} (${l.points} pts): ${l.description}`).join("\n")
+    )
+    .join("\n\n");
+
+  try {
+    const response = await requestAI({
+      templateId: "grading-rubric-analysis",
+      variables: {
+        assignmentName: params.assignmentName,
+        rubricCriteria: criteriaBlock,
+        studentWork: params.studentWork,
+      },
+    });
+
+    // Try to parse structured JSON from the AI response
+    const jsonMatch = response.text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]) as AIGradingAnalysis;
+      // Validate minimum expected shape
+      if (
+        Array.isArray(parsed.criterionScores) &&
+        typeof parsed.totalScore === "number" &&
+        typeof parsed.overallFeedback === "string"
+      ) {
+        return parsed;
+      }
+    }
+
+    // AI responded but not parseable JSON — fall back to mock
+    console.warn("[Grading AI] Response was not parseable JSON, using mock fallback");
+    return buildMockAnalysis(params.criteria);
+  } catch (err) {
+    console.error("[Grading AI] AI request failed, using mock fallback:", err);
+    return buildMockAnalysis(params.criteria);
+  }
 }
