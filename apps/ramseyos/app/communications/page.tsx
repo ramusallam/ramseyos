@@ -27,6 +27,7 @@ import {
   type GmailHandoffStatus,
 } from "@/lib/drafts";
 import { requestAI } from "@/lib/ai/client";
+import { ContextGuidance } from "@/app/components/context-guidance";
 import Link from "next/link";
 
 /* ── Style maps ── */
@@ -351,6 +352,14 @@ export default function CommunicationsPage() {
           )}
         </div>
       </header>
+
+      {/* Contextual guidance */}
+      <div className="mb-6">
+        <ContextGuidance
+          tags={["ops", "communications"]}
+          title="Drafting Guidance"
+        />
+      </div>
 
       {/* ═══ Compose Panel ═══ */}
       {composeOpen && (

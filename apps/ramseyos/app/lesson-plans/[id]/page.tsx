@@ -22,6 +22,7 @@ import {
 } from "@/lib/lesson-reflections";
 import { copySparkExportToClipboard, downloadSparkExport } from "@/lib/spark-bridge";
 import { getActiveTools, type ToolItem } from "@/lib/tools";
+import { ContextGuidance } from "@/app/components/context-guidance";
 import { getActiveVendors, type VendorItem } from "@/lib/vendors";
 import { trackRecent } from "@/lib/recents";
 import { Timestamp } from "firebase/firestore";
@@ -892,6 +893,12 @@ export default function LessonPlanEditorPage() {
               </div>
             )}
           </section>
+
+          {/* Contextual guidance */}
+          <ContextGuidance
+            tags={["teach", "lesson-planning", "pedagogy", "spark"]}
+            title="Lesson Planning Guidance"
+          />
         </div>
       </div>
     </div>

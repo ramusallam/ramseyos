@@ -231,12 +231,20 @@ export default function PlaybooksPage() {
                     </p>
 
                     {wf && (
-                      <Link
-                        href={wf.entryRoute}
-                        className="inline-flex items-center gap-1.5 text-[11px] text-accent hover:text-accent/80 mt-3 transition-colors"
-                      >
-                        Launch workflow &rarr;
-                      </Link>
+                      <div className="flex items-center gap-4 mt-3">
+                        <Link
+                          href={wf.entryRoute}
+                          className="inline-flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+                        >
+                          Launch workflow &rarr;
+                        </Link>
+                        <Link
+                          href={`/knowledge?tag=${wf.knowledgeTags[0] || ""}`}
+                          className="text-[11px] text-muted/50 hover:text-muted/80 transition-colors"
+                        >
+                          Related knowledge &rarr;
+                        </Link>
+                      </div>
                     )}
                   </div>
                 );
@@ -315,12 +323,20 @@ export default function PlaybooksPage() {
                     </p>
 
                     {wf && (
-                      <Link
-                        href={wf.entryRoute}
-                        className="inline-flex items-center gap-1.5 text-[11px] text-accent hover:text-accent/80 mt-3 transition-colors"
-                      >
-                        Launch workflow &rarr;
-                      </Link>
+                      <div className="flex items-center gap-4 mt-3">
+                        <Link
+                          href={wf.entryRoute}
+                          className="inline-flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+                        >
+                          Launch workflow &rarr;
+                        </Link>
+                        <Link
+                          href={`/knowledge?tag=${wf.knowledgeTags[0] || ""}`}
+                          className="text-[11px] text-muted/50 hover:text-muted/80 transition-colors"
+                        >
+                          Related knowledge &rarr;
+                        </Link>
+                      </div>
                     )}
                   </div>
                 );

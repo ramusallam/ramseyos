@@ -15,6 +15,7 @@ import {
 } from "@/lib/grading-jobs";
 import { getRubric, type Rubric } from "@/lib/rubrics";
 import { runGradingAnalysis } from "@/lib/grading-ai";
+import { ContextGuidance } from "@/app/components/context-guidance";
 import Link from "next/link";
 
 const STATUS_BADGE: Record<GradingJobStatus, { bg: string; text: string; label: string }> = {
@@ -304,6 +305,12 @@ export default function GradingReviewPage() {
               </div>
             );
           })}
+
+          {/* Contextual guidance */}
+          <ContextGuidance
+            tags={["teach", "grading"]}
+            title="Grading Guidance"
+          />
 
           {/* Overall feedback */}
           {scores.length > 0 && (

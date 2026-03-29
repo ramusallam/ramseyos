@@ -12,6 +12,7 @@ import {
 } from "@/lib/recommendations";
 import { createApproval } from "@/lib/approvals";
 import { requestAI } from "@/lib/ai/client";
+import { ContextGuidance } from "@/app/components/context-guidance";
 import Link from "next/link";
 
 const STATUS_BADGE: Record<RecommendationStatus, { bg: string; text: string; label: string }> = {
@@ -341,6 +342,12 @@ export default function RecommendationDetailPage() {
               className="w-full rounded-lg border border-border bg-transparent px-4 py-3 text-[13px] text-foreground leading-[1.8] placeholder:text-muted outline-none focus:border-accent/30 transition-colors resize-none"
             />
           </div>
+
+          {/* Contextual guidance */}
+          <ContextGuidance
+            tags={["ops", "recommendations", "communications"]}
+            title="Recommendation Guidance"
+          />
         </section>
       </div>
 

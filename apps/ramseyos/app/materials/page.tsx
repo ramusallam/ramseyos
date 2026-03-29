@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getLessonPlans, type LessonPlan, type MaterialItem } from "@/lib/lesson-plans";
 import { getActiveVendors, type VendorItem } from "@/lib/vendors";
+import { ContextGuidance } from "@/app/components/context-guidance";
 import Link from "next/link";
 
 interface MaterialWithContext extends MaterialItem {
@@ -129,6 +130,14 @@ export default function MaterialsPage() {
           </Link>
         </div>
       </header>
+
+      {/* Contextual guidance */}
+      <div className="mb-8">
+        <ContextGuidance
+          tags={["teach", "materials", "purchasing"]}
+          title="Sourcing Guidance"
+        />
+      </div>
 
       {allMaterials.length === 0 ? (
         <EmptyState

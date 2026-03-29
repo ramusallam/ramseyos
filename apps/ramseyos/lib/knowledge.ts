@@ -18,6 +18,8 @@ import {
   orderBy,
   getDocs,
   addDoc,
+  updateDoc,
+  doc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -112,6 +114,53 @@ export async function getKnowledgeForWorkflow(
   }));
 }
 
+export async function createKnowledgeEntry(fields: {
+  title: string;
+  body: string;
+  type: KnowledgeType;
+  tags?: string[];
+  url?: string;
+  workflowId?: string;
+}): Promise<string> {
+  try {
+    const ref = await addDoc(collection(db, "knowledge"), {
+      title: fields.title,
+      body: fields.body,
+      type: fields.type,
+      tags: fields.tags || [],
+      url: fields.url || null,
+      workflowId: fields.workflowId || null,
+      active: true,
+      createdAt: serverTimestamp(),
+    });
+    return ref.id;
+  } catch (err) {
+    console.error("[createKnowledgeEntry]", err);
+    throw err;
+  }
+}
+
+export async function updateKnowledgeEntry(
+  id: string,
+  data: Partial<Omit<KnowledgeEntry, "id" | "createdAt">>
+): Promise<void> {
+  try {
+    await updateDoc(doc(db, "knowledge", id), data);
+  } catch (err) {
+    console.error("[updateKnowledgeEntry]", err);
+    throw err;
+  }
+}
+
+export async function archiveKnowledgeEntry(id: string): Promise<void> {
+  try {
+    await updateDoc(doc(db, "knowledge", id), { active: false });
+  } catch (err) {
+    console.error("[archiveKnowledgeEntry]", err);
+    throw err;
+  }
+}
+
 export async function seedKnowledge(): Promise<number> {
   const existing = await getDocs(collection(db, "knowledge"));
   if (existing.size > 0) return 0;
@@ -169,6 +218,24 @@ export async function seedKnowledge(): Promise<number> {
       tags: ["teach", "lesson-planning", "spark"],
       url: "https://sparklearningstudio.ai",
       workflowId: "new-lesson-plan",
+      active: true,
+    },
+    {
+      title: "Rubric grading best practices",
+      body: "When grading with a rubric:\n1. Read the full student submission before scoring\n2. Score each criterion independently\n3. Use the rubric levels as anchors, not ceilings\n4. Write specific feedback that references the student's work\n5. Note both strengths and areas for growth\n6. Review your scores holistically before finalizing\n7. Be consistent across students — use the first few as calibration",
+      type: "playbook",
+      tags: ["teach", "grading"],
+      url: null,
+      workflowId: "grade-with-rubric",
+      active: true,
+    },
+    {
+      title: "Writing effective student feedback",
+      body: "Effective feedback is:\n- Specific (reference exact parts of the work)\n- Actionable (tell the student what to do differently)\n- Balanced (acknowledge what works before suggesting changes)\n- Growth-oriented (frame as improvement, not correction)\n- Timely (return as quickly as possible while thoughtful)",
+      type: "reference",
+      tags: ["teach", "grading"],
+      url: null,
+      workflowId: null,
       active: true,
     },
   ];

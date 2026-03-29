@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import {
   getActiveKnowledge,
   seedKnowledge,
+  createKnowledgeEntry,
+  updateKnowledgeEntry,
+  archiveKnowledgeEntry,
   type KnowledgeEntry,
   type KnowledgeType,
 } from "@/lib/knowledge";
@@ -24,6 +27,15 @@ const TYPE_ICON: Record<KnowledgeType, string> = {
 
 type FilterType = "all" | KnowledgeType;
 
+const EMPTY_FORM = {
+  title: "",
+  body: "",
+  type: "note" as KnowledgeType,
+  tags: "",
+  url: "",
+  workflowId: "",
+};
+
 export default function KnowledgePage() {
   const [entries, setEntries] = useState<KnowledgeEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +43,22 @@ export default function KnowledgePage() {
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [filterTag, setFilterTag] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Create form state
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState(EMPTY_FORM);
+  const [creating, setCreating] = useState(false);
+
+  // Inline edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const reload = useCallback(async () => {
+    const data = await getActiveKnowledge();
+    setEntries(data);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,14 +79,75 @@ export default function KnowledgePage() {
     setSeeding(true);
     try {
       const count = await seedKnowledge();
-      if (count > 0) {
-        const fresh = await getActiveKnowledge();
-        setEntries(fresh);
-      }
+      if (count > 0) await reload();
     } catch {
       // silent
     } finally {
       setSeeding(false);
+    }
+  }
+
+  async function handleCreate() {
+    if (!createForm.title.trim()) return;
+    setCreating(true);
+    try {
+      const tags = createForm.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      await createKnowledgeEntry({
+        title: createForm.title.trim(),
+        body: createForm.body.trim(),
+        type: createForm.type,
+        tags,
+        url: createForm.url.trim() || undefined,
+        workflowId: createForm.workflowId || undefined,
+      });
+      setCreateForm(EMPTY_FORM);
+      setShowCreate(false);
+      await reload();
+    } catch {
+      // silent
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  function startEdit(entry: KnowledgeEntry) {
+    setEditingId(entry.id);
+    setEditTitle(entry.title);
+    setEditBody(entry.body);
+  }
+
+  async function handleSaveEdit() {
+    if (!editingId) return;
+    setSaving(true);
+    try {
+      await updateKnowledgeEntry(editingId, {
+        title: editTitle.trim(),
+        body: editBody.trim(),
+      });
+      setEditingId(null);
+      await reload();
+    } catch {
+      // silent
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+  }
+
+  async function handleArchive(id: string) {
+    try {
+      await archiveKnowledgeEntry(id);
+      setEntries((prev) => prev.filter((e) => e.id !== id));
+      if (expandedId === id) setExpandedId(null);
+      if (editingId === id) setEditingId(null);
+    } catch {
+      // silent
     }
   }
 
@@ -252,8 +341,26 @@ export default function KnowledgePage() {
             )}
           </div>
 
-          {/* Seed button (when entries exist) */}
-          <div className="flex justify-end">
+          {/* Action bar: New Entry + Seed */}
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setShowCreate(!showCreate)}
+              className="inline-flex items-center gap-1.5 text-[12px] font-medium text-accent hover:text-accent/80 transition-colors"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              >
+                <path d="M8 3v10M3 8h10" />
+              </svg>
+              {showCreate ? "Cancel" : "New Entry"}
+            </button>
             <button
               type="button"
               onClick={handleSeed}
@@ -263,6 +370,126 @@ export default function KnowledgePage() {
               {seeding ? "Seeding..." : "Seed Knowledge"}
             </button>
           </div>
+
+          {/* Create form */}
+          {showCreate && (
+            <div className="rounded-xl border border-border bg-surface backdrop-blur-sm p-5 space-y-4">
+              <h3 className="text-[13px] font-medium text-foreground/80">
+                New Knowledge Entry
+              </h3>
+
+              {/* Title */}
+              <input
+                type="text"
+                placeholder="Title (required)"
+                value={createForm.title}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, title: e.target.value })
+                }
+                className="w-full bg-white/5 border border-border rounded-lg px-3 py-2 text-[13px] text-foreground placeholder:text-muted/40 focus:outline-none focus:border-accent/50 transition-colors"
+              />
+
+              {/* Body */}
+              <textarea
+                placeholder="Body / content"
+                value={createForm.body}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, body: e.target.value })
+                }
+                rows={4}
+                className="w-full bg-white/5 border border-border rounded-lg px-3 py-2 text-[13px] text-foreground placeholder:text-muted/40 focus:outline-none focus:border-accent/50 transition-colors resize-y"
+              />
+
+              {/* Type + Tags row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] text-muted/50 block mb-1">
+                    Type
+                  </label>
+                  <select
+                    value={createForm.type}
+                    onChange={(e) =>
+                      setCreateForm({
+                        ...createForm,
+                        type: e.target.value as KnowledgeType,
+                      })
+                    }
+                    className="w-full bg-white/5 border border-border rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:border-accent/50 transition-colors"
+                  >
+                    <option value="note">Note</option>
+                    <option value="playbook">Playbook</option>
+                    <option value="reference">Reference</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted/50 block mb-1">
+                    Tags (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="teach, grading"
+                    value={createForm.tags}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, tags: e.target.value })
+                    }
+                    className="w-full bg-white/5 border border-border rounded-lg px-3 py-2 text-[13px] text-foreground placeholder:text-muted/40 focus:outline-none focus:border-accent/50 transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* URL + Workflow row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] text-muted/50 block mb-1">
+                    URL (optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="https://..."
+                    value={createForm.url}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, url: e.target.value })
+                    }
+                    className="w-full bg-white/5 border border-border rounded-lg px-3 py-2 text-[13px] text-foreground placeholder:text-muted/40 focus:outline-none focus:border-accent/50 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted/50 block mb-1">
+                    Workflow (optional)
+                  </label>
+                  <select
+                    value={createForm.workflowId}
+                    onChange={(e) =>
+                      setCreateForm({
+                        ...createForm,
+                        workflowId: e.target.value,
+                      })
+                    }
+                    className="w-full bg-white/5 border border-border rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:border-accent/50 transition-colors"
+                  >
+                    <option value="">None</option>
+                    {WORKFLOWS.map((wf) => (
+                      <option key={wf.id} value={wf.id}>
+                        {wf.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleCreate}
+                  disabled={creating || !createForm.title.trim()}
+                  className="text-[12px] font-medium px-4 py-2 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 disabled:opacity-40 transition-colors"
+                >
+                  {creating ? "Saving..." : "Create Entry"}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Grouped entries */}
           {grouped.length === 0 && (
@@ -301,12 +528,13 @@ export default function KnowledgePage() {
               <div className="space-y-2">
                 {items.map((entry) => {
                   const isExpanded = expandedId === entry.id;
+                  const isEditing = editingId === entry.id;
                   const linkedWorkflows = getLinkedWorkflows(entry);
 
                   return (
                     <div
                       key={entry.id}
-                      className="rounded-xl border border-border bg-surface backdrop-blur-sm transition-all hover:border-border-strong"
+                      className="group/card rounded-xl border border-border bg-surface backdrop-blur-sm transition-all hover:border-border-strong"
                     >
                       <button
                         type="button"
@@ -358,6 +586,38 @@ export default function KnowledgePage() {
                             </div>
                           )}
                         </div>
+
+                        {/* Archive button — visible on hover */}
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleArchive(entry.id);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.stopPropagation();
+                              handleArchive(entry.id);
+                            }
+                          }}
+                          className="opacity-0 group-hover/card:opacity-100 text-[10px] text-muted/40 hover:text-rose-400 shrink-0 mt-1 transition-opacity cursor-pointer"
+                          title="Archive"
+                        >
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M2 4h12M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M3 4v9a1 1 0 001 1h8a1 1 0 001-1V4" />
+                          </svg>
+                        </span>
+
                         <svg
                           width="12"
                           height="12"
@@ -379,16 +639,75 @@ export default function KnowledgePage() {
                       {isExpanded && (
                         <div className="px-4 pb-4 pt-0">
                           <div className="border-t border-border pt-3 ml-[26px]">
-                            <p className="text-[12px] text-foreground/70 leading-relaxed whitespace-pre-wrap">
-                              {entry.body}
-                            </p>
+                            {isEditing ? (
+                              /* Inline edit mode */
+                              <div className="space-y-3">
+                                <input
+                                  type="text"
+                                  value={editTitle}
+                                  onChange={(e) => setEditTitle(e.target.value)}
+                                  className="w-full bg-white/5 border border-border rounded-lg px-3 py-2 text-[13px] text-foreground focus:outline-none focus:border-accent/50 transition-colors"
+                                />
+                                <textarea
+                                  value={editBody}
+                                  onChange={(e) => setEditBody(e.target.value)}
+                                  rows={6}
+                                  className="w-full bg-white/5 border border-border rounded-lg px-3 py-2 text-[12px] text-foreground/70 leading-relaxed focus:outline-none focus:border-accent/50 transition-colors resize-y"
+                                />
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={handleSaveEdit}
+                                    disabled={saving || !editTitle.trim()}
+                                    className="text-[11px] font-medium px-3 py-1.5 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 disabled:opacity-40 transition-colors"
+                                  >
+                                    {saving ? "Saving..." : "Save"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={cancelEdit}
+                                    className="text-[11px] text-muted/50 hover:text-muted/80 transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              /* Read mode */
+                              <>
+                                <p className="text-[12px] text-foreground/70 leading-relaxed whitespace-pre-wrap">
+                                  {entry.body}
+                                </p>
 
-                            {entry.url && (
+                                {/* Edit button */}
+                                <button
+                                  type="button"
+                                  onClick={() => startEdit(entry)}
+                                  className="inline-flex items-center gap-1 text-[11px] text-muted/40 hover:text-muted/70 mt-3 transition-colors"
+                                >
+                                  <svg
+                                    width="10"
+                                    height="10"
+                                    viewBox="0 0 16 16"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.3"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
+                                    <path d="M11.5 2.5l2 2L5 13H3v-2z" />
+                                  </svg>
+                                  Edit
+                                </button>
+                              </>
+                            )}
+
+                            {!isEditing && entry.url && (
                               <a
                                 href={entry.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 text-[11px] text-accent hover:text-accent/80 mt-3 transition-colors"
+                                className="inline-flex items-center gap-1.5 text-[11px] text-accent hover:text-accent/80 mt-3 ml-4 transition-colors"
                               >
                                 <svg
                                   width="10"
@@ -408,7 +727,7 @@ export default function KnowledgePage() {
                               </a>
                             )}
 
-                            {linkedWorkflows.length > 0 && (
+                            {!isEditing && linkedWorkflows.length > 0 && (
                               <div className="mt-3 flex items-center gap-2 flex-wrap">
                                 <span className="text-[10px] text-muted/40">
                                   Workflows:
