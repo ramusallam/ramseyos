@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getActiveKnowledge, type KnowledgeEntry } from "@/lib/knowledge";
+import Link from "next/link";
 
 const TYPE_ICON: Record<string, string> = {
   playbook: "M3 2h10v12H3zM6 5h4M6 7.5h4M6 10h2",
@@ -80,6 +81,12 @@ export function PlaybookSidebar() {
           </div>
         </div>
       ))}
+      <Link
+        href="/playbooks"
+        className="flex items-center gap-2 rounded-lg px-3 py-2 mt-1 text-[11px] text-muted/50 hover:text-muted/80 transition-colors"
+      >
+        View all &rarr;
+      </Link>
     </div>
   );
 }

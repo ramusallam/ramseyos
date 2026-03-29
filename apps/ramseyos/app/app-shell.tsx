@@ -18,6 +18,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 interface ShellCounts {
   inbox: number;
+  approvals: number;
   tasks: number;
   chosenToday: number;
   schedule: number;
@@ -26,6 +27,7 @@ interface ShellCounts {
 function useShellCounts(): ShellCounts {
   const [counts, setCounts] = useState<ShellCounts>({
     inbox: 0,
+    approvals: 0,
     tasks: 0,
     chosenToday: 0,
     schedule: 0,
@@ -41,6 +43,16 @@ function useShellCounts(): ShellCounts {
     unsubs.push(
       onSnapshot(inboxQ, (snap) =>
         setCounts((prev) => ({ ...prev, inbox: snap.size }))
+      )
+    );
+
+    const approvalsQ = query(
+      collection(db, "approvals"),
+      where("status", "==", "pending")
+    );
+    unsubs.push(
+      onSnapshot(approvalsQ, (snap) =>
+        setCounts((prev) => ({ ...prev, approvals: snap.size }))
       )
     );
 
@@ -94,6 +106,7 @@ type NavKey =
   | "today"
   | "week"
   | "inbox"
+  | "approvals"
   | "tasks"
   | "projects"
   | "calendar"
@@ -110,6 +123,8 @@ type NavKey =
   | "admin"
   | "life"
   | "weeklyReview"
+  | "knowledge"
+  | "playbooks"
   | "settings";
 
 interface NavItem {
@@ -136,6 +151,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Work",
     items: [
       { href: "/inbox", label: "Inbox", icon: InboxIcon, key: "inbox" },
+      { href: "/approvals", label: "Approvals", icon: ApprovalsIcon, key: "approvals" },
       { href: "/tasks", label: "Tasks", icon: CheckIcon, key: "tasks" },
       { href: "/projects", label: "Projects", icon: FolderIcon, key: "projects" },
       { href: "/workspaces", label: "Workspaces", icon: WorkspacesIcon, key: "workspaces" },
@@ -160,6 +176,8 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/weekly-review", label: "Weekly Review", icon: WeeklyReviewIcon, key: "weeklyReview" },
       { href: "/product-ops", label: "Product Ops", icon: ProductOpsIcon, key: "productOps" },
+      { href: "/knowledge", label: "Knowledge", icon: KnowledgeIcon, key: "knowledge" },
+      { href: "/playbooks", label: "Playbooks", icon: PlaybooksIcon, key: "playbooks" },
       { href: "/admin", label: "Admin", icon: AdminIcon, key: "admin" },
       { href: "/life", label: "Life", icon: LifeIcon, key: "life" },
     ],
@@ -181,6 +199,8 @@ function getNavCount(
       return counts.chosenToday || null;
     case "inbox":
       return counts.inbox || null;
+    case "approvals":
+      return counts.approvals || null;
     case "tasks":
       return counts.tasks || null;
     case "calendar":
@@ -612,6 +632,27 @@ function InboxIcon({ active }: { active: boolean }) {
         d="M2 9h3.5a1 1 0 011 1v0a1 1 0 001 1h1a1 1 0 001-1v0a1 1 0 011-1H14"
         stroke="currentColor"
         strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
+function ApprovalsIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M5.5 8l2 2 3-4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -1072,6 +1113,53 @@ function LifeIcon({ active }: { active: boolean }) {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function KnowledgeIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <path
+        d="M3 2h10v12H3zM6 5h4M6 7.5h4M6 10h2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function PlaybooksIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <rect
+        x="2"
+        y="2"
+        width="12"
+        height="12"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M5 5.5h6M5 8h6M5 10.5h4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
       />
     </svg>
   );
