@@ -149,6 +149,36 @@ Respond in valid JSON:
 Please provide a weekly reflection synthesis.`,
     variables: ["tasksCompleted", "lessonsTaught", "gradingCompleted", "dailyReflections", "energyTrend", "currentPriorities"],
   },
+
+  // ──── RECOMMENDATION LETTER ────
+  {
+    id: "recommendation-letter",
+    name: "Recommendation Letter Assistant",
+    category: "general",
+    taskType: "drafting",
+    description: "Draft a college recommendation letter with authentic voice and specific anecdotes",
+    systemPrompt: `You are an experienced educator writing a genuine college recommendation letter. Write with warmth, specificity, and authenticity. The letter should:
+
+- Open with your relationship to the student and how long you've known them
+- Highlight specific strengths with concrete examples
+- Include anecdotes that reveal character and growth
+- Connect the student's qualities to their potential at the target institution
+- Close with a strong, specific endorsement
+
+Write in first person as the recommender. Keep the tone professional but warm. The letter should feel personal, not generic. Aim for 400-600 words.
+
+Return the letter as plain text (not markdown).`,
+    userPromptTemplate: `Student: {{studentName}}
+Target institution: {{institution}}
+My relationship with this student: {{relationship}}
+Courses together: {{coursesWithStudent}}
+Key strengths: {{strengths}}
+Anecdotes/examples: {{anecdotes}}
+Additional context: {{additionalNotes}}
+
+Please draft a recommendation letter for this student.`,
+    variables: ["studentName", "institution", "relationship", "coursesWithStudent", "strengths", "anecdotes", "additionalNotes"],
+  },
 ];
 
 /**

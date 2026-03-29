@@ -1,11 +1,25 @@
 "use client";
 
-import { WORKSPACES, type Workspace } from "@/lib/workspaces";
+import { useEffect, useState } from "react";
+import { WORKSPACES, getWorkspaceSummary, type Workspace, type WorkspaceSummary } from "@/lib/workspaces";
 import Link from "next/link";
 
 export default function WorkspacesPage() {
   const schoolWorkspaces = WORKSPACES.filter((w) => w.domain === "school");
   const consultingWorkspaces = WORKSPACES.filter((w) => w.domain === "consulting");
+
+  const [summaries, setSummaries] = useState<Record<string, WorkspaceSummary>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all(WORKSPACES.map((w) => getWorkspaceSummary(w.id))).then((results) => {
+      if (cancelled) return;
+      const map: Record<string, WorkspaceSummary> = {};
+      for (const s of results) map[s.id] = s;
+      setSummaries(map);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-8 pt-8 sm:pt-10 pb-20">
@@ -26,11 +40,11 @@ export default function WorkspacesPage() {
       </header>
 
       {/* Schools */}
-      <WorkspaceDomainSection label="Schools" workspaces={schoolWorkspaces} />
+      <WorkspaceDomainSection label="Schools" workspaces={schoolWorkspaces} summaries={summaries} />
 
       {/* Consulting */}
       <div className="mt-8">
-        <WorkspaceDomainSection label="Consulting" workspaces={consultingWorkspaces} />
+        <WorkspaceDomainSection label="Consulting" workspaces={consultingWorkspaces} summaries={summaries} />
       </div>
     </div>
   );
@@ -39,9 +53,11 @@ export default function WorkspacesPage() {
 function WorkspaceDomainSection({
   label,
   workspaces,
+  summaries,
 }: {
   label: string;
   workspaces: Workspace[];
+  summaries: Record<string, WorkspaceSummary>;
 }) {
   return (
     <section>
@@ -53,14 +69,16 @@ function WorkspaceDomainSection({
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {workspaces.map((w) => (
-          <WorkspaceCard key={w.id} workspace={w} />
+          <WorkspaceCard key={w.id} workspace={w} summary={summaries[w.id]} />
         ))}
       </div>
     </section>
   );
 }
 
-function WorkspaceCard({ workspace }: { workspace: Workspace }) {
+function WorkspaceCard({ workspace, summary }: { workspace: Workspace; summary?: WorkspaceSummary }) {
+  const isSchool = workspace.domain === "school";
+
   return (
     <Link
       href={`/workspaces/${workspace.id}`}
@@ -80,6 +98,22 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
           <p className="text-[12px] text-muted leading-relaxed">
             {workspace.description}
           </p>
+
+          {/* Quick counts */}
+          {summary && (
+            <div className="flex items-center gap-3 mt-2 text-[10px] text-muted/70 tabular-nums">
+              <span>{summary.projectCount} projects</span>
+              <span className="text-muted/30">/</span>
+              <span>{summary.openTaskCount} open tasks</span>
+              {isSchool && summary.lessonPlanCount > 0 && (
+                <>
+                  <span className="text-muted/30">/</span>
+                  <span>{summary.lessonPlanCount} lessons</span>
+                </>
+              )}
+            </div>
+          )}
+
           <div className="mt-3 flex items-center gap-2">
             <span
               className={`text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${workspace.color} ${workspace.accent}`}

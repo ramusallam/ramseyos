@@ -11,6 +11,14 @@ export interface Workspace {
   description: string;
 }
 
+/** Maps workspace IDs to the course names that belong in that workspace. */
+export const WORKSPACE_COURSES: Record<string, string[]> = {
+  sonoma: ["Chemistry", "Physics", "AP Chemistry", "Honors Chemistry"],
+  concordia: ["EDUT 501", "EDUT 523"],
+  woven: [],
+  cycles: [],
+};
+
 export const WORKSPACES: Workspace[] = [
   {
     id: "sonoma",
@@ -58,9 +66,19 @@ export interface WorkspaceData {
   projects: Array<{ id: string; title: string; status: string; color: string | null; taskCount: number }>;
   tasks: Array<{ id: string; title: string; completed: boolean; priority: string | null; projectId: string | null }>;
   lessonPlans: Array<{ id: string; title: string; course: string; status: string }>;
+  recommendations: Array<{ id: string; studentName: string; institution: string; status: string; dueDate: string | null }>;
   drafts: Array<{ id: string; subject: string; status: string }>;
   adminItems: Array<{ id: string; title: string; status: string; category: string }>;
   products: Array<{ id: string; name: string; status: string; category: string }>;
+}
+
+export interface WorkspaceSummary {
+  id: string;
+  name: string;
+  projectCount: number;
+  openTaskCount: number;
+  lessonPlanCount: number;
+  pendingRecommendations: number;
 }
 
 export async function getWorkspaceData(workspaceId: string): Promise<WorkspaceData> {
@@ -68,10 +86,13 @@ export async function getWorkspaceData(workspaceId: string): Promise<WorkspaceDa
     projects: [],
     tasks: [],
     lessonPlans: [],
+    recommendations: [],
     drafts: [],
     adminItems: [],
     products: [],
   };
+
+  const courses = WORKSPACE_COURSES[workspaceId] ?? [];
 
   try {
     // Get projects for this workspace
@@ -111,19 +132,41 @@ export async function getWorkspaceData(workspaceId: string): Promise<WorkspaceDa
       });
     }
 
-    // Get lesson plans (filter by workspace-associated courses)
-    const lpSnap = await getDocs(collection(db, "lessonPlans"));
-    lpSnap.forEach((doc) => {
-      const d = doc.data();
-      if (d.status !== "archived") {
-        data.lessonPlans.push({
+    // Get lesson plans filtered by workspace-associated courses
+    if (courses.length > 0) {
+      const lpSnap = await getDocs(collection(db, "lessonPlans"));
+      lpSnap.forEach((doc) => {
+        const d = doc.data();
+        const course = (d.course as string) || "";
+        if (d.status !== "archived" && courses.includes(course)) {
+          data.lessonPlans.push({
+            id: doc.id,
+            title: d.title,
+            course,
+            status: d.status || "draft",
+          });
+        }
+      });
+    }
+
+    // Get recommendations for this workspace
+    try {
+      const recSnap = await getDocs(
+        query(collection(db, "recommendations"), where("workspaceId", "==", workspaceId))
+      );
+      recSnap.forEach((doc) => {
+        const d = doc.data();
+        data.recommendations.push({
           id: doc.id,
-          title: d.title,
-          course: d.course || "",
-          status: d.status || "draft",
+          studentName: d.studentName || "",
+          institution: d.institution || "",
+          status: d.status || "pending",
+          dueDate: d.dueDate || null,
         });
-      }
-    });
+      });
+    } catch {
+      // Collection may not exist yet — that is fine
+    }
 
     // Get drafts
     const draftSnap = await getDocs(collection(db, "communicationDrafts"));
@@ -164,4 +207,69 @@ export async function getWorkspaceData(workspaceId: string): Promise<WorkspaceDa
   }
 
   return data;
+}
+
+/** Quick summary counts for a workspace — used by the workspace index page. */
+export async function getWorkspaceSummary(workspaceId: string): Promise<WorkspaceSummary> {
+  const ws = getWorkspace(workspaceId);
+  const summary: WorkspaceSummary = {
+    id: workspaceId,
+    name: ws?.name ?? workspaceId,
+    projectCount: 0,
+    openTaskCount: 0,
+    lessonPlanCount: 0,
+    pendingRecommendations: 0,
+  };
+
+  try {
+    // Projects
+    const projSnap = await getDocs(
+      query(collection(db, "projects"), where("workspaceId", "==", workspaceId), where("archived", "==", false))
+    );
+    summary.projectCount = projSnap.size;
+
+    const projectIds: string[] = [];
+    projSnap.forEach((d) => projectIds.push(d.id));
+
+    // Open tasks across those projects
+    if (projectIds.length > 0) {
+      const tasksSnap = await getDocs(collection(db, "tasks"));
+      tasksSnap.forEach((d) => {
+        const data = d.data();
+        if (projectIds.includes(data.projectId) && !data.completed) {
+          summary.openTaskCount++;
+        }
+      });
+    }
+
+    // Lesson plans by course
+    const courses = WORKSPACE_COURSES[workspaceId] ?? [];
+    if (courses.length > 0) {
+      const lpSnap = await getDocs(collection(db, "lessonPlans"));
+      lpSnap.forEach((d) => {
+        const data = d.data();
+        if (data.status !== "archived" && courses.includes((data.course as string) || "")) {
+          summary.lessonPlanCount++;
+        }
+      });
+    }
+
+    // Pending recommendations
+    try {
+      const recSnap = await getDocs(
+        query(
+          collection(db, "recommendations"),
+          where("workspaceId", "==", workspaceId),
+          where("status", "==", "pending")
+        )
+      );
+      summary.pendingRecommendations = recSnap.size;
+    } catch {
+      // Collection may not exist yet
+    }
+  } catch (err) {
+    console.error("[getWorkspaceSummary]", err);
+  }
+
+  return summary;
 }

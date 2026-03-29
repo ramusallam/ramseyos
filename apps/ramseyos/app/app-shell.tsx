@@ -119,6 +119,7 @@ type NavKey =
   | "purchasing"
   | "vendors"
   | "communications"
+  | "recommendations"
   | "productOps"
   | "admin"
   | "life"
@@ -174,6 +175,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Ops",
     items: [
+      { href: "/recommendations", label: "Recs", icon: RecsIcon, key: "recommendations" },
       { href: "/weekly-review", label: "Weekly Review", icon: WeeklyReviewIcon, key: "weeklyReview" },
       { href: "/product-ops", label: "Product Ops", icon: ProductOpsIcon, key: "productOps" },
       { href: "/knowledge", label: "Knowledge", icon: KnowledgeIcon, key: "knowledge" },
@@ -998,6 +1000,35 @@ function CommsIcon({ active }: { active: boolean }) {
       />
       <path
         d="M1.5 3.5l6.5 5 6.5-5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function RecsIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <rect
+        x="3"
+        y="2"
+        width="10"
+        height="12"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M5.5 5h5M5.5 7.5h5M5.5 10h3"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"

@@ -104,7 +104,7 @@ export const WORKFLOWS: Workflow[] = [
     description: "Generate a recommendation letter from student data and review before sending.",
     category: "ops",
     icon: "M3 3h10v2H3zM5 7h6M5 10h4",
-    entryRoute: "/communications",
+    entryRoute: "/recommendations",
     steps: [
       { label: "Select student" },
       { label: "Generate draft" },
@@ -112,7 +112,7 @@ export const WORKFLOWS: Workflow[] = [
       { label: "Export / send" },
     ],
     quickLaunch: true,
-    knowledgeTags: ["ops", "communications"],
+    knowledgeTags: ["ops", "recommendations"],
   },
   {
     id: "material-sourcing",

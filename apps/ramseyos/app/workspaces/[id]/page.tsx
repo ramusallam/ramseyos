@@ -95,6 +95,9 @@ export default function WorkspaceDetailPage() {
             {isSchool && data.lessonPlans.length > 0 && (
               <StatDot color="bg-violet-400" label={`${data.lessonPlans.length} lessons`} />
             )}
+            {isSchool && data.recommendations.length > 0 && (
+              <StatDot color="bg-rose-400" label={`${data.recommendations.filter((r) => r.status === "pending").length} pending recs`} />
+            )}
             {data.drafts.length > 0 && (
               <span className="tabular-nums">{data.drafts.length} drafts</span>
             )}
@@ -176,6 +179,7 @@ export default function WorkspaceDetailPage() {
           ) : (
             <EmptyMessage>No open tasks for this workspace.</EmptyMessage>
           )}
+          <ContextLink href="/tasks" label="View all tasks" />
         </CollapsibleSection>
 
         {/* Lesson Plans (school workspaces only) */}
@@ -208,6 +212,44 @@ export default function WorkspaceDetailPage() {
             ) : (
               <EmptyMessage>No lesson plans yet.</EmptyMessage>
             )}
+            <ContextLink href="/lesson-plans" label="View all lessons" />
+          </CollapsibleSection>
+        )}
+
+        {/* Recommendations (school workspaces only) */}
+        {isSchool && (
+          <CollapsibleSection
+            icon="M2 3h12v10H2zM5 6.5h6M5 9h4"
+            label="Recommendations"
+            count={data?.recommendations.length || 0}
+            accent={workspace.accent}
+            collapsed={collapsed["recs"]}
+            onToggle={() => toggle("recs")}
+          >
+            {data && data.recommendations.length > 0 ? (
+              <div className="space-y-1">
+                {data.recommendations.map((rec) => (
+                  <Link
+                    key={rec.id}
+                    href={`/recommendations/${rec.id}`}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-surface-raised/50 transition-colors"
+                  >
+                    <span className={`size-1.5 rounded-full shrink-0 ${rec.status === "sent" ? "bg-emerald-400" : rec.status === "in_progress" ? "bg-sky-400" : "bg-amber-400"}`} />
+                    <span className="flex-1 text-[13px] text-foreground/80 truncate">{rec.studentName}</span>
+                    {rec.institution && (
+                      <span className="text-[10px] text-muted shrink-0">{rec.institution}</span>
+                    )}
+                    <StatusBadge status={rec.status} />
+                    {rec.dueDate && (
+                      <span className="text-[10px] text-muted/60 shrink-0 tabular-nums">{rec.dueDate}</span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <EmptyMessage>No recommendations for this workspace.</EmptyMessage>
+            )}
+            <ContextLink href="/recommendations" label="View all recommendations" />
           </CollapsibleSection>
         )}
 
@@ -394,4 +436,17 @@ function PriorityBadge({ priority }: { priority: string }) {
 
 function EmptyMessage({ children }: { children: React.ReactNode }) {
   return <p className="text-[12px] text-muted/60 px-3 py-2">{children}</p>;
+}
+
+function ContextLink({ href, label }: { href: string; label: string }) {
+  return (
+    <div className="mt-2 px-3">
+      <Link
+        href={href}
+        className="text-[11px] text-muted/50 hover:text-accent transition-colors"
+      >
+        {label} &rarr;
+      </Link>
+    </div>
+  );
 }
