@@ -13,6 +13,7 @@ import { useAuth, type AuthStatus } from "@/lib/auth";
 import { trackRecent } from "@/lib/recents";
 import { CommandPalette } from "./command-palette";
 import { useFocusTimer, FocusTimerIndicator } from "./focus-timer";
+import { ConnectionStatus } from "./components/connection-status";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -318,6 +319,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background">
+      {/* Connection Status */}
+      <ConnectionStatus />
+
       {/* Command Palette */}
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
 

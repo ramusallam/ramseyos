@@ -2,6 +2,12 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
+import {
+  getPermissionStatus,
+  requestPermission,
+  sendNotification,
+  type NotificationPermissionStatus,
+} from "@/lib/notifications";
 import Link from "next/link";
 
 /* ── Types ── */
@@ -50,9 +56,11 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [prefs, setPrefs] = useState<Preferences>(DEFAULT_PREFS);
   const [exportStatus, setExportStatus] = useState<string | null>(null);
+  const [notifPerm, setNotifPerm] = useState<NotificationPermissionStatus>("default");
 
   useEffect(() => {
     setPrefs(loadPrefs());
+    setNotifPerm(getPermissionStatus());
   }, []);
 
   useEffect(() => {
@@ -209,6 +217,73 @@ export default function SettingsPage() {
               checked={prefs.compactSidebar}
               onChange={() => togglePref("compactSidebar")}
             />
+          </div>
+        </SettingsSection>
+
+        {/* ── Notifications ── */}
+        <SettingsSection icon="M8 1.5v1M8 13.5v1M3.5 8h-1M14.5 8h-1M4.5 4.5l-.7-.7M12.2 12.2l-.7-.7M4.5 11.5l-.7.7M12.2 3.8l-.7.7" label="Notifications">
+          <div className="rounded-xl border border-border bg-surface p-5 shadow-card space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[13px] text-foreground/80">Browser notifications</p>
+                <p className="text-[11px] text-muted">
+                  {notifPerm === "granted"
+                    ? "Notifications are enabled"
+                    : notifPerm === "denied"
+                      ? "Notifications are blocked — update in browser settings"
+                      : "Allow RamseyOS to send browser notifications"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex items-center gap-1.5 text-[10px] ${
+                    notifPerm === "granted"
+                      ? "text-emerald-500"
+                      : notifPerm === "denied"
+                        ? "text-rose-400"
+                        : "text-muted"
+                  }`}
+                >
+                  <span
+                    className={`size-1.5 rounded-full ${
+                      notifPerm === "granted"
+                        ? "bg-emerald-400"
+                        : notifPerm === "denied"
+                          ? "bg-rose-400"
+                          : "bg-muted"
+                    }`}
+                  />
+                  {notifPerm === "granted" ? "Granted" : notifPerm === "denied" ? "Blocked" : "Not set"}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {notifPerm === "default" && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const result = await requestPermission();
+                    setNotifPerm(result);
+                  }}
+                  className="text-[12px] font-medium text-accent hover:text-accent/80 transition-colors"
+                >
+                  Enable notifications
+                </button>
+              )}
+              {notifPerm === "granted" && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    sendNotification("RamseyOS", {
+                      body: "Notifications are working.",
+                    })
+                  }
+                  className="text-[12px] font-medium text-accent hover:text-accent/80 transition-colors"
+                >
+                  Send test notification
+                </button>
+              )}
+            </div>
           </div>
         </SettingsSection>
 
