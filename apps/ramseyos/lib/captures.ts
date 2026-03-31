@@ -1,5 +1,6 @@
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
+import { logCreated } from "./activity-log";
 
 export type CaptureSource =
   | "manual"
@@ -51,6 +52,7 @@ export async function createCapture(input: CaptureInput): Promise<string> {
       createdAt: serverTimestamp(),
       tags: [],
     });
+    logCreated("capture", ref.id, input.text.slice(0, 60), { href: "/inbox" });
     return ref.id;
   } catch (err) {
     console.error("[createCapture]", err);

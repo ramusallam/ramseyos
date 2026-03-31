@@ -130,3 +130,10 @@ export type { BuildContextCategory, BuildContext } from "./build-contexts";
 
 // ── Recents ────────────────────────────────────────────────────
 export type { RecentItem } from "./recents";
+
+// ── Activity Log ───────────────────────────────────────────────
+export type {
+  ActivityAction,
+  ActivityObjectType,
+  ActivityEntry,
+} from "./activity-log";

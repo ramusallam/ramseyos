@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { toDate } from "./shared";
+import { logCreated, logActivity } from "./activity-log";
 
 export type DraftStatus = "draft" | "ready" | "sent" | "failed";
 export type GmailHandoffStatus = "not_prepared" | "ready_for_gmail" | "handed_off";
@@ -58,6 +59,7 @@ export async function createDraft(fields: {
       gmailStatus: "not_prepared" as GmailHandoffStatus,
       createdAt: serverTimestamp(),
     });
+    logCreated("draft", ref.id, fields.subject, { href: "/communications" });
     return ref.id;
   } catch (err) {
     console.error("[createDraft]", err);
@@ -83,6 +85,11 @@ export async function updateDraft(
 ): Promise<void> {
   try {
     await updateDoc(doc(db, "communicationDrafts", id), fields);
+    if (fields.status === "sent") {
+      logActivity({ action: "sent", objectType: "draft", objectId: id, label: fields.subject ?? "Draft", href: "/communications" });
+    } else if (fields.status === "ready") {
+      logActivity({ action: "status_changed", objectType: "draft", objectId: id, label: fields.subject ?? "Draft", detail: "Marked ready", href: "/communications" });
+    }
   } catch (err) {
     console.error("[updateDraft]", err);
     throw err;

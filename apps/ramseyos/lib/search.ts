@@ -1,9 +1,19 @@
-import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "./firebase";
 
 export interface SearchResult {
   id: string;
-  type: "task" | "project" | "lesson-plan" | "material" | "tool" | "product" | "draft" | "capture";
+  type:
+    | "task"
+    | "project"
+    | "lesson-plan"
+    | "material"
+    | "tool"
+    | "product"
+    | "draft"
+    | "capture"
+    | "recommendation"
+    | "knowledge";
   title: string;
   subtitle?: string;
   status?: string;
@@ -19,6 +29,8 @@ const TYPE_META: Record<SearchResult["type"], { label: string; color: string }> 
   product: { label: "Product", color: "text-rose-400" },
   draft: { label: "Draft", color: "text-indigo-400" },
   capture: { label: "Capture", color: "text-white/50" },
+  recommendation: { label: "Recommendation", color: "text-orange-400" },
+  knowledge: { label: "Knowledge", color: "text-cyan-400" },
 };
 
 export function getTypeMeta(type: SearchResult["type"]) {
@@ -158,6 +170,49 @@ export async function globalSearch(q: string): Promise<SearchResult[]> {
       }
     });
   } catch (e) { console.error("[search] captures error", e); }
+
+  // Search recommendations
+  try {
+    const recSnap = await getDocs(collection(db, "recommendations"));
+    recSnap.forEach((doc) => {
+      const d = doc.data();
+      if (
+        (d.studentName || "").toLowerCase().includes(lower) ||
+        (d.institution || "").toLowerCase().includes(lower)
+      ) {
+        results.push({
+          id: doc.id,
+          type: "recommendation",
+          title: d.studentName || "Untitled Rec",
+          subtitle: d.institution,
+          status: d.status,
+          href: `/recommendations/${doc.id}`,
+        });
+      }
+    });
+  } catch (e) { console.error("[search] recommendations error", e); }
+
+  // Search knowledge (includes playbooks)
+  try {
+    const knSnap = await getDocs(collection(db, "knowledge"));
+    knSnap.forEach((doc) => {
+      const d = doc.data();
+      if (
+        (d.title || "").toLowerCase().includes(lower) ||
+        (d.body || "").toLowerCase().includes(lower) ||
+        ((d.tags as string[]) || []).some((t: string) => t.toLowerCase().includes(lower))
+      ) {
+        results.push({
+          id: doc.id,
+          type: "knowledge",
+          title: d.title || "Untitled",
+          subtitle: d.type === "playbook" ? "Playbook" : d.type,
+          status: d.archived ? "archived" : "active",
+          href: d.type === "playbook" ? "/playbooks" : "/knowledge",
+        });
+      }
+    });
+  } catch (e) { console.error("[search] knowledge error", e); }
 
   return results;
 }

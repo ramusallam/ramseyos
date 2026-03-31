@@ -127,6 +127,7 @@ type NavKey =
   | "weeklyReview"
   | "knowledge"
   | "playbooks"
+  | "activity"
   | "settings";
 
 interface NavItem {
@@ -188,6 +189,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "System",
     items: [
+      { href: "/activity", label: "Activity", icon: ActivityIcon, key: "activity" },
       { href: "/settings", label: "Settings", icon: SettingsIcon, key: "settings" },
     ],
   },
@@ -1195,6 +1197,27 @@ function PlaybooksIcon({ active }: { active: boolean }) {
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function ActivityIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      className={active ? "text-accent" : "text-muted"}
+    >
+      <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M8 5v3l2 1"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );

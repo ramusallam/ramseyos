@@ -1,5 +1,6 @@
 import { collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where, orderBy, Timestamp, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
+import { logCreated, logStatusChanged } from "./activity-log";
 
 export type RecommendationStatus = "request" | "drafting" | "review" | "final" | "sent" | "archived";
 
@@ -49,6 +50,7 @@ export async function createRecommendation(fields: {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
+    logCreated("recommendation", ref.id, fields.studentName, { href: `/recommendations/${ref.id}` });
     return ref.id;
   } catch (err) {
     console.error("[createRecommendation]", err);
@@ -97,6 +99,7 @@ export async function updateRecommendationStatus(id: string, status: Recommendat
       status,
       updatedAt: serverTimestamp(),
     });
+    logStatusChanged("recommendation", id, "Recommendation", `Status → ${status}`, { href: `/recommendations/${id}` });
   } catch (err) {
     console.error("[updateRecommendationStatus]", err);
     throw err;

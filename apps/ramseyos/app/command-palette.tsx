@@ -17,6 +17,8 @@ import { createProject } from "@/lib/projects";
 import { createLessonPlan } from "@/lib/lesson-plans";
 import { createDraft } from "@/lib/drafts";
 import { getRecents, type RecentItem } from "@/lib/recents";
+import { getRecentActivity, type ActivityEntry } from "@/lib/activity-log";
+import { toDate } from "@/lib/shared";
 
 /* ── Types ── */
 
@@ -24,7 +26,7 @@ interface PaletteItem {
   id: string;
   label: string;
   detail?: string;
-  category: "navigate" | "task" | "project" | "lesson" | "action" | "recent";
+  category: "navigate" | "task" | "project" | "lesson" | "action" | "recent" | "activity";
   href?: string;
   action?: () => void | Promise<void>;
   icon: string;
@@ -34,6 +36,7 @@ interface PaletteItem {
 
 const NAV_ITEMS: PaletteItem[] = [
   { id: "nav-search", label: "Search", detail: "Search everything", category: "navigate", href: "/search", icon: "search" },
+  { id: "nav-activity", label: "Activity", detail: "Recent changes", category: "navigate", href: "/activity", icon: "activity" },
   { id: "nav-today", label: "Today", category: "navigate", href: "/", icon: "sun" },
   { id: "nav-week", label: "This Week", detail: "Weekly planning & review", category: "navigate", href: "/week", icon: "calendar" },
   { id: "nav-inbox", label: "Inbox", category: "navigate", href: "/inbox", icon: "inbox" },
@@ -146,6 +149,7 @@ const ICON_PATHS: Record<string, string> = {
   capture: "M8 3.5v9M3.5 8h9",
   task: "M5.5 8l2 2 3-4",
   search: "M7 3a4 4 0 100 8 4 4 0 000-8zM10.5 10.5L14 14",
+  activity: "M8 2a6 6 0 100 12A6 6 0 008 2zM8 5v3l2 1",
 };
 
 function PaletteIcon({ name }: { name: string }) {
@@ -171,14 +175,15 @@ function PaletteIcon({ name }: { name: string }) {
 
 const CATEGORY_LABEL: Record<string, string> = {
   action: "Quick Actions",
-  recent: "Recent",
+  activity: "Recent Activity",
+  recent: "Recent Pages",
   navigate: "Navigate",
   task: "Tasks",
   project: "Projects",
   lesson: "Lessons",
 };
 
-const CATEGORY_ORDER = ["action", "recent", "navigate", "task", "project", "lesson"];
+const CATEGORY_ORDER = ["action", "activity", "recent", "navigate", "task", "project", "lesson"];
 
 /* ── Main Component ── */
 
@@ -193,10 +198,11 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const [search, setSearch] = useState("");
   const [dynamic, setDynamic] = useState<DynamicItems | null>(null);
   const [recentItems, setRecentItems] = useState<PaletteItem[]>([]);
+  const [activityItems, setActivityItems] = useState<PaletteItem[]>([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
-  // Fetch dynamic items + recents when palette opens
+  // Fetch dynamic items + recents + activity when palette opens
   useEffect(() => {
     if (open) {
       setSearch("");
@@ -216,6 +222,35 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
           icon: r.category === "project" ? "folder" : r.category === "lesson" ? "lesson" : r.category === "task" ? "check" : "sun",
         }))
       );
+
+      // Load persistent activity
+      getRecentActivity(5).then((entries) => {
+        setActivityItems(
+          entries.map((e) => {
+            const iconMap: Record<string, string> = {
+              task: "check", project: "folder", "lesson-plan": "lesson",
+              draft: "comms", capture: "inbox", recommendation: "admin",
+              knowledge: "materials",
+            };
+            const d = toDate(e.createdAt);
+            const timeStr = d ? (() => {
+              const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+              if (mins < 1) return "just now";
+              if (mins < 60) return `${mins}m ago`;
+              const hrs = Math.floor(mins / 60);
+              return hrs < 24 ? `${hrs}h ago` : `${Math.floor(hrs / 24)}d ago`;
+            })() : "";
+            return {
+              id: `activity-${e.id}`,
+              label: e.label,
+              detail: `${e.action} · ${timeStr}`,
+              category: "activity" as const,
+              href: e.href,
+              icon: iconMap[e.objectType] ?? "check",
+            };
+          })
+        );
+      });
 
       setTimeout(() => inputRef.current?.focus(), 50);
     }
@@ -327,8 +362,8 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     ];
 
     if (!q) {
-      // Show recents (if any) + navigation when search is empty
-      return [...recentItems, ...all.filter((i) => i.category === "navigate")];
+      // Show activity + recents + navigation when search is empty
+      return [...activityItems, ...recentItems, ...all.filter((i) => i.category === "navigate")];
     }
 
     return all.filter(
@@ -337,7 +372,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
         (i.detail && i.detail.toLowerCase().includes(q)) ||
         (i.category === "action" && q.length > 0)
     );
-  }, [search, dynamic, actionItems, searchAllItem, recentItems]);
+  }, [search, dynamic, actionItems, searchAllItem, recentItems, activityItems]);
 
   // Group by category
   const grouped = useMemo(() => {

@@ -6,6 +6,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { logCreated, logCompleted, logActivity } from "./activity-log";
 
 // Re-export Priority from shared so all consumers get the same type.
 export { type Priority } from "./shared";
@@ -42,6 +43,7 @@ export async function createTask(fields: {
       chosenForToday: false,
       createdAt: serverTimestamp(),
     });
+    logCreated("task", ref.id, fields.title, { href: "/tasks" });
     return ref.id;
   } catch (err) {
     console.error("[createTask]", err);
@@ -69,6 +71,9 @@ export async function toggleTaskCompleted(
     await updateDoc(doc(db, COLLECTION, taskId), {
       completed: !current,
     });
+    if (!current) {
+      logCompleted("task", taskId, "Task completed", { href: "/tasks" });
+    }
   } catch (err) {
     console.error("[toggleTaskCompleted]", err);
     throw err;

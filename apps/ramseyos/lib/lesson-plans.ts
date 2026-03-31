@@ -12,6 +12,7 @@ import {
   type Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { logCreated, logUpdated, logActivity } from "./activity-log";
 
 /* ── Types ── */
 
@@ -144,6 +145,7 @@ export async function createLessonPlan(fields: {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
+    logCreated("lesson-plan", ref.id, fields.title, { href: `/lesson-plans/${ref.id}` });
     return ref.id;
   } catch (err) {
     console.error("[createLessonPlan]", err);
@@ -208,6 +210,11 @@ export async function updateLessonPlan(
       ...data,
       updatedAt: serverTimestamp(),
     });
+    if (data.status) {
+      logActivity({ action: "status_changed", objectType: "lesson-plan", objectId: id, label: data.title ?? "Lesson plan", detail: `Status → ${data.status}`, href: `/lesson-plans/${id}` });
+    } else {
+      logUpdated("lesson-plan", id, data.title ?? "Lesson plan", { href: `/lesson-plans/${id}` });
+    }
   } catch (err) {
     console.error("[updateLessonPlan]", err);
     throw err;
@@ -264,6 +271,7 @@ export async function archiveLessonPlan(id: string): Promise<void> {
       status: "archived" as LessonStatus,
       updatedAt: serverTimestamp(),
     });
+    logActivity({ action: "archived", objectType: "lesson-plan", objectId: id, label: "Lesson plan archived", href: `/lesson-plans/${id}` });
   } catch (err) {
     console.error("[archiveLessonPlan]", err);
     throw err;

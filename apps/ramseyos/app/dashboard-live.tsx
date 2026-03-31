@@ -13,6 +13,8 @@ import {
 import { db } from "@/lib/firebase";
 import { getActiveTools, type ToolItem } from "@/lib/tools";
 import { getRecents, type RecentItem } from "@/lib/recents";
+import { getRecentActivity, type ActivityEntry } from "@/lib/activity-log";
+import { toDate } from "@/lib/shared";
 import { getDrafts, type DraftItem } from "@/lib/drafts";
 import { getLessonPlans, type LessonPlan as LPItem } from "@/lib/lesson-plans";
 import { PRIORITY_STYLE } from "@/lib/shared";
@@ -931,14 +933,39 @@ const RECENT_DOT: Record<string, string> = {
   page: "bg-muted/40",
 };
 
+const ACTIVITY_DOT: Record<string, string> = {
+  task: "bg-sky-400",
+  project: "bg-emerald-400",
+  "lesson-plan": "bg-violet-400",
+  draft: "bg-indigo-400",
+  capture: "bg-white/40",
+  recommendation: "bg-orange-400",
+  knowledge: "bg-cyan-400",
+};
+
+const ACTION_VERB: Record<string, string> = {
+  created: "Created",
+  updated: "Updated",
+  completed: "Completed",
+  archived: "Archived",
+  status_changed: "Changed",
+  approved: "Approved",
+  sent: "Sent",
+};
+
 export function RecentActivity() {
-  const [items, setItems] = useState<RecentItem[]>([]);
+  const [recents, setRecents] = useState<RecentItem[]>([]);
+  const [activity, setActivity] = useState<ActivityEntry[]>([]);
 
   useEffect(() => {
-    setItems(getRecents(6));
+    setRecents(getRecents(4));
+    getRecentActivity(6).then(setActivity);
   }, []);
 
-  if (items.length === 0) return null;
+  const hasRecents = recents.length > 0;
+  const hasActivity = activity.length > 0;
+
+  if (!hasRecents && !hasActivity) return null;
 
   function relativeTime(ts: number) {
     const diff = Date.now() - ts;
@@ -951,6 +978,12 @@ export function RecentActivity() {
     return `${days}d ago`;
   }
 
+  function activityTime(entry: ActivityEntry): string {
+    const d = toDate(entry.createdAt);
+    if (!d) return "";
+    return relativeTime(d.getTime());
+  }
+
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
@@ -960,22 +993,66 @@ export function RecentActivity() {
         <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted/60">
           Recent
         </h2>
+        <Link href="/activity" className="ml-auto text-[9px] text-muted/40 hover:text-accent transition-colors">
+          All &rarr;
+        </Link>
       </div>
-      <div className="space-y-0.5">
-        {items.map((item) => (
-          <Link
-            key={item.id}
-            href={item.href}
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/70 hover:bg-surface-raised hover:text-foreground transition-colors group"
-          >
-            <span className={`size-2 rounded-full shrink-0 ${RECENT_DOT[item.category] ?? "bg-muted/40"}`} />
-            <span className="flex-1 truncate">{item.label}</span>
-            <span className="text-[9px] text-muted shrink-0">
-              {relativeTime(item.timestamp)}
-            </span>
-          </Link>
-        ))}
-      </div>
+
+      {/* Persistent activity entries */}
+      {hasActivity && (
+        <div className="space-y-0.5 mb-2">
+          {activity.map((entry) => {
+            const dot = ACTIVITY_DOT[entry.objectType] ?? "bg-muted/40";
+            const verb = ACTION_VERB[entry.action] ?? entry.action;
+            const cls = "flex items-center gap-3 rounded-lg px-3 py-1.5 text-[12px] text-foreground/60 hover:bg-surface-raised hover:text-foreground transition-colors";
+            const inner = (
+              <>
+                <span className={`size-1.5 rounded-full shrink-0 ${dot}`} />
+                <span className="flex-1 truncate">
+                  <span className="text-muted/50">{verb}</span>{" "}
+                  {entry.label}
+                </span>
+                <span className="text-[9px] text-muted/40 shrink-0">
+                  {activityTime(entry)}
+                </span>
+              </>
+            );
+            return entry.href ? (
+              <Link key={entry.id} href={entry.href} className={cls}>
+                {inner}
+              </Link>
+            ) : (
+              <div key={entry.id} className={cls}>
+                {inner}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Page recents */}
+      {hasRecents && (
+        <div className="space-y-0.5">
+          {hasActivity && (
+            <p className="text-[9px] text-muted/30 uppercase tracking-wider px-3 pt-1 pb-0.5">
+              Visited
+            </p>
+          )}
+          {recents.map((item) => (
+            <Link
+              key={item.id}
+              href={item.href}
+              className="flex items-center gap-3 rounded-lg px-3 py-1.5 text-[12px] text-foreground/60 hover:bg-surface-raised hover:text-foreground transition-colors"
+            >
+              <span className={`size-1.5 rounded-full shrink-0 ${RECENT_DOT[item.category] ?? "bg-muted/40"}`} />
+              <span className="flex-1 truncate">{item.label}</span>
+              <span className="text-[9px] text-muted/40 shrink-0">
+                {relativeTime(item.timestamp)}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

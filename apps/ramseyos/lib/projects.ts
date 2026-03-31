@@ -11,6 +11,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { logCreated, logActivity } from "./activity-log";
 
 export type ProjectStatus = "active" | "paused" | "completed" | "archived";
 
@@ -47,6 +48,7 @@ export async function createProject(fields: {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
+    logCreated("project", ref.id, fields.title, { href: `/projects/${ref.id}` });
     return ref.id;
   } catch (err) {
     console.error("[createProject]", err);
@@ -81,6 +83,7 @@ export async function archiveProject(id: string): Promise<void> {
       status: "archived" as ProjectStatus,
       updatedAt: serverTimestamp(),
     });
+    logActivity({ action: "archived", objectType: "project", objectId: id, label: "Project archived", href: `/projects/${id}` });
   } catch (err) {
     console.error("[archiveProject]", err);
     throw err;
